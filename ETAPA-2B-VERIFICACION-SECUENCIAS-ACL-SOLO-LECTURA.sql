@@ -8,7 +8,7 @@ SELECT
   c.relname AS sequence_name,
   pg_get_userbyid(c.relowner) AS owner,
   COALESCE(c.relacl, acldefault('S', c.relowner)) AS effective_acl,
-  x.grantee_oid,
+  x.grantee AS grantee_oid,
   COALESCE(r.rolname, 'PUBLIC') AS grantee,
   x.privilege_type,
   x.is_grantable
