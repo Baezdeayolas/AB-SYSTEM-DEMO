@@ -5,7 +5,7 @@ const SUPABASE_KEY='sb_publishable_M6W3DMCqPcH92cT96ioP5A_wi64QmcA';
 const $=id=>document.getElementById(id);
 if(!window.supabase?.createClient){$('login-message').textContent='No se pudo cargar el servicio de acceso DEMO.';return;}
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let user=null,profile=null,companies=[],activeCompany=null,isGlobal=false,items=[],clients=[],cart=[],orders=[],tier=1,estado='pendiente',condicion='Contado';
+let user=null,profile=null,companies=[],activeCompany=null,isGlobal=false,items=[],clients=[],sellerRows=[],cart=[],orders=[],tier=1,estado='pendiente',condicion='Contado';
 const money=n=>'Gs. '+Math.round(Number(n||0)).toLocaleString('es-PY');
 const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const timeout=(p,label)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error(label+' no respondió.')),12000))]);
@@ -43,7 +43,7 @@ async function loadCompanyContext(u){
 async function switchCompany(companyId){
  const next=companies.find(c=>c.id===companyId);if(!next||next.id===activeCompany?.id)return;
  activeCompany=next;profile={role:isGlobal?'company_admin':(next.memberRole||'seller')};
- cart=[];orders=[];items=[];clients=[];
+ cart=[];orders=[];items=[];clients=[];sellerRows=[];
  $('cliente-input').value='';$('cliente-input').dataset.code='';$('cliente-suggestions').classList.remove('open');$('vendedor-input').value='';
  $('order-message').textContent='';$('discount-input').value='0';
  $('company-role').textContent=isGlobal?'Superadministrador global':(profile.role==='company_admin'?'Administrador de empresa':'Vendedor');
@@ -84,11 +84,20 @@ async function loadData(){
   if(!items.length)items=[...window.DEMO_ITEMS];
   if(!clients.length)clients=[...window.DEMO_CLIENTS];
  }
- let assignmentsQuery=db.from('seller_assignments').select('seller_label').eq('company_id',activeCompany.id);
+ const {data:members,error:me}=await timeout(
+  db.from('company_memberships').select('user_id').eq('company_id',activeCompany.id).eq('role','seller').eq('status','active'),
+  'Las membresías de vendedores'
+ );
+ if(me)throw me;
+ const memberIds=(members||[]).map(x=>x.user_id);
+ let assignmentsQuery=db.from('seller_assignments').select('user_id,seller_label').eq('company_id',activeCompany.id);
  if(profile.role==='seller'&&!isGlobal)assignmentsQuery=assignmentsQuery.eq('user_id',user.id);
- const {data:as,error:ae}=await timeout(assignmentsQuery,'Los permisos de vendedor');if(ae)throw ae;
- const sellers=(as||[]).map(x=>x.seller_label);
- if(profile.role==='seller'&&!sellers.length)throw new Error('Tu cuenta no tiene vendedores asignados en esta empresa.');
+ else if(memberIds.length)assignmentsQuery=assignmentsQuery.in('user_id',memberIds);
+ else assignmentsQuery=assignmentsQuery.eq('user_id','00000000-0000-0000-0000-000000000000');
+ const {data:as,error:ae}=await timeout(assignmentsQuery,'Las asignaciones de vendedores');if(ae)throw ae;
+ sellerRows=as||[];
+ const sellers=sellerRows.map(x=>x.seller_label);
+ if(profile.role==='seller'&&!sellers.length)throw new Error('Tu cuenta no tiene un vendedor activo asignado en esta empresa.');
  $('vendedor-input').innerHTML='<option value="">Vendedor</option>'+[...new Set(sellers)].map(x=>'<option value="'+safe(x)+'">'+safe(x)+'</option>').join('');
  $('save-order').textContent='Guardar pedido · '+activeCompany.name;
  $('stock-list').setAttribute('aria-label','Stock de '+activeCompany.name);
@@ -104,7 +113,7 @@ async function activate(u){
  $('admin-menu-tab').hidden=!(isGlobal||profile.role==='company_admin');showPanel('panel-search');
 }
 $('login-form').addEventListener('submit',async e=>{e.preventDefault();const b=$('login-form').querySelector('button');b.disabled=true;gate('Conectando con Supabase DEMO…');try{const r=await timeout(db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value}),'El acceso');if(r.error)throw r.error;await activate(r.data.user);}catch(err){await db.auth.signOut();gate('No se pudo ingresar: '+(err.message||'Error desconocido'));}finally{b.disabled=false;}});
-$('logout').onclick=async()=>{await db.auth.signOut();user=null;profile=null;activeCompany=null;companies=[];isGlobal=false;items=[];clients=[];orders=[];cart=[];gate('Sesión cerrada.');};
+$('logout').onclick=async()=>{await db.auth.signOut();user=null;profile=null;activeCompany=null;companies=[];isGlobal=false;items=[];clients=[];sellerRows=[];orders=[];cart=[];gate('Sesión cerrada.');};
 document.querySelectorAll('.tabs [data-panel]').forEach(b=>b.addEventListener('click',()=>showPanel(b.dataset.panel)));
 $('search-input').addEventListener('input',render);$('discount-input').addEventListener('input',render);
 document.querySelectorAll('[data-tier]').forEach(b=>b.onclick=()=>{tier=Number(b.dataset.tier);document.querySelectorAll('[data-tier]').forEach(x=>x.classList.toggle('active',x===b));render();});
@@ -116,10 +125,13 @@ $('save-order').onclick=async()=>{
  const msg=$('order-message');const seller=$('vendedor-input').value,clientCode=$('cliente-input').dataset.code;
  if(!cart.length){msg.textContent='Agregá al menos un artículo.';return;}
  if(!seller||!clientCode){msg.textContent='Seleccioná vendedor y cliente de la lista.';return;}
+ const sellerMatches=sellerRows.filter(x=>x.seller_label===seller);
+ if(sellerMatches.length!==1){msg.textContent='No se pudo identificar de forma única al vendedor seleccionado. Revisá sus asignaciones.';return;}
+ const ownerId=sellerMatches[0].user_id;
  const client=clients.find(c=>String(c.c)===String(clientCode));if(!client){msg.textContent='Seleccioná un cliente válido.';return;}
  const sub=total(),discount=Math.min(100,Math.max(0,Number($('discount-input').value)||0)),grand=sub-(sub*discount/100),now=new Date().toISOString(),id=activeCompany.code.toLowerCase()+'_'+crypto.randomUUID();
  const payload={id,vendedor:seller,cliente:client.n,clienteCodigo:client.c,estado,condicion:$('condicion-input').value||condicion,lines:cart.map(x=>({code:x.c,description:x.d,qty:x.qty,tier,price:x['p'+tier]})),subtotal:sub,discount,total:grand,createdAt:now,updatedAt:now,companyCode:activeCompany.code};
- const {error}=await db.from('orders').insert({company_id:activeCompany.id,owner_id:user.id,legacy_id:id,legacy_source:'archive',payload,updated_at:now});
+ const {error}=await db.from('orders').insert({company_id:activeCompany.id,owner_id:ownerId,created_by:user.id,legacy_id:id,legacy_source:'archive',payload,updated_at:now});
  if(error){msg.textContent='No se pudo guardar el pedido: '+error.message;return;}
  cart=[];$('discount-input').value='0';msg.textContent='Pedido guardado correctamente en '+activeCompany.name+'.';await loadOrders();showPanel('panel-archive');
 };
