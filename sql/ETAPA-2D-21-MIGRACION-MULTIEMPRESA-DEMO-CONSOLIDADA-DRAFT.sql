@@ -1594,5 +1594,5 @@ BEGIN
 END
 $verify$;
 
--- Ensayo consolidado: revertir todos los cambios.
-ROLLBACK;
+-- Aplicación autorizada: confirmar cambios únicamente en AB-SYSTEM-DEMO.
+COMMIT;
