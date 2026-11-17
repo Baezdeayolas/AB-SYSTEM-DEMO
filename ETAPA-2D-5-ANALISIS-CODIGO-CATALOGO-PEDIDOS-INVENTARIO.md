@@ -66,8 +66,9 @@ Por tanto, el frontend actual no implementa la identidad acordada. No debe habil
 
 - No convertir todavía `inventory_current` en la fuente canónica.
 - Antes de crear tablas de stock y movimientos, localizar importadores y procesos que escriben `catalog_items.payload`.
-- La futura fuente canónica debe ser por empresa, con movimientos auditables append-only y actualizaciones transaccionales.
-- Definir una estrategia de compatibilidad temporal para `sc` para evitar que frontend e importador escriban fuentes divergentes.
+- La futura fuente canónica debe ser por empresa y depósito, actualizada mediante importación Excel validada.
+- No generar movimientos de salida ni reservas cuando se registra un pedido. La actualización de saldos se hará mediante la importación de stock acordada.
+- Definir una estrategia de compatibilidad temporal para los campos legacy para evitar que frontend e importador escriban fuentes divergentes.
 
 ## 6. Bloqueos que impiden ejecutar ahora el primer lote mutante
 
@@ -111,7 +112,7 @@ El usuario compartió registros reales de ejemplo del archivo `ListaPrecios_6571
 El usuario confirmó expresamente que Central y CDE deben manejarse como depósitos separados. Por tanto:
 
 1. La futura importación debe conservar `stock_central` y `stock_cde` como cantidades independientes; no sumarlas para reemplazar los saldos individuales.
-2. Cada saldo y sus movimientos deberán quedar asociados a empresa, producto y depósito.
+2. Cada saldo quedará asociado a empresa, producto y depósito.
 3. Los tres precios deben conservarse como listas diferenciadas.
 4. `cod_articulo` es el identificador comercial candidato para el producto dentro de una empresa; antes de imponer restricciones se deben revisar duplicados y reglas reales del importador.
 5. No asumir que `stock_central` equivale a `sc` ni que `stock_cde` equivale a `sd`. El código actual solo demuestra uso visual de `sc`; `sd` sigue sin consumidor identificado.
@@ -155,12 +156,12 @@ Se inspeccionaron `app.js` y `cloud-sync.js` del repositorio de producción úni
 - La carga sobrescribe en memoria `item.sc`, `item.sd`, `item.p1`, `item.p2` e `item.p3` con los campos `central`, `cde`, `p1`, `p2` y `p3` del inventario compartido.
 - El panel de stock (`refreshStockSnapshotFromCatalog()` y `renderStockPanel()`) consume `sc` como CENTRAL y `sd` como CDE; muestra ambos por separado y ofrece filtros separados.
 - Las tarjetas de producto también muestran CENTRAL y CDE por separado.
-- Sin embargo, al agregar un producto a un pedido, `app.js` calcula `disponible = sc + sd` y compara la cantidad solicitada contra el total combinado. La confirmación al usuario también comunica que el total está disponible entre ambos depósitos.
+- Al agregar un producto a un pedido, el código inspeccionado calcula `disponible = sc + sd` y compara la cantidad solicitada contra el total combinado. Esa operación no descuenta inventario.
 - La selección de precio usa `p1`, `p2` o `p3` según la lista seleccionada.
 
 ### 10.4 Consecuencia para el diseño multiempresa
 
-El usuario confirmó que los saldos Central y CDE deben mantenerse separados. La interfaz ya los muestra separados, pero la validación de cantidad del pedido actualmente los suma. No debe asumirse que la separación de inventario implica necesariamente reservar desde un depósito elegido: se requiere definir la regla de venta/compromiso de stock (elegir depósito, permitir surtido desde cualquiera, o mantener validación consolidada sin perder saldos separados).
+El usuario confirmó que los saldos Central y CDE deben mantenerse separados, mientras que la validación de disponibilidad de un pedido puede usar el total combinado. La creación del pedido no debe reservar ni descontar stock.
 
 ### 10.5 Bloqueos técnicos confirmados
 
@@ -170,18 +171,29 @@ El usuario confirmó que los saldos Central y CDE deben mantenerse separados. La
 4. El catálogo maestro también puede almacenar `sc`/`sd` y precios, pero la carga de inventario compartido los sobrescribe en memoria; hay dos representaciones que deben unificarse.
 5. `cod_fabrica`, `envases`, `master` e `inner` no se conservan en el objeto normalizado de catálogo actual.
 
-## 11. Regla funcional confirmada: disponibilidad combinada
+## 11. Reglas funcionales confirmadas: disponibilidad combinada y pedidos sin descuento
 
-El usuario eligió expresamente la **opción B**:
+### 11.1 Disponibilidad combinada
+
+El usuario eligió expresamente la opción B:
 
 - Mantener los saldos de CENTRAL y CDE separados y visibles como cantidades independientes.
 - Para validar la disponibilidad de un pedido, permitir utilizar la suma de ambos saldos.
-- La validación se considera satisfecha cuando la cantidad solicitada no supera la disponibilidad combinada de los dos depósitos.
 - La suma se utiliza únicamente para comprobar disponibilidad; no reemplaza ni fusiona los saldos individuales almacenados o mostrados.
-- La importación y los movimientos deben seguir actualizando y auditando cada depósito por separado.
 
-**Distinción pendiente antes de implementar:** esta decisión define la validación de disponibilidad, pero todavía no especifica cómo se descuenta/reserva físicamente la cantidad vendida entre CENTRAL y CDE. Esa regla de asignación deberá definirse en una etapa posterior para que los movimientos y saldos no queden ambiguos. No inventar una distribución automática ni modificar inventario hasta acordarla.
+### 11.2 El pedido no modifica el inventario
+
+El usuario aclaró expresamente que generar un pedido **no es una facturación ni una salida de mercadería**. En consecuencia:
+
+- Al crear, guardar o editar un pedido, no se descuenta stock de CENTRAL ni de CDE.
+- No se crea una reserva ni un movimiento de salida por el simple hecho de registrar un pedido.
+- La disponibilidad combinada funciona como referencia/validación informativa al momento de preparar el pedido, sin alterar los saldos.
+- Los saldos de ambos depósitos se actualizarán mediante la importación del archivo Excel que el usuario utiliza para stock y precios.
+- La importación Excel será el mecanismo operativo de actualización de existencias; deberá validarse y asociarse a la empresa correspondiente.
+- Cualquier futura operación de facturación o salida real de mercadería deberá ser un flujo separado y explícito, fuera del alcance de este comportamiento de pedidos.
+
+No se debe inferir ni implementar una distribución de descuento entre depósitos para los pedidos, porque no habrá descuento ni reserva.
 
 ## 12. Próximo paso
 
-Continuar la revisión del contrato de importación del Excel y diseñar el modelo de inventario multiempresa por depósito, incorporando la regla de disponibilidad combinada confirmada. No ejecutar SQL mutante, no modificar el frontend y no tocar producción en esta etapa.
+Continuar la revisión del contrato de importación del Excel y diseñar el modelo de inventario multiempresa por depósito, incorporando estas reglas: saldos independientes, disponibilidad combinada informativa y ninguna modificación de stock al registrar pedidos. No ejecutar SQL mutante, no modificar el frontend y no tocar producción en esta etapa.
