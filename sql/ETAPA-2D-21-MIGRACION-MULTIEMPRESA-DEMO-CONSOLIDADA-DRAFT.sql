@@ -1244,7 +1244,7 @@ RETURNS integer
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = $q$$q$
-AS $$
+AS $ab_import$
 DECLARE
   v_row jsonb;
   v_code text;
@@ -1362,7 +1362,7 @@ BEGIN
 
   RETURN v_processed;
 END;
-$$;
+$ab_import$;
 
 -- Aislamiento y escritura solo por RPC.
 ALTER TABLE public.inventory_balances ENABLE ROW LEVEL SECURITY;
