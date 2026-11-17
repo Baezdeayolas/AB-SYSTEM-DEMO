@@ -76,7 +76,7 @@ DECLARE
   v_bad_assignments bigint;
   v_conflicts bigint;
 BEGIN
-  SELECT count(*), min(id)
+  SELECT count(*), (array_agg(id))[1]
     INTO v_company_count, v_company_id
   FROM public.companies
   WHERE code = 'KOEJU';
