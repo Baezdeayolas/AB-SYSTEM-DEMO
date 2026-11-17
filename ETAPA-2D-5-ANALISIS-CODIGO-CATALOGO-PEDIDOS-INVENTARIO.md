@@ -97,3 +97,27 @@ Por tanto, el frontend actual no implementa la identidad acordada. No debe habil
 - No se modificó producción, no se abrió PR, no se hizo merge y no se publicó.
 
 **Resultado:** la fuente visual actual del stock está identificada (`catalog_items.payload.sc`), pero la migración del inventario y el aislamiento multiempresa siguen bloqueados hasta completar las verificaciones de importación, respaldo y RLS.
+## 9. Estructura Excel confirmada por el usuario
+
+El usuario compartió registros reales de ejemplo del archivo `ListaPrecios_6571.xlsx`. Los encabezados observados son:
+
+- Identificación: `cod_articulo`, `cod_fabrica`, `cod_barra`.
+- Clasificación: `agrup_1`, `agrup_2`, `agrup_3`.
+- Descripción y empaque: `descripcion`, `envases`, `master`, `inner`.
+- Existencias: `stock_central`, `stock_cde`.
+- Precios: `precio_1`, `precio_2`, `precio_3`.
+
+El usuario confirmó expresamente que Central y CDE deben manejarse como depósitos separados. Por tanto:
+
+1. La futura importación debe conservar `stock_central` y `stock_cde` como cantidades independientes; no sumarlas para reemplazar los saldos individuales.
+2. Cada saldo y sus movimientos deberán quedar asociados a empresa, producto y depósito.
+3. Los tres precios deben conservarse como listas diferenciadas.
+4. `cod_articulo` es el identificador comercial candidato para el producto dentro de una empresa; antes de imponer restricciones se deben revisar duplicados y reglas reales del importador.
+5. No asumir que `stock_central` equivale a `sc` ni que `stock_cde` equivale a `sd`. El código actual solo demuestra uso visual de `sc`; `sd` sigue sin consumidor identificado.
+6. El JSON compartido contiene solo cinco registros de muestra, por lo que no representa un inventario completo ni permite calcular conteos o duplicados del archivo entero.
+
+El código Python compartido por el usuario es únicamente un lector/inspector de Excel que serializa hojas y filas a JSON. No es el importador de la aplicación ni actualiza Supabase.
+
+### Próximo paso técnico
+
+Conseguir el código real que la aplicación utiliza para recibir/procesar el Excel y actualizar el catálogo/stock. Revisar también el flujo de importación completo antes de definir la migración de `catalog_items.payload` y el modelo normalizado de existencias por depósito. No ejecutar SQL mutante ni modificar el frontend hasta cerrar esa revisión.
