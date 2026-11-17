@@ -413,7 +413,7 @@ ROLLBACK;
 
   RETURN v_processed;
 END;
-$;
+$$;
 
 -- Aislamiento y escritura solo por RPC.
 ALTER TABLE public.inventory_balances ENABLE ROW LEVEL SECURITY;
