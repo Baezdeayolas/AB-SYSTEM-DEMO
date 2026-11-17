@@ -30,11 +30,12 @@ SELECT c.conrelid::regclass AS table_name,
 FROM pg_constraint c
 JOIN pg_namespace n ON n.oid = c.connamespace
 WHERE n.nspname = 'public'
-  AND c.conrelid::regclass::text IN (
-    'public.companies','public.company_memberships','public.global_roles',
-    'public.profiles','public.catalog_items','public.catalog_clients',
-    'public.catalog_import_rows','public.inventory_current',
-    'public.orders','public.seller_assignments'
+  AND c.conrelid IN (
+    'public.companies'::regclass,'public.company_memberships'::regclass,
+    'public.global_roles'::regclass,'public.profiles'::regclass,
+    'public.catalog_items'::regclass,'public.catalog_clients'::regclass,
+    'public.catalog_import_rows'::regclass,'public.inventory_current'::regclass,
+    'public.orders'::regclass,'public.seller_assignments'::regclass
   )
 ORDER BY 1, 2;
 
