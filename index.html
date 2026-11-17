@@ -2,10 +2,10 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#20302B">
 <title>AB SYSTEM · DEMO</title>
-<meta name="description" content="AB SYSTEM DEMO — interfaz matriz oficial AB SYSTEM">
+<meta name="description" content="AB SYSTEM — plataforma de gestión comercial">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
@@ -13,58 +13,65 @@
 </head>
 <body>
 <section id="login" class="gate">
-  <form id="login-form" class="login-card">
-    <div class="brand">AB SYSTEM <span>DEMO</span></div>
-    <h1>Gestión comercial</h1>
-    <p>Ingresá con tu cuenta de demostración.</p>
-    <label>Correo electrónico<input id="email" type="email" autocomplete="username" required></label>
-    <label>Contraseña<input id="password" type="password" autocomplete="current-password" required></label>
-    <button class="primary" type="submit">Ingresar</button>
-    <p id="login-message" class="message" role="status">Acceso protegido</p>
-  </form>
+ <form id="login-form" class="login-card">
+  <div class="brand">AB SYSTEM <span>DEMO</span></div>
+  <h1>Gestión comercial</h1><p>Ingresá con tu cuenta de demostración.</p>
+  <label>Correo electrónico<input id="email" type="email" autocomplete="username" required></label>
+  <label>Contraseña<input id="password" type="password" autocomplete="current-password" required></label>
+  <button class="primary" type="submit">Ingresar</button>
+  <p id="login-message" class="message" role="status">Acceso protegido · entorno de prueba</p>
+ </form>
 </section>
 <div id="app" hidden>
 <header class="topbar">
- <div class="topbar-brand"><div class="brand">AB SYSTEM <span>DEMO</span></div><small>PLATAFORMA DE GESTIÓN COMERCIAL</small></div>
- <div class="userline"><span id="user-label">Cuenta</span><button id="logout" class="ghost">Salir</button></div>
+ <div class="topbar-title"><div class="topbar-brand"><span>AB SYSTEM</span><small class="topbar-tagline">PLATAFORMA DE GESTIÓN COMERCIAL</small></div></div>
+ <div class="meta-fields">
+  <select id="vendedor-input" aria-label="Vendedor"><option value="">Vendedor</option></select>
+  <div class="cliente-field"><input id="cliente-input" type="text" placeholder="Cliente (código o nombre)" autocomplete="off"><div class="cliente-suggestions" id="cliente-suggestions"></div></div>
+ </div>
+ <div class="client-tools-row"><button type="button" class="nuevo-cliente-toggle" id="nuevo-cliente-toggle">+ Datos de clientes nuevos</button><span id="cloud-status-slot" class="status">Conectado a Supabase DEMO</span><button id="logout" class="ghost" type="button">Salir</button></div>
+ <div class="nuevo-cliente-panel" id="nuevo-cliente-panel" hidden><input id="ruc-input" placeholder="RUC"><input id="direccion-input" placeholder="Dirección"><input id="telefono-input" placeholder="Teléfono" inputmode="tel"></div>
+ <div class="company-context"><span>Empresa activa</span><strong>EMPRESA DEMO</strong><small>Entorno aislado de pruebas</small></div>
 </header>
-<main>
- <section class="welcome"><div><p class="eyebrow">ENTORNO DE PRUEBA</p><h1>Resumen comercial</h1><p>Datos ficticios · Base independiente</p></div><div id="connection" class="status">Conectando…</div></section>
- <section class="metrics" id="dashboard">
-  <article><small>Productos</small><strong id="metric-products">0</strong></article>
-  <article><small>Clientes</small><strong id="metric-clients">0</strong></article>
-  <article><small>Mis pedidos</small><strong id="metric-orders">0</strong></article>
- </section>
- <section class="columns">
-  <article class="panel" id="catalog-panel">
-   <div class="panel-head"><div><p class="eyebrow">CATÁLOGO</p><h2>Buscar productos</h2></div></div>
-   <input id="product-search" class="search" placeholder="Código o descripción">
-   <div id="products" class="list"></div>
-  </article>
-  <article class="panel" id="order-panel">
-   <div class="panel-head"><div><p class="eyebrow">PEDIDO ACTUAL</p><h2>Detalle</h2></div></div>
-   <label>Vendedor<select id="seller"><option value="">Seleccionar vendedor</option></select></label>
-   <label>Cliente<select id="client"><option value="">Seleccionar cliente</option></select></label>
-   <div id="cart" class="cart"><p class="muted">Todavía no agregaste productos.</p></div>
-   <div class="total"><span>Total estimado</span><strong id="total">Gs. 0</strong></div>
-   <button id="save-order" class="primary wide">Guardar pedido DEMO</button>
-   <p id="order-message" class="message" role="status"></p>
-  </article>
- </section>
- <section class="panel history" id="history-panel">
-  <div class="panel-head"><div><p class="eyebrow">REGISTROS</p><h2>Pedidos recientes</h2></div><button id="refresh" class="ghost">Actualizar</button></div>
-  <div id="orders" class="list"></div>
- </section>
-</main>
-<nav class="bottom-nav" aria-label="Navegación principal"><button type="button" data-target="dashboard">Resumen</button><button type="button" data-target="catalog-panel" class="active">Productos</button><button type="button" data-target="order-panel">Pedido</button><button type="button" data-target="history-panel">Historial</button></nav>
-<footer>AB SYSTEM DEMO · No contiene información comercial real.</footer>
+<div class="precio-estado-row">
+ <div class="tier-row"><span class="tier-label">Precio</span><div class="tier-options"><button class="tier-btn active" data-tier="1" type="button">M1</button><button class="tier-btn" data-tier="2" type="button">M2</button><button class="tier-btn" data-tier="3" type="button">M3</button></div></div>
+ <div class="tier-row"><span class="tier-label">Estado</span><div class="tier-options"><button class="tier-btn active" data-estado="pendiente" type="button">Pendiente</button><button class="tier-btn" data-estado="confirmado" type="button">Confirmado</button></div></div>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="data-demo.js"></script>
-<script src="cloud-sync-demo.js"></script>
-<script>
-if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  window.addEventListener('load', () => navigator.serviceWorker.register('./service-worker.js').catch(err => console.warn('No se pudo registrar el modo sin conexión:', err)));
-}
-</script>
+<div class="condicion-row"><span class="tier-label">Condición</span><div class="condicion-quick"><button class="tier-btn" data-condicion="Contado" type="button">Contado</button><button class="tier-btn" data-condicion="Crédito" type="button">Crédito</button></div><input id="condicion-input" class="condicion-input" placeholder="Escribir..."></div>
+<main>
+ <section id="panel-dashboard" class="panel">
+  <div class="dashboard-head"><div><h2>Resumen del día</h2><p id="dashboard-date">Actividad de hoy · DEMO</p></div><button type="button" class="btn-outline btn-sm" id="dashboard-refresh">Actualizar</button></div>
+  <div class="dashboard-grid">
+   <article class="dashboard-card"><span>Pedidos</span><strong id="dashboard-orders">0</strong><small>Registros DEMO</small></article>
+   <article class="dashboard-card"><span>Productos</span><strong id="dashboard-units">0</strong><small>Catálogo disponible</small></article>
+   <article class="dashboard-card"><span>Clientes</span><strong id="dashboard-sales">0</strong><small>Clientes DEMO</small></article>
+   <article class="dashboard-card"><span>Pendientes</span><strong id="dashboard-pending">0</strong><small>Pedidos sin confirmar</small></article>
+  </div><div class="dashboard-note" id="dashboard-scope">Información ficticia del entorno DEMO.</div>
+ </section>
+ <section id="panel-search" class="panel active">
+  <div class="search-wrap"><div class="search-input-row"><input id="search-input" type="search" inputmode="search" placeholder="Código, código de barra o descripción..."><button type="button" class="scan-btn" id="btn-scan-barcode" aria-label="Escáner no disponible en esta etapa">⌕</button></div></div>
+  <div class="result-count" id="result-count"></div><div class="item-list" id="item-list"></div>
+ </section>
+ <section id="panel-order" class="panel area-central-pedido">
+  <div class="editing-banner" id="editing-banner" hidden>Pedido DEMO en preparación</div>
+  <div class="order-list" id="order-list"></div>
+  <div class="order-discount-panel"><label for="discount-input">Descuento del pedido (%)</label><input id="discount-input" type="number" min="0" max="100" step="0.1" value="0"><div class="discount-summary"><span id="discount-total">Subtotal: Gs. 0</span><span id="discount-value">Descuento: Gs. 0</span></div></div>
+  <div class="empty-state" id="order-empty"><div class="big">Todavía no agregaste artículos</div><div>Buscá por código o descripción en la pestaña Buscar.</div></div>
+ </section>
+ <section id="panel-archive" class="panel"><div class="search-wrap"><input id="archive-search-input" type="search" placeholder="Buscar cliente en archivo e histórico..."></div><div class="archive-summary" id="archive-summary"><strong id="archive-summary-count">0 pedidos</strong><span id="archive-summary-value">Gs. 0</span></div><div class="archive-list" id="archive-list"></div><div class="empty-state" id="archive-empty"><div class="big">Todavía no hay pedidos</div></div></section>
+ <section id="panel-stock" class="panel"><div class="stock-import-head"><h2>Control de stock DEMO</h2><p>Existencias ficticias del catálogo de prueba</p></div><div class="stock-controls"><input id="stock-search" type="search" placeholder="Buscar código o descripción..."></div><div class="stock-list" id="stock-list"></div></section>
+ <section id="panel-admin" class="panel"><div id="admin-panel-content"><h2>Administración DEMO</h2><p>Gestión de usuarios y empresas se habilitará después de validar el modelo multiempresa.</p><div class="admin-tools"><strong>Próxima etapa</strong><p>Roles globales, empresas y membresías con control desde el backend.</p></div></div></section>
+</main>
+<nav class="tabs" aria-label="Navegación principal">
+ <button class="tab-btn active" data-panel="panel-search" type="button"><span class="tab-icon">⌕</span><span class="tab-label">Buscar</span></button>
+ <button class="tab-btn" data-panel="panel-order" type="button"><span class="tab-icon">＋</span><span class="tab-label">Pedido</span><span class="count" id="tab-order-count">0</span></button>
+ <button class="tab-btn" data-panel="panel-archive" type="button"><span class="tab-icon">▤</span><span class="tab-label">Archivo</span><span class="count" id="tab-archive-count">0</span></button>
+ <button class="tab-btn" data-panel="panel-dashboard" type="button"><span class="tab-icon">▦</span><span class="tab-label">Resumen</span></button>
+ <button class="tab-btn" data-panel="panel-stock" type="button"><span class="tab-icon">▥</span><span class="tab-label">Stock</span></button>
+ <button class="tab-btn" data-panel="panel-admin" id="admin-menu-tab" type="button" hidden><span class="tab-icon">⚙</span><span class="tab-label">Admin</span></button>
+</nav>
+<footer class="footer"><div class="total-block"><div class="total-label">Total pedido</div><div class="total-value" id="total-value">Gs. 0</div></div><div class="footer-actions"><button class="btn btn-ghost" id="btn-clear" type="button">Nuevo</button><button class="btn btn-primary" id="btn-pdf" type="button">Compartir PDF</button></div></footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="data-demo.js"></script><script src="cloud-sync-demo.js"></script>
+<script>if('serviceWorker'in navigator&&location.protocol==='https:'){addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}</script>
 </body></html>
