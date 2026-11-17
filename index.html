@@ -59,8 +59,15 @@
   <button class="btn btn-primary" id="save-order" type="button">Guardar pedido</button><p id="order-message" class="message" role="status"></p><div class="empty-state" id="order-empty"><div class="big">Todavía no agregaste artículos</div><div>Buscá por código o descripción en la pestaña Buscar.</div></div>
  </section>
  <section id="panel-archive" class="panel"><div class="search-wrap"><input id="archive-search-input" type="search" placeholder="Buscar cliente en archivo e histórico..."></div><div class="archive-summary" id="archive-summary"><strong id="archive-summary-count">0 pedidos</strong><span id="archive-summary-value">Gs. 0</span></div><div class="archive-list" id="archive-list"></div><div class="empty-state" id="archive-empty"><div class="big">Todavía no hay pedidos</div></div></section>
- <section id="panel-stock" class="panel"><div class="stock-import-head"><h2>Control de stock</h2><p>Existencias de la empresa activa</p></div><div class="stock-controls"><input id="stock-search" type="search" placeholder="Buscar código o descripción..."></div><div class="stock-list" id="stock-list"></div></section>
- <section id="panel-admin" class="panel"><div id="admin-panel-content"><h2>Administración de empresa</h2><p>Gestión de usuarios y empresas se habilitará después de validar el modelo multiempresa.</p><div class="admin-tools"><strong>Próxima etapa</strong><p>Roles globales, empresas y membresías con control desde el backend.</p></div></div></section>
+ <section id="panel-stock" class="panel"><div class="stock-import-head"><h2>Control de stock</h2><p>Existencias separadas por depósito · CENTRAL y CDE</p></div><div class="stock-controls"><input id="stock-search" type="search" placeholder="Buscar código o descripción..."></div><div class="stock-list" id="stock-list"></div></section>
+ <section id="panel-admin" class="panel"><div id="admin-panel-content"><h2>Administración de empresa</h2><p>Importación controlada del catálogo, precios y existencias.</p>
+<div class="admin-tools">
+<label for="excel-import-file">Archivo Excel de precios y stock</label>
+<input id="excel-import-file" type="file" accept=".xlsx,.xls">
+<p class="muted">Se reconocerán los encabezados del archivo habitual: Cód.Artículo, Descripción, CENTRAL, CDE y listas 1, 2 y 3.</p>
+<div id="excel-import-preview" class="message" role="status">Seleccioná un archivo para validar antes de importar.</div>
+<button id="excel-import-confirm" class="btn btn-primary" type="button" disabled>Confirmar importación</button>
+</div></div></section>
 </main>
 <nav class="tabs" aria-label="Navegación principal">
  <button class="tab-btn active" data-panel="panel-search" type="button"><span class="tab-icon">⌕</span><span class="tab-label">Buscar</span></button>
@@ -72,6 +79,6 @@
 </nav>
 <footer class="footer"><div class="total-block"><div class="total-label">Total pedido</div><div class="total-value" id="total-value">Gs. 0</div></div><div class="footer-actions"><button class="btn btn-ghost" id="btn-clear" type="button">Nuevo</button><button class="btn btn-primary" id="btn-pdf" type="button">Compartir PDF</button></div></footer>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="data-demo.js"></script><script src="cloud-sync-demo.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="data-demo.js"></script><script src="cloud-sync-demo.js"></script>
 <script>if('serviceWorker'in navigator&&location.protocol==='https:'){addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}</script>
 </body></html>
