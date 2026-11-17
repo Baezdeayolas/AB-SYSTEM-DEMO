@@ -2,7 +2,7 @@
 
 **Entorno:** AB SYSTEM DEMO exclusivamente  
 **Rama:** `work/ab-system-multempresa-ui`  
-**Estado:** diseño funcional y técnico preliminar; pendiente validación con el libro Excel completo.  
+**Estado:** estructura y tipos del libro real inspeccionados; pendientes algunas reglas funcionales de celdas y campos de empaque.  
 **No autoriza:** ejecución SQL, cambios de frontend, importación real, despliegue ni modificación de producción.
 
 ## 1. Objetivo
@@ -39,6 +39,25 @@ Los siguientes encabezados proceden de los ejemplos reales compartidos por el us
 | `precio_3` | `prices.tier_3` | Número; lista 3 |
 
 Los códigos deben tratarse como texto, no como números, para evitar pérdida de ceros iniciales o notación científica.
+
+## 2.1 Inspección del archivo real recibido (17-11-2026)
+
+Se inspeccionó el archivo adjunto `ListaPrecios_6571.xlsx` en modo de solo lectura. No se modificó el libro.
+
+- Una sola hoja: `Sheet0`.
+- 9.541 filas físicas y 15 columnas.
+- Filas 1 a 4 contienen título, empresa, filtros y rótulos auxiliares.
+- Encabezados efectivos en la fila 5.
+- Registros de artículos desde la fila 6: **9.536 artículos**.
+- Encabezados exactos: `Cód.Artículo`, `Cód.Fábrica`, `Cód.Barra`, `Agrup.1`, `Agrup.2`, `Agrup.3`, `Descripción`, `Envases`, `Master`, `Inner`, `CENTRAL`, `CDE`, `1`, `2`, `3`.
+- Los 9.536 códigos de artículo están almacenados como texto, no como números; no se encontraron códigos vacíos ni duplicados.
+- No se encontraron códigos de barra duplicados. Hay 22 filas sin código de barra y 5.903 sin código de fábrica.
+- Los campos numéricos están almacenados como números nativos de Excel. En las 9.536 filas no hay celdas vacías en `Envases`, `Master`, `Inner`, `CENTRAL`, `CDE` ni en las tres listas de precios; los ceros están expresados explícitamente como valor numérico 0.
+- CENTRAL: 6.990 artículos con saldo mayor que cero; CDE: 6.222.
+- Listas 1, 2 y 3: 9.237 artículos con precio mayor que cero en cada lista; 299 tienen cero en las tres listas.
+- `Envases`, `Master` e `Inner` contienen valores numéricos, incluidos ceros; su significado comercial todavía debe confirmarse.
+
+**Consecuencia para el importador:** debe admitir los encabezados reales tal como aparecen (incluidos `Cód.Artículo`, `Cód.Fábrica`, `Cód.Barra`, `Agrup.1` y las listas `1`, `2`, `3`), además de los alias previamente documentados. El libro real no usa `stock_central`, `stock_cde` ni `precio_1` como encabezados. El parser debe mapear CENTRAL y CDE como saldos separados, y 1/2/3 como listas de precios.
 
 ## 3. Normalización de encabezados y compatibilidad
 
@@ -144,11 +163,10 @@ El usuario indicó que el archivo puede incluir artículos nuevos, pero nunca co
 
 ### 8.2 Pendientes de verificación
 
-1. **Hojas:** confirmar si se usa siempre la primera hoja o si hay más hojas relevantes.
-2. **Celdas vacías:** confirmar si una celda vacía significa “sin cambio”, “cero” o error para cada campo.
-3. **Formato numérico:** verificar valores reales de stock y precios para definir parseo sin pérdida.
-4. **Campos de empaque:** confirmar tipo y significado comercial de `envases`, `master` e `inner`.
-5. **Campos obligatorios para artículo nuevo:** verificar cuáles deben venir siempre completos en el Excel.
+1. **Celdas vacías:** el archivo inspeccionado no tiene celdas vacías en los campos numéricos; falta definir cómo tratar vacíos en futuras versiones del libro.
+2. **Campos de empaque:** confirmar significado comercial de `Envases`, `Master` e `Inner`.
+3. **Campos obligatorios para artículo nuevo:** confirmar si además de código y descripción se exige algún otro campo.
+4. **Ceros de precio:** el libro contiene 299 artículos con precio 0 en las tres listas; confirmar si representan artículos sin precio o una condición comercial válida.
 
 ## 9. Pruebas de aceptación necesarias
 
@@ -171,6 +189,6 @@ El usuario indicó que el archivo puede incluir artículos nuevos, pero nunca co
 
 ## 10. Próximo paso seguro
 
-Revisar el archivo Excel completo (preferentemente una copia anonimizada si contiene datos sensibles) para verificar hojas, encabezados, tipos, formatos numéricos y campos obligatorios de artículos nuevos. Después se puede cerrar el contrato y preparar el diseño SQL separado para revisión.
+La estructura, encabezados, tipos numéricos y unicidad de códigos del archivo real ya fueron inspeccionados. El siguiente paso es cerrar el significado de los campos de empaque, los precios en cero y los campos obligatorios de artículos nuevos; después se preparará el diseño SQL separado para revisión.
 
 **Estado de ejecución:** no se modificó código de aplicación, no se ejecutó SQL, no se importaron datos, no se modificó Supabase, no se tocó producción y no se publicó.
