@@ -14,8 +14,8 @@
 <body>
 <section id="login" class="gate">
  <form id="login-form" class="login-card">
-  <div class="brand">AB SYSTEM <span>DEMO</span></div>
-  <h1>Gestión comercial</h1><p>Ingresá con tu cuenta de demostración.</p>
+  <div class="brand">AB SYSTEM <span>MULTIEMPRESA</span></div>
+  <h1>Gestión comercial</h1><p>Ingresá con tu cuenta de AB SYSTEM.</p>
   <label>Correo electrónico<input id="email" type="email" autocomplete="username" required></label>
   <label>Contraseña<input id="password" type="password" autocomplete="current-password" required></label>
   <button class="primary" type="submit">Ingresar</button>
@@ -56,11 +56,11 @@
   <div class="editing-banner" id="editing-banner" hidden>Pedido DEMO en preparación</div>
   <div class="order-list" id="order-list"></div>
   <div class="order-discount-panel"><label for="discount-input">Descuento del pedido (%)</label><input id="discount-input" type="number" min="0" max="100" step="0.1" value="0"><div class="discount-summary"><span id="discount-total">Subtotal: Gs. 0</span><span id="discount-value">Descuento: Gs. 0</span></div></div>
-  <button class="btn btn-primary" id="save-order" type="button">Guardar pedido DEMO</button><p id="order-message" class="message" role="status"></p><div class="empty-state" id="order-empty"><div class="big">Todavía no agregaste artículos</div><div>Buscá por código o descripción en la pestaña Buscar.</div></div>
+  <button class="btn btn-primary" id="save-order" type="button">Guardar pedido</button><p id="order-message" class="message" role="status"></p><div class="empty-state" id="order-empty"><div class="big">Todavía no agregaste artículos</div><div>Buscá por código o descripción en la pestaña Buscar.</div></div>
  </section>
  <section id="panel-archive" class="panel"><div class="search-wrap"><input id="archive-search-input" type="search" placeholder="Buscar cliente en archivo e histórico..."></div><div class="archive-summary" id="archive-summary"><strong id="archive-summary-count">0 pedidos</strong><span id="archive-summary-value">Gs. 0</span></div><div class="archive-list" id="archive-list"></div><div class="empty-state" id="archive-empty"><div class="big">Todavía no hay pedidos</div></div></section>
- <section id="panel-stock" class="panel"><div class="stock-import-head"><h2>Control de stock DEMO</h2><p>Existencias ficticias del catálogo de prueba</p></div><div class="stock-controls"><input id="stock-search" type="search" placeholder="Buscar código o descripción..."></div><div class="stock-list" id="stock-list"></div></section>
- <section id="panel-admin" class="panel"><div id="admin-panel-content"><h2>Administración DEMO</h2><p>Gestión de usuarios y empresas se habilitará después de validar el modelo multiempresa.</p><div class="admin-tools"><strong>Próxima etapa</strong><p>Roles globales, empresas y membresías con control desde el backend.</p></div></div></section>
+ <section id="panel-stock" class="panel"><div class="stock-import-head"><h2>Control de stock</h2><p>Existencias de la empresa activa</p></div><div class="stock-controls"><input id="stock-search" type="search" placeholder="Buscar código o descripción..."></div><div class="stock-list" id="stock-list"></div></section>
+ <section id="panel-admin" class="panel"><div id="admin-panel-content"><h2>Administración de empresa</h2><p>Gestión de usuarios y empresas se habilitará después de validar el modelo multiempresa.</p><div class="admin-tools"><strong>Próxima etapa</strong><p>Roles globales, empresas y membresías con control desde el backend.</p></div></div></section>
 </main>
 <nav class="tabs" aria-label="Navegación principal">
  <button class="tab-btn active" data-panel="panel-search" type="button"><span class="tab-icon">⌕</span><span class="tab-label">Buscar</span></button>
