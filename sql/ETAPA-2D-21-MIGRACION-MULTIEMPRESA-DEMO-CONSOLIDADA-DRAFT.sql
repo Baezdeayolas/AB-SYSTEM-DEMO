@@ -1536,7 +1536,7 @@ DO $defaults$
 DECLARE
   v_role text;
 BEGIN
-  FOREACH v_role IN ARRAY ARRAY['postgres','supabase_admin'] LOOP
+  FOREACH v_role IN ARRAY ARRAY['postgres'] LOOP
     EXECUTE format(
       'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA public REVOKE ALL ON TABLES FROM PUBLIC, anon, authenticated',
       v_role
