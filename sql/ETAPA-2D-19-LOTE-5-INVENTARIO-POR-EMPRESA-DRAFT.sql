@@ -228,7 +228,7 @@ RETURNS integer
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $$
 DECLARE
   v_row jsonb;
   v_code text;
