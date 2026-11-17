@@ -121,3 +121,15 @@ El código Python compartido por el usuario es únicamente un lector/inspector d
 ### Próximo paso técnico
 
 Conseguir el código real que la aplicación utiliza para recibir/procesar el Excel y actualizar el catálogo/stock. Revisar también el flujo de importación completo antes de definir la migración de `catalog_items.payload` y el modelo normalizado de existencias por depósito. No ejecutar SQL mutante ni modificar el frontend hasta cerrar esa revisión.
+
+### Confirmación adicional del usuario: un único Excel para stock y precios
+
+El usuario confirmó que `ListaPrecios_6571.xlsx` es el mismo archivo que utiliza habitualmente desde Ko’ẽju para actualizar stock y precios. Por tanto, el flujo real debe tratar ese archivo como fuente tanto de catálogo/campos descriptivos como de existencias y listas de precios, aunque el frontend actual tenga dos rutas de importación separadas.
+
+El importador `parseSharedInventoryFile()` inspeccionado en `cloud-sync.js` de producción espera encabezados normalizados `CODARTICULO`, `CENTRAL`, `CDE` y tres columnas de precio (`1`/`M1`/`PRECIO1`, etc.). Convierte las existencias a propiedades `central` y `cde`, y los precios a `p1`, `p2`, `p3`, luego reemplaza el contenido de la fila única `inventory_current` mediante upsert. Esto confirma que el stock actual se persiste en `inventory_current.items` por ese flujo, además del campo `sc` mostrado desde `catalog_items.payload` en la ruta de catálogo. La coexistencia de ambas representaciones requiere resolver fuente canónica y sincronización antes de migrar.
+
+El ejemplo real del Excel usa encabezados `cod_articulo`, `stock_central`, `stock_cde`, `precio_1`, `precio_2`, `precio_3`. Hay que comprobar en código la normalización exacta de encabezados y asegurar compatibilidad; no inferirla solo por semejanza textual.
+
+**Riesgo/bloqueo actualizado:** existe una doble representación del inventario: el flujo de catálogo publica campos `sc`/`sd` dentro de `catalog_items.payload`, mientras que la importación de stock y precios actualiza `inventory_current.items` con `central`/`cde`/`p1`/`p2`/`p3`. Antes de multiempresa se debe decidir y probar una única fuente canónica por empresa y depósito, y definir una compatibilidad transitoria para pantallas y pedidos. No sumar depósitos ni borrar campos legacy durante la transición.
+
+**Siguiente inspección:** revisar `normalizeStockHeader()`, `parseStockNumber()`, `loadSharedInventory()` y todos los consumidores de `inventory_current.items`/`sc`/`sd`; verificar si la importación de inventario también actualiza catálogo/precios o si son flujos separados. No modificar producción ni ejecutar SQL.
