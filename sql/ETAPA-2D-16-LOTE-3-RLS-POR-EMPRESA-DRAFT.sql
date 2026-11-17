@@ -138,7 +138,7 @@ BEGIN
   -- created_by es inmutable para usuarios de la aplicación. Se permite SET NULL
   -- únicamente en una eliminación administrativa de Auth vía rol privilegiado.
   IF OLD.created_by IS DISTINCT FROM NEW.created_by
-     AND NOT (NEW.created_by IS NULL AND current_user IN ('postgres', 'service_role')) THEN
+     AND NOT (NEW.created_by IS NULL AND current_user IN ('postgres', 'service_role', 'supabase_auth_admin')) THEN
     RAISE EXCEPTION 'No se permite cambiar el creador original del pedido.';
   END IF;
   RETURN NEW;
