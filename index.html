@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#082746">
+<title>AB SYSTEM DEMO</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<section id="login" class="gate">
+  <form id="login-form" class="login-card">
+    <div class="brand">AB SYSTEM <span>DEMO</span></div>
+    <h1>Gestión comercial</h1>
+    <p>Ingresá con tu cuenta de demostración.</p>
+    <label>Correo electrónico<input id="email" type="email" autocomplete="username" required></label>
+    <label>Contraseña<input id="password" type="password" autocomplete="current-password" required></label>
+    <button class="primary" type="submit">Ingresar</button>
+    <p id="login-message" class="message" role="status">Acceso protegido</p>
+  </form>
+</section>
+<div id="app" hidden>
+<header class="topbar">
+ <div><div class="brand">AB SYSTEM <span>DEMO</span></div><small>PLATAFORMA DE GESTIÓN COMERCIAL</small></div>
+ <div class="userline"><span id="user-label">Cuenta</span><button id="logout" class="ghost">Salir</button></div>
+</header>
+<main>
+ <section class="welcome"><div><p class="eyebrow">ENTORNO DE PRUEBA</p><h1>Panel comercial</h1><p>Datos ficticios · Base independiente</p></div><div id="connection" class="status">Conectando…</div></section>
+ <section class="metrics">
+  <article><small>Productos</small><strong id="metric-products">0</strong></article>
+  <article><small>Clientes</small><strong id="metric-clients">0</strong></article>
+  <article><small>Mis pedidos</small><strong id="metric-orders">0</strong></article>
+ </section>
+ <section class="columns">
+  <article class="panel">
+   <div class="panel-head"><div><p class="eyebrow">CATÁLOGO</p><h2>Buscar productos</h2></div></div>
+   <input id="product-search" class="search" placeholder="Código o descripción">
+   <div id="products" class="list"></div>
+  </article>
+  <article class="panel">
+   <div class="panel-head"><div><p class="eyebrow">PEDIDO ACTUAL</p><h2>Detalle</h2></div></div>
+   <label>Vendedor<select id="seller"><option value="">Seleccionar vendedor</option></select></label>
+   <label>Cliente<select id="client"><option value="">Seleccionar cliente</option></select></label>
+   <div id="cart" class="cart"><p class="muted">Todavía no agregaste productos.</p></div>
+   <div class="total"><span>Total estimado</span><strong id="total">Gs. 0</strong></div>
+   <button id="save-order" class="primary wide">Guardar pedido DEMO</button>
+   <p id="order-message" class="message" role="status"></p>
+  </article>
+ </section>
+ <section class="panel history">
+  <div class="panel-head"><div><p class="eyebrow">REGISTROS</p><h2>Pedidos recientes</h2></div><button id="refresh" class="ghost">Actualizar</button></div>
+  <div id="orders" class="list"></div>
+ </section>
+</main>
+<footer>AB SYSTEM DEMO · No contiene información comercial real.</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="data-demo.js"></script>
+<script src="cloud-sync-demo.js"></script>
+</body></html>
