@@ -40,8 +40,9 @@ BEGIN
   SELECT count(*) INTO v_bad_inventory
   FROM public.inventory_current
   WHERE id <> 1
-     OR jsonb_typeof(items) IS DISTINCT FROM 'array'
-     OR jsonb_array_length(items) <> 0;
+     OR CASE WHEN jsonb_typeof(items) = 'array'
+             THEN jsonb_array_length(items)
+             ELSE -1 END <> 0;
   IF v_bad_inventory > 0 THEN
     RAISE EXCEPTION 'ABORTADO: inventory_current no esta vacio como se documento; requiere conciliacion manual.';
   END IF;
@@ -166,7 +167,7 @@ BEGIN
     RAISE EXCEPTION 'La cantidad debe ser un numero mayor o igual a cero.';
   END IF;
 
-  IF p_movement_type NOT IN ('import','adjustment') THEN
+  IF p_movement_type IS NULL OR p_movement_type NOT IN ('import','adjustment') THEN
     RAISE EXCEPTION 'Tipo de movimiento no permitido.';
   END IF;
 
