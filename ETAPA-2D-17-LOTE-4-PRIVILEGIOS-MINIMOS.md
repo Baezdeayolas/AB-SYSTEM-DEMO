@@ -28,3 +28,8 @@
 No corrige todavía ACL predeterminadas para objetos futuros, ACL de secuencias, EXECUTE de funciones ni grants de otros objetos. Se deben tratar en un lote aparte, porque la auditoría previa mostró permisos heredados amplios y es necesario identificar roles creadores y dependencias.
 
 No ejecutar hasta restauración de respaldo probada, aplicación y pruebas de Lotes 1-3, revisión de ACL por columna y aprobación explícita. No ejecutar en Ko'eju histórico/producción.
+
+
+## Corrección de auditoría — 2026-11-17
+
+Se corrigió la verificación final para identificar correctamente los privilegios concedidos a PUBLIC. La revisión confirma que este lote sigue siendo insuficiente para cerrar la seguridad: no corrige ACL por defecto, secuencias ni EXECUTE de funciones. Esos permisos requieren un lote independiente con inventario y pruebas de dependencias; no se revocarán a ciegas.
