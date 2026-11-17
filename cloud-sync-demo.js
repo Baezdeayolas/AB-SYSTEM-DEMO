@@ -2,6 +2,10 @@
 'use strict';
 const SUPABASE_URL='https://druugcvqxxanhtdkqnjd.supabase.co';
 const SUPABASE_KEY='sb_publishable_M6W3DMCqPcH92cT96ioP5A_wi64QmcA';
+if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+  document.getElementById('login-message').textContent = 'No se pudo cargar el servicio de acceso. Verificá tu conexión e intentá nuevamente.';
+  return;
+}
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const $=id=>document.getElementById(id);
 let user=null,profile=null,items=[...window.DEMO_ITEMS],clients=[...window.DEMO_CLIENTS],cart=[];
