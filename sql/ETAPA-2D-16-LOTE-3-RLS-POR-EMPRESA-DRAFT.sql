@@ -85,7 +85,7 @@ RETURNS trigger
 LANGUAGE plpgsql
 SECURITY INVOKER
 SET search_path = ''
-AS $
+AS $$
 BEGIN
   IF OLD.company_id IS DISTINCT FROM NEW.company_id
      OR OLD.user_id IS DISTINCT FROM NEW.user_id THEN
@@ -99,7 +99,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$;
+$$;
 
 DO $membership_trigger$
 BEGIN
@@ -125,19 +125,25 @@ RETURNS trigger
 LANGUAGE plpgsql
 SECURITY INVOKER
 SET search_path = ''
-AS $
+AS $$
 BEGIN
   IF OLD.id IS DISTINCT FROM NEW.id
      OR OLD.company_id IS DISTINCT FROM NEW.company_id
      OR OLD.owner_id IS DISTINCT FROM NEW.owner_id
-     OR OLD.created_by IS DISTINCT FROM NEW.created_by
      OR OLD.legacy_source IS DISTINCT FROM NEW.legacy_source
      OR OLD.legacy_id IS DISTINCT FROM NEW.legacy_id THEN
-    RAISE EXCEPTION 'No se permite cambiar la empresa, propietario, creador o identidad de un pedido.';
+    RAISE EXCEPTION 'No se permite cambiar la empresa, propietario o identidad de un pedido.';
+  END IF;
+
+  -- created_by es inmutable para usuarios de la aplicación. Se permite SET NULL
+  -- únicamente en una eliminación administrativa de Auth vía rol privilegiado.
+  IF OLD.created_by IS DISTINCT FROM NEW.created_by
+     AND NOT (NEW.created_by IS NULL AND current_user IN ('postgres', 'service_role')) THEN
+    RAISE EXCEPTION 'No se permite cambiar el creador original del pedido.';
   END IF;
   RETURN NEW;
 END;
-$;
+$$;
 
 DO $order_trigger$
 BEGIN
@@ -154,6 +160,44 @@ BEGIN
     FOR EACH ROW EXECUTE FUNCTION public.ab_guard_order_identity();
 END
 $order_trigger$;
+
+-- Una asignacion solo puede apuntar a un vendedor activo de esa empresa.
+CREATE OR REPLACE FUNCTION public.ab_guard_seller_assignment_membership()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = ''
+AS $
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.company_memberships m
+    WHERE m.company_id = NEW.company_id
+      AND m.user_id = NEW.user_id
+      AND m.role = 'seller'
+      AND m.status = 'active'
+  ) THEN
+    RAISE EXCEPTION 'La asignacion debe corresponder a un vendedor activo de la misma empresa.';
+  END IF;
+  RETURN NEW;
+END;
+$;
+
+DO $assignment_trigger$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_trigger
+    WHERE tgrelid = 'public.seller_assignments'::regclass
+      AND tgname = 'trg_seller_assignments_active_seller'
+      AND NOT tgisinternal
+  ) THEN
+    RAISE EXCEPTION 'Ya existe trg_seller_assignments_active_seller; revisar antes de continuar.';
+  END IF;
+  CREATE TRIGGER trg_seller_assignments_active_seller
+    BEFORE INSERT OR UPDATE ON public.seller_assignments
+    FOR EACH ROW EXECUTE FUNCTION public.ab_guard_seller_assignment_membership();
+END
+$assignment_trigger$;
 
 -- Empresas: cada usuario ve empresas donde tiene acceso; superadmin ve todas.
 CREATE POLICY companies_read_access
