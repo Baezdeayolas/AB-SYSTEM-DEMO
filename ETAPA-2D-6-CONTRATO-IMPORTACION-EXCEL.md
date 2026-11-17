@@ -85,12 +85,13 @@ El proceso debe trabajar primero en modo de previsualización y rechazar la publ
 - No eliminar puntos de manera indiscriminada sin confirmar el formato real.
 - Mostrar errores por fila y columna para corregir el Excel antes de publicar.
 
-### 4.3 Duplicados y productos no reconocidos
+### 4.3 Duplicados y productos nuevos
 
 - Detectar códigos repetidos en el archivo y mostrar las filas implicadas.
 - Mostrar cuántos códigos coinciden con productos existentes y cuántos serían nuevos.
-- No descartar silenciosamente productos no reconocidos.
-- No borrar productos ausentes del archivo sin una decisión explícita de sincronización completa.
+- Los artículos nuevos presentes en un archivo válido se incorporarán al catálogo de la empresa mediante upsert, una vez superada la validación y confirmada la importación.
+- Un artículo nuevo debe incluir su código y los campos obligatorios definidos para el catálogo; no crear registros incompletos silenciosamente.
+- La importación nunca debe crear el mismo producto dos veces dentro de una empresa.
 
 ## 5. Flujo de importación propuesto
 
@@ -129,19 +130,32 @@ El diseño debe separar:
 
 La estructura definitiva, restricciones, índices, RLS y estrategia de compatibilidad con `catalog_items.payload` e `inventory_current` se definirán después de verificar el libro real y el respaldo/restauración DEMO. Este documento no prescribe todavía migraciones SQL.
 
-## 8. Decisiones pendientes que no deben suponerse
+## 8. Decisiones confirmadas y pendientes
 
-1. **Alcance del archivo:** confirmar si cada Excel contiene siempre el catálogo completo de la empresa o si puede ser parcial. Hasta confirmarlo, la importación no debe borrar ni poner a cero productos que no aparezcan.
-2. **Hojas:** confirmar si se usa siempre la primera hoja o si hay más hojas relevantes.
-3. **Celdas vacías:** confirmar si una celda vacía significa “sin cambio”, “cero” o error para cada campo.
-4. **Productos nuevos:** confirmar si el Excel es autoridad para crear automáticamente productos o si deben aprobarse antes.
-5. **Productos ausentes:** definir si se mantienen, se marcan inactivos o se eliminan (recomendación segura: no eliminar automáticamente).
-6. **Formato numérico:** verificar valores reales de stock y precios para definir parseo sin pérdida.
-7. **Campos de empaque:** confirmar tipo y significado comercial de `envases`, `master` e `inner`.
+### 8.1 Alcance del archivo — confirmado por el usuario
+
+El usuario indicó que el archivo puede incluir artículos nuevos, pero nunca contiene menos artículos que la lista habitual. Para el diseño esto se interpreta como un archivo que representa el catálogo completo vigente de la empresa, con posibilidad de altas.
+
+- Los artículos nuevos que aparezcan se incorporan al catálogo de esa empresa al confirmar una importación válida.
+- Los artículos ya existentes que aparezcan se actualizan con los datos del archivo.
+- La ausencia de un artículo no debe causar borrado automático, baja ni puesta a cero. Aunque el archivo sea completo según la regla comunicada, se conserva esta protección para evitar pérdidas por errores de exportación o cambios accidentales.
+- Si en una futura operación el usuario necesita retirar artículos, se diseñará una acción explícita de baja/inactivación, separada de la importación.
+- La importación no altera pedidos anteriores.
+
+### 8.2 Pendientes de verificación
+
+1. **Hojas:** confirmar si se usa siempre la primera hoja o si hay más hojas relevantes.
+2. **Celdas vacías:** confirmar si una celda vacía significa “sin cambio”, “cero” o error para cada campo.
+3. **Formato numérico:** verificar valores reales de stock y precios para definir parseo sin pérdida.
+4. **Campos de empaque:** confirmar tipo y significado comercial de `envases`, `master` e `inner`.
+5. **Campos obligatorios para artículo nuevo:** verificar cuáles deben venir siempre completos en el Excel.
 
 ## 9. Pruebas de aceptación necesarias
 
 - Libro válido con códigos alfanuméricos y códigos con ceros iniciales.
+- Artículo nuevo: se crea una sola vez en la empresa correcta.
+- Artículo existente: se actualizan catálogo, precios y saldos sin duplicarlo.
+- Artículo ausente del archivo: no se borra, no se inactiva y no se pone a cero automáticamente.
 - Stock CENTRAL y CDE distintos; comprobar que no se mezclan.
 - Tres precios distintos; comprobar que se conservan en la lista correcta.
 - Código duplicado: el lote se bloquea y señala filas.
@@ -152,11 +166,11 @@ La estructura definitiva, restricciones, índices, RLS y estrategia de compatibi
 - Usuario vendedor: no puede publicar.
 - Admin empresa: solo puede importar en su empresa.
 - Superadmin: puede seleccionar empresa autorizada y operar en el contexto elegido.
-- Pedidos anteriores y posteriores a la importación: permanecen sin cambios por el proceso de importación, salvo que una política posterior defina expresamente otra cosa.
+- Pedidos anteriores y posteriores a la importación: permanecen sin cambios por el proceso de importación.
 - Guardar pedido: no cambia ningún saldo ni crea movimiento de salida.
 
 ## 10. Próximo paso seguro
 
-Solicitar y revisar el archivo Excel completo (preferentemente una copia anonimizada si contiene datos sensibles) para verificar hojas, encabezados, tipos y formatos numéricos. Después se puede cerrar el contrato, definir si la importación es snapshot completo o actualización parcial y preparar el diseño SQL separado para revisión.
+Revisar el archivo Excel completo (preferentemente una copia anonimizada si contiene datos sensibles) para verificar hojas, encabezados, tipos, formatos numéricos y campos obligatorios de artículos nuevos. Después se puede cerrar el contrato y preparar el diseño SQL separado para revisión.
 
 **Estado de ejecución:** no se modificó código de aplicación, no se ejecutó SQL, no se importaron datos, no se modificó Supabase, no se tocó producción y no se publicó.
