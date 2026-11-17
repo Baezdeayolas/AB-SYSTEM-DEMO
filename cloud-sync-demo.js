@@ -57,6 +57,9 @@ async function switchCompany(companyId){
  }catch(e){
   activeCompany=previous;profile={role:isGlobal?'company_admin':(previous.memberRole||'seller')};select.value=previous.id;
   cart=[];orders=[];items=[];clients=[];sellerRows=[];
+  $('company-role').textContent=isGlobal?'Superadministrador global':(profile.role==='company_admin'?'Administrador de empresa':'Vendedor');
+  $('dashboard-date').textContent='Actividad de hoy · '+previous.name;
+  $('dashboard-scope').textContent='Información de '+previous.name+'.';
   $('cloud-status-slot').textContent='No se pudo cambiar de empresa: '+e.message;
   try{await loadData();}catch(reloadError){$('cloud-status-slot').textContent='Error al recuperar '+previous.name+': '+reloadError.message;}
  }finally{select.disabled=false;}
@@ -146,7 +149,9 @@ $('save-order').onclick=async()=>{
  const payload={id,vendedor:seller,cliente:client.n,clienteCodigo:client.c,estado,condicion:$('condicion-input').value||condicion,lines:cart.map(x=>({code:x.c,description:x.d,qty:x.qty,tier,price:x['p'+tier]})),subtotal:sub,discount,total:grand,createdAt:now,updatedAt:now,companyCode:activeCompany.code};
  const {error}=await db.from('orders').insert({company_id:activeCompany.id,owner_id:ownerId,created_by:user.id,legacy_id:id,legacy_source:'archive',payload,updated_at:now});
  if(error){msg.textContent='No se pudo guardar el pedido: '+error.message;return;}
- cart=[];$('discount-input').value='0';msg.textContent='Pedido guardado correctamente en '+activeCompany.name+'.';await loadOrders();showPanel('panel-archive');
+ cart=[];$('discount-input').value='0';showPanel('panel-archive');
+ try{await loadOrders();msg.textContent='Pedido guardado correctamente en '+activeCompany.name+'.';}
+ catch(refreshError){msg.textContent='El pedido se guardó, pero no se pudo actualizar el archivo: '+refreshError.message;}
  }catch(e){msg.textContent='No se pudo completar el guardado: '+(e.message||'Error desconocido');}
  finally{saveButton.disabled=false;}
 };
