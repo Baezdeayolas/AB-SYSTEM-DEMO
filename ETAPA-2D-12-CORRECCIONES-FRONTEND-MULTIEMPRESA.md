@@ -47,4 +47,4 @@ Ambos se copiaron a la carpeta privada de respaldos del usuario en Google Drive.
 
 No se ejecutó SQL ni se modificó Supabase. No se importaron datos. No se publicó ni fusionó la rama. No se modificó Ko’ẽju producción.
 
-La siguiente entrega técnica debe ser un **preflight SQL de solo lectura** que compruebe el estado real de claves, restricciones, índices, políticas, datos y pertenencia de la empresa antes de redactar un lote mutante. El lote mutante solo se preparará cuando se resuelvan los bloqueos y se pueda revisar el script completo con rollback.
+La siguiente entrega técnica prevista ya está preparada en `sql/ETAPA-2D-13-PREFLIGHT-MULTIEMPRESA-SOLO-LECTURA.sql`. Contiene consultas de solo lectura para columnas, constraints, índices, RLS, políticas, triggers, resumen de empresas/membresías, conteos comerciales y tablas publicadas en Realtime. **Todavía no se ejecutó**. El lote mutante solo se preparará cuando se revisen sus resultados, se resuelvan los bloqueos y se pueda revisar el script completo con rollback.
