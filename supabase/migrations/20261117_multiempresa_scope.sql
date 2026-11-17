@@ -99,6 +99,35 @@ create index if not exists company_memberships_user_status_idx
 create unique index if not exists company_memberships_company_user_uidx
   on public.company_memberships(company_id, user_id);
 
+-- Impedir que una fila ya creada se traslade a otra empresa mediante UPDATE.
+create or replace function public.ab_prevent_company_reassignment()
+returns trigger
+language plpgsql
+set search_path = ''
+as $
+begin
+  if old.company_id is distinct from new.company_id then
+    raise exception 'No se permite cambiar la empresa propietaria del registro.';
+  end if;
+  return new;
+end;
+$;
+
+do $
+declare t text;
+begin
+  foreach t in array array[
+    'catalog_items','catalog_clients','catalog_import_rows',
+    'inventory_current','orders','seller_assignments','company_memberships'
+  ] loop
+    execute format('drop trigger if exists ab_company_immutable on public.%I', t);
+    execute format(
+      'create trigger ab_company_immutable before update of company_id on public.%I for each row execute function public.ab_prevent_company_reassignment()',
+      t
+    );
+  end loop;
+end $;
+
 -- El acceso global se consulta mediante RPC; la tabla de roles globales no se
 -- expone directamente al navegador.
 create or replace function public.ab_is_global_superadmin()
