@@ -177,3 +177,16 @@ Una consulta ejecutada como `postgres` no demuestra que RLS funcione para `authe
 ## 10. Siguiente acción concreta
 
 Obtener y revisar los resultados de las consultas de preflight de la sección 3. Con esos resultados se redactará el SQL final de Etapa 2B con nombres exactos de policies, constraints, índices y dependencias, evitando asumir que el esquema sigue idéntico al último diagnóstico.
+## 11. Hallazgo recibido: privilegios SQL amplios
+
+El usuario compartió el resultado de `information_schema.role_table_grants` para las seis tablas actuales inspeccionadas (`catalog_clients`, `catalog_import_rows`, `catalog_items`, `inventory_current`, `orders`, `seller_assignments`). En todas aparecen privilegios para `anon` y `authenticated`, incluyendo `INSERT`, `UPDATE`, `DELETE` y `TRUNCATE`; también aparecen los privilegios esperables de `postgres` y `service_role`.
+
+Interpretación:
+- Es una configuración demasiado amplia para un esquema multiempresa y debe corregirse en la migración de seguridad.
+- RLS filtra operaciones por fila, pero no sustituye los privilegios SQL. En particular, `TRUNCATE` no está protegido por RLS; no debe estar concedido a `anon` ni a `authenticated`.
+- La presencia de estos GRANT no demuestra por sí sola que los datos sean públicamente legibles o modificables: eso depende también de RLS, políticas, vistas y funciones. No afirmar exposición efectiva sin revisar esas capas.
+- No ejecutar todavía un `REVOKE` aislado: primero hay que definir los privilegios mínimos requeridos por el frontend, RPC y políticas finales para evitar romper la aplicación o dejar una falsa sensación de seguridad.
+
+Acción para SQL final: incluir revocación explícita de privilegios innecesarios a `anon` y `authenticated`, conceder únicamente los privilegios mínimos por tabla/operación y revisar privilegios por columna, secuencias, funciones, vistas y `ALTER DEFAULT PRIVILEGES`. Mantener `service_role` solo en backend seguro.
+
+Este hallazgo se basa en la salida compartida por el usuario. Aún faltan los resultados de conteos/backfill, memberships/global_roles, FKs entrantes y `pg_policies` para cerrar el preflight.
