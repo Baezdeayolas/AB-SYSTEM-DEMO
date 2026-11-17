@@ -167,7 +167,7 @@ RETURNS trigger
 LANGUAGE plpgsql
 SECURITY INVOKER
 SET search_path = ''
-AS $
+AS $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1
