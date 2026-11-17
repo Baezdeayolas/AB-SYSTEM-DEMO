@@ -132,10 +132,13 @@ No basta con que los SQL terminen sin errores. Se exige:
 
 - Respaldo DEMO: restauración local de esquema y datos públicos comprobada.
 - Respaldo Ko’ẽju histórico: generado y legible por `pg_restore --list`, pero su restauración local no se ha probado.
-- Lotes SQL 1–4: borradores; **no ejecutar en Supabase**.
+- Lotes SQL 1–6 y migración consolidada: borradores; **no ejecutar en Supabase todavía**.
 - SQL en Supabase: no ejecutado.
 - Ko’ẽju producción: sin cambios.
 - Publicación/merge: no realizados.
 
 
 Se preparó también el Lote 6 para funciones, secuencias y default privileges. Este lote mantiene los grants explícitos de service_role, retira EXECUTE de PUBLIC/anon en las funciones de aplicación y endurece los defaults de postgres/supabase_admin. La revocación global del EXECUTE por defecto a PUBLIC para funciones futuras tiene alcance sobre todos los esquemas de esos creadores y debe revisarse antes de aprobarla.
+
+
+La migración completa se consolidó en `sql/ETAPA-2D-21-MIGRACION-MULTIEMPRESA-DEMO-CONSOLIDADA-DRAFT.sql` para evitar ejecutar los lotes por separado. Es una sola transacción de ensayo con ROLLBACK final. La validación estática encontró una sola apertura/cierre transaccional y delimitadores PL/pgSQL balanceados; no sustituye una ejecución real.
