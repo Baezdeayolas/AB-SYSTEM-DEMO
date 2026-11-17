@@ -31,14 +31,14 @@ Crear un pedido **no descuenta ni reserva stock**. Este lote no tiene trigger ni
 
 ## Cambios de frontend incluidos
 
-`cloud-sync-demo.js` ahora consulta `inventory_balances` por empresa y usa su cantidad para mostrar el stock, en lugar de confiar en el campo histórico `payload.sc`. La interfaz seguirá necesitando una pantalla/flujo de importación Excel que invoque una RPC masiva transaccional; ese flujo todavía no está implementado.
+`cloud-sync-demo.js` ahora consulta `inventory_balances` por empresa y usa su cantidad para mostrar el stock, en lugar de confiar en el campo histórico `payload.sc`. El lote incorpora `ab_import_company_catalog`, una RPC masiva transaccional para recibir filas `{code,payload,quantity}`, crear/actualizar artículos y ajustar sus saldos. El parser/selector de Excel y la conexión de la pantalla todavía no están implementados.
 
 ## Pendientes antes de aprobar
 
 1. Ejecutar el borrador en una copia aislada de DEMO y comprobar tipos reales de `payload.sc`.
-2. Añadir una RPC batch para importar todo el Excel en una sola transacción, con protección contra archivos que omitan productos existentes (nunca borrar productos ausentes).
+2. Conectar el parser/selector Excel con `ab_import_company_catalog` y probar el lote completo; la RPC ya está preparada y no borra artículos ausentes.
 3. Probar RLS con JWT de superadmin, company_admin, seller y usuario sin membresía.
-4. Incluir las dos tablas nuevas y los permisos de RPC en la auditoría final de grants/default ACL.
+4. Verificar las dos tablas nuevas y los permisos de RPC con el Lote 6.
 5. No desplegar el frontend que consulta `inventory_balances` hasta que este lote y el lote de privilegios estén aplicados y probados.
 
 ## Estado de datos
