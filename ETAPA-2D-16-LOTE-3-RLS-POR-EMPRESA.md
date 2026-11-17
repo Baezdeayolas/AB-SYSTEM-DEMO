@@ -46,11 +46,11 @@ Se reforzó el borrador SQL para corregir dos riesgos detectados:
 - La policy de INSERT de pedidos ahora exige siempre un vendedor propietario activo en la misma empresa, también para el superadministrador global.
 - Se agregaron triggers de protección para impedir cambios ordinarios a la identidad/empresa del pedido y a la identidad de la membresía. El administrador de empresa puede gestionar vendedores de su empresa, pero no crear administradores ni cambiar roles; los cambios de rol quedan reservados al superadministrador global.
 
-El archivo SQL sigue terminando en ROLLBACK. Esta corrección es un borrador para revisión, no una migración ejecutada ni una prueba de RLS/JWT. El inventario multiempresa y los privilegios por defecto/secuencias/funciones continúan pendientes.
+El archivo SQL sigue terminando en ROLLBACK. Esta corrección es un borrador para revisión, no una migración ejecutada ni una prueba de RLS/JWT. El inventario se prepara en el Lote 5 y los privilegios por defecto/secuencias/funciones en el Lote 6.
 
 
 ## Correcciones técnicas adicionales — 2026-11-17
 
-La revisión estática encontró y corrigió un error de delimitadores dollar-quote en las funciones PL/pgSQL del borrador. También se agregó un trigger que exige que toda asignación de vendedor corresponda a una membresía seller activa de la misma empresa. La protección de pedidos permite que Auth establezca created_by en NULL únicamente durante una eliminación administrativa ejecutada por los roles privilegiados postgres/service_role; los usuarios de la aplicación no pueden cambiar el creador.
+La revisión estática encontró y corrigió un error de delimitadores dollar-quote en las funciones PL/pgSQL del borrador. También se agregó un trigger que exige que toda asignación de vendedor corresponda a una membresía seller activa de la misma empresa. La protección de pedidos permite que Auth establezca created_by en NULL únicamente durante una eliminación administrativa ejecutada por los roles privilegiados postgres/service_role/supabase_auth_admin; los usuarios de la aplicación no pueden cambiar el creador.
 
 Estas correcciones son de código y todavía no se han ejecutado contra Supabase. El SQL continúa terminando en ROLLBACK.
