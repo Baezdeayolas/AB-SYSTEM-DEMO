@@ -11,7 +11,7 @@ declare
   v_company_id uuid;
   v_company_count integer;
 begin
-  select count(*), min(id) into v_company_count, v_company_id
+  select count(*), (array_agg(id))[1] into v_company_count, v_company_id
   from public.companies
   where status = 'active';
 
@@ -157,7 +157,7 @@ using (user_id = (select auth.uid())
 create policy memberships_company_admin_manage on public.company_memberships
 for all to authenticated
 using (public.ab_is_company_admin(company_id) or public.ab_is_global_superadmin())
-with check (public.ab_is_company_admin(company_id) or public.ab_is_global_superadmin());
+with check (public.ab_is_global_superadmin() or (public.ab_is_company_admin(company_id) and (user_id <> (select auth.uid()) or role = 'seller')));
 
 create policy items_read_company on public.catalog_items
 for select to authenticated using (public.ab_has_company_access(company_id));
@@ -194,7 +194,7 @@ with check (owner_id = (select auth.uid()) and public.ab_has_company_access(comp
 create policy orders_update_company on public.orders
 for update to authenticated
 using (owner_id = (select auth.uid()) or public.ab_is_company_admin(company_id))
-with check (owner_id = (select auth.uid()) or public.ab_is_company_admin(company_id));
+with check (public.ab_has_company_access(company_id) and (owner_id = (select auth.uid()) or public.ab_is_company_admin(company_id)));
 create policy orders_delete_company on public.orders
 for delete to authenticated
 using (owner_id = (select auth.uid()) or public.ab_is_company_admin(company_id));
