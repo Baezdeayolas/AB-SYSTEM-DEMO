@@ -44,7 +44,7 @@ async function switchCompany(companyId){
  const next=companies.find(c=>c.id===companyId);if(!next||next.id===activeCompany?.id)return;
  activeCompany=next;profile={role:isGlobal?'company_admin':(next.memberRole||'seller')};
  cart=[];orders=[];items=[];clients=[];
- $('cliente-input').value='';$('cliente-input').dataset.code='';
+ $('cliente-input').value='';$('cliente-input').dataset.code='';$('cliente-suggestions').classList.remove('open');$('vendedor-input').value='';
  $('order-message').textContent='';$('discount-input').value='0';
  $('company-role').textContent=isGlobal?'Superadministrador global':(profile.role==='company_admin'?'Administrador de empresa':'Vendedor');
  $('dashboard-date').textContent='Actividad de hoy · '+activeCompany.name;
