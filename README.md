@@ -46,9 +46,11 @@ Los catálogos de Supabase DEMO (`catalog_items` y `catalog_clients`) reemplazan
 ## Adaptación multiempresa en curso
 
 La rama `work/adaptacion-multiempresa-v1` incorpora el primer tramo de adaptación:
-- Contexto de empresa y selector cuando el usuario tiene varias empresas.
+- Contexto de empresa y selector funcional cuando el usuario tiene varias empresas.
 - Resolución de empresas desde `company_memberships` y del rol global mediante RPC.
 - Lecturas de catálogo, clientes, vendedores y pedidos filtradas por `company_id`.
+- Cambio de empresa conectado a la recarga del contexto; si falla, se intenta recuperar la empresa anterior.
+- Bloqueo de doble envío de pedidos y cálculo del total mostrado en el archivo.
 - Pedidos nuevos guardados con `company_id`; crear pedidos no modifica `inventory_current`.
 - Contrato frontend preparado para el esquema empresarial; la migración SQL queda pendiente de revisión del preflight y de una restauración de respaldo.
 
@@ -62,3 +64,12 @@ La rama `work/adaptacion-multiempresa-v1` incorpora el primer tramo de adaptaci�
 - Falta diseñar y aprobar el lote SQL completo, incluyendo claves compuestas, políticas RLS, validación de vendedor/membresía y rollback.
 - Falta probar la migración en una restauración independiente de DEMO. El respaldo actual del proyecto nuevo todavía no tiene restauración comprobada.
 - La adaptación funcional completa de Ko'eju (PDF, edición/reutilización de pedidos, importación Excel y administración) se realizará después de validar esta base multiempresa.
+
+
+### Corrección de la iteración actual
+
+Se corrigió un defecto funcional: el selector de empresa se mostraba, pero no tenía conectado el evento que cambiaba el contexto. Ahora el cambio activa la recarga de catálogo, clientes, vendedores y pedidos; si la carga falla, se restaura el contexto anterior. También se evita el doble envío de pedidos y se completa el total del archivo.
+
+**Validación pendiente:** no se ejecutaron pruebas de navegador ni pruebas con JWT/RLS. La aplicación sigue sin ser compatible con el esquema Supabase activo hasta que se apruebe y ejecute una migración verificada que añada y proteja las relaciones empresariales. No publicar ni probar contra datos reales todavía.
+
+**Identidad de empresas pendiente de confirmar:** la empresa existente en DEMO figura con código `KOEJU`. La empresa `DEMO` para pruebas de prospectos debe ser una empresa separada; no cambiar el código ni reasignar los registros existentes por suposición.
