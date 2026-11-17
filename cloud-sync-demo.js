@@ -53,9 +53,18 @@ async function activate(sessionUser){
 }
 $('login-form').addEventListener('submit',async e=>{
  e.preventDefault();const btn=e.submitter;btn.disabled=true;showLogin('Verificando acceso…');
- try{const {data,error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});if(error)throw error;await activate(data.user);}
- catch(err){await db.auth.signOut();showLogin('No se pudo ingresar: '+err.message);}
- finally{btn.disabled=false;}
+ let timeoutId;
+ try{
+  const timeout=new Promise((_,reject)=>{timeoutId=setTimeout(()=>reject(new Error('La solicitud a Supabase no respondió en 12 segundos. Revisá la conexión a Internet o intentá nuevamente más tarde.')),12000);});
+  const result=await Promise.race([db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value}),timeout]);
+  clearTimeout(timeoutId);
+  if(result.error)throw result.error;
+  await activate(result.data.user);
+ }catch(err){
+  clearTimeout(timeoutId);
+  db.auth.signOut().catch(()=>{});
+  showLogin('No se pudo ingresar: '+(err?.message||'Error desconocido'));
+ }finally{btn.disabled=false;}
 });
 $('logout').addEventListener('click',async()=>{await db.auth.signOut();user=null;profile=null;cart=[];showLogin('Sesión cerrada.');});
 $('product-search').addEventListener('input',render);
