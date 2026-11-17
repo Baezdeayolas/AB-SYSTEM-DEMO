@@ -210,3 +210,10 @@ Implicaciones para Etapa 2B:
 4. No ejecutar aún `DROP POLICY` ni cambios de grants. Primero completar preflight y preparar reemplazos exactos para evitar ventanas de acceso indebido o interrupciones.
 
 Falta todavía el resultado de la consulta B sobre FKs entrantes a `catalog_items` y `catalog_clients`. Sin él no se puede cerrar el análisis de dependencias de claves y referencias.
+## Addendum — resultado de auditoría de FKs entrantes
+
+El usuario ejecutó la consulta de claves foráneas entrantes hacia `public.catalog_items` y `public.catalog_clients` y obtuvo `Success. No rows returned`.
+
+Interpretación: la consulta no encontró FKs declaradas en otras tablas que referencien esas dos tablas. Esto reduce las dependencias referenciales declaradas que habría que migrar al cambiar sus claves; no descarta dependencias en código, vistas, funciones, triggers, procesos de importación ni consultas del frontend. Antes de cambiar PK o claves únicas todavía deben revisarse esos consumidores.
+
+El preflight sigue incompleto: faltan los resultados actuales de empresa/memberships/global_roles y conteos de tablas, o confirmación de que coinciden con el inventario documentado. No redactar ni ejecutar aún el SQL final.
