@@ -622,7 +622,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$;
+$$;
 
 DO $assignment_trigger$
 BEGIN
@@ -1426,7 +1426,7 @@ $verify$;
 
   RETURN v_processed;
 END;
-$;
+$$;
 
 -- Aislamiento y escritura solo por RPC.
 ALTER TABLE public.inventory_balances ENABLE ROW LEVEL SECURITY;
