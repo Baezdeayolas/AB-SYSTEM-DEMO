@@ -27,7 +27,7 @@ SELECT n.nspname AS schema_name, p.proname AS function_name,
        has_function_privilege('anon',p.oid,'EXECUTE') AS anon_execute,
        has_function_privilege('authenticated',p.oid,'EXECUTE') AS authenticated_execute
 FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
-WHERE n.nspname='public'
+WHERE n.nspname='public' AND p.prokind IN ('f','p','w')
   AND (pg_get_functiondef(p.oid) ILIKE '%catalog_items%'
     OR pg_get_functiondef(p.oid) ILIKE '%catalog_clients%'
     OR pg_get_functiondef(p.oid) ILIKE '%inventory_current%'
