@@ -181,7 +181,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$;
+$$;
 
 DO $assignment_trigger$
 BEGIN
