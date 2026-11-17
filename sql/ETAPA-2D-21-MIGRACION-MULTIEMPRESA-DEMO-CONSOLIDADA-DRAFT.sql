@@ -608,7 +608,7 @@ RETURNS trigger
 LANGUAGE plpgsql
 SECURITY INVOKER
 SET search_path = ''
-AS $
+AS $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1
@@ -1230,7 +1230,7 @@ BEGIN
 
   RETURN p_quantity;
 END;
-$;
+$$;
 
 -- Importacion masiva atomica de catalogo y stock.
 -- Contrato por fila: {"code":"ART-001","payload":{...},"quantity":12.0}
@@ -1244,7 +1244,7 @@ RETURNS integer
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $$
 DECLARE
   v_row jsonb;
   v_code text;
