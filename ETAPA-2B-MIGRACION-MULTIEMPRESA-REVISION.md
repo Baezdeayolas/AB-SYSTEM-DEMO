@@ -233,3 +233,11 @@ Los conteos coinciden con el inventario previo documentado. Aún falta recibir l
 ## Addendum — empresa inicial confirmada
 
 El usuario compartió el resultado de `public.companies`: existe Ko’ẽju con ID `c8c4f6bf-a941-48a2-be99-6322b4ac19fd`, código `KOEJU`, nombre `Ko’ẽju` y estado `active`. Coincide con la empresa inicial documentada. Quedan pendientes los resultados de `company_memberships` y `global_roles`.
+## Addendum — membresías de empresa confirmadas
+
+El usuario compartió dos filas activas para Ko’ẽju:
+
+- Usuario `6eb46f45-7a88-47bc-9512-1a5ddbd06841`: `company_admin`, `active`.
+- Usuario `7e930b49-582a-4104-b0c6-7054b11ac5d7`: `seller`, `active`.
+
+Los resultados coinciden con las identidades y roles DEMO previamente confirmados. Falta la salida de `public.global_roles` para verificar la asignación `superadmin_global` y cerrar este bloque del preflight.
