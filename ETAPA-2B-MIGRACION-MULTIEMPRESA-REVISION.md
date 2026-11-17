@@ -230,3 +230,6 @@ El usuario compartió los conteos actuales de Supabase DEMO:
 | `seller_assignments` | 1 |
 
 Los conteos coinciden con el inventario previo documentado. Aún falta recibir la salida de `companies`, `company_memberships` y `global_roles` para validar empresa y membresías antes de cerrar el preflight.
+## Addendum — empresa inicial confirmada
+
+El usuario compartió el resultado de `public.companies`: existe Ko’ẽju con ID `c8c4f6bf-a941-48a2-be99-6322b4ac19fd`, código `KOEJU`, nombre `Ko’ẽju` y estado `active`. Coincide con la empresa inicial documentada. Quedan pendientes los resultados de `company_memberships` y `global_roles`.
