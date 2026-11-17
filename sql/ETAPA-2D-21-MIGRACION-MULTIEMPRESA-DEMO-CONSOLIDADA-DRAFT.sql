@@ -1323,73 +1323,7 @@ BEGIN
       '0'
     );
 
-    IF v_quantity_text !~ '^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)
-ALTER TABLE public.inventory_balances ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.inventory_movements ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY inventory_balances_read_company
-ON public.inventory_balances FOR SELECT TO authenticated
-USING (public.ab_has_company_access(company_id) OR public.ab_is_global_superadmin());
-
-CREATE POLICY inventory_movements_read_admin
-ON public.inventory_movements FOR SELECT TO authenticated
-USING (public.ab_is_company_admin(company_id) OR public.ab_is_global_superadmin());
-
-REVOKE ALL ON TABLE public.inventory_balances, public.inventory_movements FROM PUBLIC, anon, authenticated;
-GRANT SELECT ON TABLE public.inventory_balances, public.inventory_movements TO authenticated;
-
-REVOKE ALL ON FUNCTION public.ab_set_inventory_balance(uuid,text,numeric,text,text,text) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.ab_set_inventory_balance(uuid,text,numeric,text,text,text) TO authenticated;
-REVOKE ALL ON FUNCTION public.ab_import_company_catalog(uuid,text,jsonb) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.ab_import_company_catalog(uuid,text,jsonb) TO authenticated;
-REVOKE ALL ON FUNCTION public.ab_inventory_create_balance_for_product() FROM PUBLIC, anon, authenticated;
-
--- Cargar saldos iniciales desde el stock que hoy se muestra en catalog_items.payload.sc.
-INSERT INTO public.inventory_balances(company_id, product_code, quantity)
-SELECT
-  ci.company_id,
-  ci.code,
-  COALESCE(NULLIF(btrim(ci.payload->>'sc'), '')::numeric, 0)
-FROM public.catalog_items ci;
-
-INSERT INTO public.inventory_movements(
-  company_id, product_code, movement_type, quantity_delta,
-  quantity_before, quantity_after, reason, source_ref, created_by
-)
-SELECT
-  b.company_id, b.product_code, 'opening', b.quantity,
-  0, b.quantity, 'Saldo inicial migrado desde catalog_items.payload.sc',
-  'opening-balance-migration-2026-11-17', NULL
-FROM public.inventory_balances b;
-
-DO $verify$
-DECLARE
-  v_products bigint;
-  v_balances bigint;
-  v_missing bigint;
-  v_mismatches bigint;
-BEGIN
-  SELECT count(*) INTO v_products FROM public.catalog_items;
-  SELECT count(*) INTO v_balances FROM public.inventory_balances;
-  SELECT count(*) INTO v_missing
-  FROM public.catalog_items ci
-  LEFT JOIN public.inventory_balances b
-    ON b.company_id=ci.company_id AND b.product_code=ci.code
-  WHERE b.product_code IS NULL;
-
-  SELECT count(*) INTO v_mismatches
-  FROM public.catalog_items ci
-  JOIN public.inventory_balances b
-    ON b.company_id=ci.company_id AND b.product_code=ci.code
-  WHERE b.quantity <> COALESCE(NULLIF(btrim(ci.payload->>'sc'), '')::numeric, 0);
-
-  IF v_products <> v_balances OR v_missing <> 0 OR v_mismatches <> 0 THEN
-    RAISE EXCEPTION 'Verificacion de inventario fallida: productos %, saldos %, faltantes %, diferencias %.',
-      v_products, v_balances, v_missing, v_mismatches;
-  END IF;
-END
-$verify$;
- THEN
+    IF v_quantity_text !~ '^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$' THEN
       RAISE EXCEPTION 'Cantidad no numerica para articulo %.', v_code;
     END IF;
 
@@ -1447,6 +1381,8 @@ GRANT SELECT ON TABLE public.inventory_balances, public.inventory_movements TO a
 
 REVOKE ALL ON FUNCTION public.ab_set_inventory_balance(uuid,text,numeric,text,text,text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.ab_set_inventory_balance(uuid,text,numeric,text,text,text) TO authenticated;
+REVOKE ALL ON FUNCTION public.ab_import_company_catalog(uuid,text,jsonb) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.ab_import_company_catalog(uuid,text,jsonb) TO authenticated;
 REVOKE ALL ON FUNCTION public.ab_inventory_create_balance_for_product() FROM PUBLIC, anon, authenticated;
 
 -- Cargar saldos iniciales desde el stock que hoy se muestra en catalog_items.payload.sc.
