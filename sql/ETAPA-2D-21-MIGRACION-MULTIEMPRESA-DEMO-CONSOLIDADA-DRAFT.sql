@@ -1243,7 +1243,7 @@ CREATE OR REPLACE FUNCTION public.ab_import_company_catalog(
 RETURNS integer
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = ''
+SET search_path = $q$$q$
 AS $$
 DECLARE
   v_row jsonb;
@@ -1257,82 +1257,82 @@ DECLARE
 BEGIN
   v_actor := auth.uid();
   IF v_actor IS NULL THEN
-    RAISE EXCEPTION 'Se requiere una sesion autenticada.';
+    RAISE EXCEPTION $q$Se requiere una sesion autenticada.$q$;
   END IF;
 
   IF NOT EXISTS (
     SELECT 1 FROM public.companies c
-    WHERE c.id = p_company_id AND c.status = 'active'
+    WHERE c.id = p_company_id AND c.status = $q$active$q$
   ) THEN
-    RAISE EXCEPTION 'La empresa no existe o esta suspendida.';
+    RAISE EXCEPTION $q$La empresa no existe o esta suspendida.$q$;
   END IF;
 
   IF NOT (public.ab_is_global_superadmin() OR public.ab_is_company_admin(p_company_id)) THEN
-    RAISE EXCEPTION 'No tienes permiso para importar catalogo en esta empresa.';
+    RAISE EXCEPTION $q$No tienes permiso para importar catalogo en esta empresa.$q$;
   END IF;
 
-  IF NULLIF(btrim(p_import_id), '') IS NULL THEN
-    RAISE EXCEPTION 'El identificador de importacion es obligatorio.';
+  IF NULLIF(btrim(p_import_id), $q$$q$) IS NULL THEN
+    RAISE EXCEPTION $q$El identificador de importacion es obligatorio.$q$;
   END IF;
 
-  IF jsonb_typeof(p_rows) IS DISTINCT FROM 'array' THEN
-    RAISE EXCEPTION 'Las filas de importacion deben enviarse como un array JSON.';
+  IF jsonb_typeof(p_rows) IS DISTINCT FROM $q$array$q$ THEN
+    RAISE EXCEPTION $q$Las filas de importacion deben enviarse como un array JSON.$q$;
   END IF;
 
   IF jsonb_array_length(p_rows) = 0 THEN
-    RAISE EXCEPTION 'El archivo no contiene filas para importar.';
+    RAISE EXCEPTION $q$El archivo no contiene filas para importar.$q$;
   END IF;
 
   IF EXISTS (
     SELECT 1 FROM public.catalog_import_rows
     WHERE company_id = p_company_id AND import_id = btrim(p_import_id)
   ) THEN
-    RAISE EXCEPTION 'El identificador de importacion ya fue utilizado en esta empresa.';
+    RAISE EXCEPTION $q$El identificador de importacion ya fue utilizado en esta empresa.$q$;
   END IF;
 
   IF jsonb_array_length(p_rows) > 10000 THEN
-    RAISE EXCEPTION 'El lote supera el maximo de 10000 filas.';
+    RAISE EXCEPTION $q$El lote supera el maximo de 10000 filas.$q$;
   END IF;
 
   SELECT count(*) INTO v_count
   FROM jsonb_array_elements(p_rows) e
-  WHERE NULLIF(btrim(e.value->>'code'), '') IS NULL
-     OR jsonb_typeof(e.value->'payload') IS DISTINCT FROM 'object';
+  WHERE NULLIF(btrim(e.value->>$q$code$q$), $q$$q$) IS NULL
+     OR jsonb_typeof(e.value->$q$payload$q$) IS DISTINCT FROM $q$object$q$;
   IF v_count > 0 THEN
-    RAISE EXCEPTION 'Hay % filas sin codigo o con payload no valido.', v_count;
+    RAISE EXCEPTION $q$Hay % filas sin codigo o con payload no valido.$q$, v_count;
   END IF;
 
   SELECT count(*) INTO v_count
   FROM (
-    SELECT e.value->>'code'
+    SELECT e.value->>$q$code$q$
     FROM jsonb_array_elements(p_rows) e
-    GROUP BY e.value->>'code'
+    GROUP BY e.value->>$q$code$q$
     HAVING count(*) > 1
   ) duplicates;
   IF v_count > 0 THEN
-    RAISE EXCEPTION 'El archivo contiene codigos de articulo duplicados.';
+    RAISE EXCEPTION $q$El archivo contiene codigos de articulo duplicados.$q$;
   END IF;
 
   FOR v_row IN SELECT value FROM jsonb_array_elements(p_rows)
   LOOP
-    v_code := btrim(v_row->>'code');
-    v_payload := v_row->'payload';
+    v_code := btrim(v_row->>$q$code$q$);
+    v_payload := v_row->$q$payload$q$;
     v_quantity_text := COALESCE(
-      NULLIF(btrim(v_row->>'quantity'), ''),
-      NULLIF(btrim(v_payload->>'sc'), ''),
-      '0'
+      NULLIF(btrim(v_row->>$q$quantity$q$), $q$$q$),
+      NULLIF(btrim(v_payload->>$q$sc$q$), $q$$q$),
+      $q$0$q$
     );
 
-    IF v_quantity_text !~ '^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$' THEN
-      RAISE EXCEPTION 'Cantidad no numerica para articulo %.', v_code;
+    IF v_quantity_text !~ $q$^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)$$q$ THEN
+      RAISE EXCEPTION $q$Cantidad no numerica para articulo %.$q$, v_code;
     END IF;
 
     v_quantity := v_quantity_text::numeric;
     IF v_quantity < 0 THEN
-      RAISE EXCEPTION 'Cantidad negativa para articulo %.', v_code;
+      RAISE EXCEPTION $q$Cantidad negativa para articulo %.$q$, v_code;
     END IF;
 
-    v_payload := jsonb_set(v_payload, '{sc}', to_jsonb(v_quantity), true);
+    v_payload := jsonb_set(v_payload, $q${sc}$q$, to_jsonb(v_quantity), true);
 
     INSERT INTO public.catalog_items(company_id, code, payload, updated_at)
     VALUES (p_company_id, v_code, v_payload, now())
@@ -1343,8 +1343,8 @@ BEGIN
       p_company_id,
       v_code,
       v_quantity,
-      'import',
-      'Importacion de catalogo ' || btrim(p_import_id),
+      $q$import$q$,
+      $q$Importacion de catalogo $q$ || btrim(p_import_id),
       btrim(p_import_id)
     );
 
@@ -1352,7 +1352,7 @@ BEGIN
       company_id, import_id, catalog_type, code, payload, created_at
     )
     VALUES (
-      p_company_id, btrim(p_import_id), 'items', v_code, v_payload, now()
+      p_company_id, btrim(p_import_id), $q$items$q$, v_code, v_payload, now()
     )
     ON CONFLICT (company_id, import_id, catalog_type, code)
     DO UPDATE SET payload = EXCLUDED.payload, created_at = now();
