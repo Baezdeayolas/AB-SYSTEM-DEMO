@@ -214,7 +214,7 @@ BEGIN
 
   RETURN p_quantity;
 END;
-$;
+$$;
 
 -- Importacion masiva atomica de catalogo y stock.
 -- Contrato por fila: {"code":"ART-001","payload":{...},"quantity":12.0}
