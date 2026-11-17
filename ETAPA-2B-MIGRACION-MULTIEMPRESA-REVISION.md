@@ -241,3 +241,10 @@ El usuario compartió dos filas activas para Ko’ẽju:
 - Usuario `7e930b49-582a-4104-b0c6-7054b11ac5d7`: `seller`, `active`.
 
 Los resultados coinciden con las identidades y roles DEMO previamente confirmados. Falta la salida de `public.global_roles` para verificar la asignación `superadmin_global` y cerrar este bloque del preflight.
+## Addendum — rol global confirmado y cierre del bloque de identidad
+
+El usuario compartió una fila en `public.global_roles`: el usuario `6eb46f45-7a88-47bc-9512-1a5ddbd06841` tiene el rol `superadmin_global`. Coincide con el administrador DEMO y su membership `company_admin` activa en Ko’ẽju.
+
+Con la empresa activa, las dos memberships, el rol global y los conteos compartidos, el bloque de identidad y conteos del preflight queda confirmado. También se recibieron policies actuales, grants amplios y ausencia de FKs entrantes hacia catálogo. Esto no equivale a una auditoría completa de esquema/seguridad ni a pruebas RLS con JWT; quedan pendientes revisión de consumidores frontend/funciones/vistas/triggers, privilegios de funciones/secuencias/vistas/default privileges, detalles de constraints/índices, y pruebas con JWT por rol.
+
+Estado: documentación de revisión actualizada; no se ha ejecutado SQL de modificación en Supabase ni se ha tocado producción.
