@@ -85,12 +85,14 @@ function render(){
 function add(code,qty){const item=items.find(x=>String(x.c)===String(code));if(!item)return;const row=cart.find(x=>x.c===item.c);if(row)row.qty+=qty;else cart.push({...item,qty});render();}
 async function loadData(){
  if(!activeCompany?.id)throw new Error('No hay una empresa activa.');
- const [ir,cr]=await timeout(Promise.all([
+ const [ir,cr,br]=await timeout(Promise.all([
   db.from('catalog_items').select('code,payload').eq('company_id',activeCompany.id).order('code'),
-  db.from('catalog_clients').select('code,payload').eq('company_id',activeCompany.id).order('code')
- ]),'La carga de catálogo');
- if(ir.error)throw ir.error;if(cr.error)throw cr.error;
- items=(ir.data||[]).map(x=>x.payload);
+  db.from('catalog_clients').select('code,payload').eq('company_id',activeCompany.id).order('code'),
+  db.from('inventory_balances').select('product_code,quantity').eq('company_id',activeCompany.id)
+ ]),'La carga de catálogo e inventario');
+ if(ir.error)throw ir.error;if(cr.error)throw cr.error;if(br.error)throw br.error;
+ const stockByCode=new Map((br.data||[]).map(x=>[String(x.product_code),Number(x.quantity)||0]));
+ items=(ir.data||[]).map(x=>({...x.payload,c:x.payload?.c??x.code,sc:stockByCode.get(String(x.code))??0}));
  clients=(cr.data||[]).map(x=>x.payload);
  if(String(activeCompany.code||'').toUpperCase()==='DEMO'){
   if(!items.length)items=[...window.DEMO_ITEMS];
