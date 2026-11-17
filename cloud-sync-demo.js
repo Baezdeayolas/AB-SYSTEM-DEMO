@@ -41,10 +41,20 @@ async function loadData(){
  render();showLogin('Permisos verificados. Cargando pedidos DEMO…');await loadOrders();
 }
 async function loadOrders(){
- const {data,error}=await withTimeout(db.from('orders').select('id,legacy_id,legacy_source,payload,updated_at').order('updated_at',{ascending:false}).limit(30),'La carga de pedidos');
- if(error)throw error;
- $('metric-orders').textContent=data.length;
- $('orders').innerHTML=data.map(x=>'<div class="order-row"><div><strong>'+safe(x.payload?.cliente||'Pedido DEMO')+'</strong><small>'+safe(x.payload?.vendedor||'')+' · '+new Date(x.updated_at).toLocaleString('es-PY')+'</small></div><strong>'+money(x.payload?.total)+'</strong></div>').join('')||'<p class="muted">Todavía no hay pedidos guardados.</p>';
+ showLogin('DIAGNÓSTICO DEMO: iniciando consulta de pedidos…');
+ const watchdog=setTimeout(()=>showLogin('DIAGNÓSTICO DEMO: la consulta sigue pendiente después de 5 segundos.'),5000);
+ try{
+  showLogin('DIAGNÓSTICO DEMO: enviando consulta a Supabase…');
+  const request=db.from('orders').select('id,legacy_id,legacy_source,payload,updated_at').order('updated_at',{ascending:false}).limit(30);
+  const result=await withTimeout(request,'La carga de pedidos');
+  clearTimeout(watchdog);
+  showLogin('DIAGNÓSTICO DEMO: respuesta recibida; procesando pedidos…');
+  if(result.error)throw result.error;
+  const data=result.data||[];
+  $('metric-orders').textContent=data.length;
+  $('orders').innerHTML=data.map(x=>'<div class="order-row"><div><strong>'+safe(x.payload?.cliente||'Pedido DEMO')+'</strong><small>'+safe(x.payload?.vendedor||'')+' · '+new Date(x.updated_at).toLocaleString('es-PY')+'</small></div><strong>'+money(x.payload?.total)+'</strong></div>').join('')||'<p class="muted">Todavía no hay pedidos guardados.</p>';
+  showLogin('DIAGNÓSTICO DEMO: pedidos procesados; finalizando acceso…');
+ }catch(error){clearTimeout(watchdog);throw error;}
 }
 async function activate(sessionUser){
  user=sessionUser;
