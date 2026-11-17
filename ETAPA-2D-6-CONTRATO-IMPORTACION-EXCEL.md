@@ -54,7 +54,7 @@ Se inspeccionó el archivo adjunto `ListaPrecios_6571.xlsx` en modo de solo lect
 - No se encontraron códigos de barra duplicados. Hay 22 filas sin código de barra y 5.903 sin código de fábrica.
 - Los campos numéricos están almacenados como números nativos de Excel. En las 9.536 filas no hay celdas vacías en `Envases`, `Master`, `Inner`, `CENTRAL`, `CDE` ni en las tres listas de precios; los ceros están expresados explícitamente como valor numérico 0.
 - CENTRAL: 6.990 artículos con saldo mayor que cero; CDE: 6.222.
-- Listas 1, 2 y 3: 9.237 artículos con precio mayor que cero en cada lista; 299 tienen cero en las tres listas.
+- Listas 1, 2 y 3: 9.237 artículos con precio mayor que cero en cada lista; 299 tienen cero en las tres listas. El usuario confirmó que estos precios cero son válidos y deben conservarse.
 - `Envases`, `Master` e `Inner` contienen valores numéricos, incluidos ceros; su significado comercial todavía debe confirmarse.
 
 **Consecuencia para el importador:** debe admitir los encabezados reales tal como aparecen (incluidos `Cód.Artículo`, `Cód.Fábrica`, `Cód.Barra`, `Agrup.1` y las listas `1`, `2`, `3`), además de los alias previamente documentados. El libro real no usa `stock_central`, `stock_cde` ni `precio_1` como encabezados. El parser debe mapear CENTRAL y CDE como saldos separados, y 1/2/3 como listas de precios.
@@ -109,7 +109,7 @@ El proceso debe trabajar primero en modo de previsualización y rechazar la publ
 - Detectar códigos repetidos en el archivo y mostrar las filas implicadas.
 - Mostrar cuántos códigos coinciden con productos existentes y cuántos serían nuevos.
 - Los artículos nuevos presentes en un archivo válido se incorporarán al catálogo de la empresa mediante upsert, una vez superada la validación y confirmada la importación.
-- Un artículo nuevo debe incluir su código y los campos obligatorios definidos para el catálogo; no crear registros incompletos silenciosamente.
+- Un artículo nuevo debe incluir como mínimo código de artículo y descripción. Los demás campos pueden estar vacíos o en cero, según corresponda; no rechazarlo por ausencia de datos opcionales.
 - La importación nunca debe crear el mismo producto dos veces dentro de una empresa.
 
 ## 5. Flujo de importación propuesto
@@ -171,7 +171,9 @@ El usuario indicó que el archivo puede incluir artículos nuevos, pero nunca co
 ## 9. Pruebas de aceptación necesarias
 
 - Libro válido con códigos alfanuméricos y códigos con ceros iniciales.
-- Artículo nuevo: se crea una sola vez en la empresa correcta.
+- Artículo nuevo con código y descripción, aunque otros campos opcionales estén vacíos o en cero: se crea una sola vez en la empresa correcta.
+- Precio cero en las tres listas: se conserva como valor válido.
+- `Envases`, `Master` e `Inner`: se preservan sin tratarlos como unidades de empaque ni usarlos en cálculos.
 - Artículo existente: se actualizan catálogo, precios y saldos sin duplicarlo.
 - Artículo ausente del archivo: no se borra, no se inactiva y no se pone a cero automáticamente.
 - Stock CENTRAL y CDE distintos; comprobar que no se mezclan.
