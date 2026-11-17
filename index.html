@@ -27,18 +27,18 @@
 </header>
 <main>
  <section class="welcome"><div><p class="eyebrow">ENTORNO DE PRUEBA</p><h1>Panel comercial</h1><p>Datos ficticios · Base independiente</p></div><div id="connection" class="status">Conectando…</div></section>
- <section class="metrics">
+ <section class="metrics" id="dashboard">
   <article><small>Productos</small><strong id="metric-products">0</strong></article>
   <article><small>Clientes</small><strong id="metric-clients">0</strong></article>
   <article><small>Mis pedidos</small><strong id="metric-orders">0</strong></article>
  </section>
  <section class="columns">
-  <article class="panel">
+  <article class="panel" id="catalog-panel">
    <div class="panel-head"><div><p class="eyebrow">CATÁLOGO</p><h2>Buscar productos</h2></div></div>
    <input id="product-search" class="search" placeholder="Código o descripción">
    <div id="products" class="list"></div>
   </article>
-  <article class="panel">
+  <article class="panel" id="order-panel">
    <div class="panel-head"><div><p class="eyebrow">PEDIDO ACTUAL</p><h2>Detalle</h2></div></div>
    <label>Vendedor<select id="seller"><option value="">Seleccionar vendedor</option></select></label>
    <label>Cliente<select id="client"><option value="">Seleccionar cliente</option></select></label>
@@ -48,11 +48,12 @@
    <p id="order-message" class="message" role="status"></p>
   </article>
  </section>
- <section class="panel history">
+ <section class="panel history" id="history-panel">
   <div class="panel-head"><div><p class="eyebrow">REGISTROS</p><h2>Pedidos recientes</h2></div><button id="refresh" class="ghost">Actualizar</button></div>
   <div id="orders" class="list"></div>
  </section>
 </main>
+<nav class="bottom-nav" aria-label="Navegación principal"><button type="button" data-target="dashboard">Resumen</button><button type="button" data-target="catalog-panel" class="active">Productos</button><button type="button" data-target="order-panel">Pedido</button><button type="button" data-target="history-panel">Historial</button></nav>
 <footer>AB SYSTEM DEMO · No contiene información comercial real.</footer>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
