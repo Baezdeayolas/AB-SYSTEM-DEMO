@@ -31,7 +31,7 @@
  </div>
  <div class="client-tools-row"><button type="button" class="nuevo-cliente-toggle" id="nuevo-cliente-toggle">+ Datos de clientes nuevos</button><span id="cloud-status-slot" class="status">Conectado a Supabase DEMO</span><button id="logout" class="ghost" type="button">Salir</button></div>
  <div class="nuevo-cliente-panel" id="nuevo-cliente-panel" hidden><input id="ruc-input" placeholder="RUC"><input id="direccion-input" placeholder="Dirección"><input id="telefono-input" placeholder="Teléfono" inputmode="tel"></div>
- <div class="company-context"><span>Empresa activa</span><strong>EMPRESA DEMO</strong><small>Entorno aislado de pruebas</small></div>
+ <div class="company-context"><span>Empresa activa</span><select id="company-select" aria-label="Empresa activa"></select><small id="company-role">Contexto de empresa</small></div>
 </header>
 <div class="precio-estado-row">
  <div class="tier-row"><span class="tier-label">Precio</span><div class="tier-options"><button class="tier-btn active" data-tier="1" type="button">M1</button><button class="tier-btn" data-tier="2" type="button">M2</button><button class="tier-btn" data-tier="3" type="button">M3</button></div></div>
