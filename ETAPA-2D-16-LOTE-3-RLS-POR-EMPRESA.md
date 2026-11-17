@@ -38,3 +38,12 @@ El script:
 - termina en `ROLLBACK`, por lo que ejecutar el borrador literalmente no persiste cambios.
 
 No autoriza ejecución. Antes de cambiar el cierre a COMMIT se requiere respaldo/restauración probada, revisión del inventario de consumidores y aprobación expresa del propietario. No ejecutar en Ko'eju histórico/producción.
+
+
+## Corrección de revisión — 2026-11-17
+
+Se reforzó el borrador SQL para corregir dos riesgos detectados:
+- La policy de INSERT de pedidos ahora exige siempre un vendedor propietario activo en la misma empresa, también para el superadministrador global.
+- Se agregaron triggers de protección para impedir cambios ordinarios a la identidad/empresa del pedido y a la identidad de la membresía. El administrador de empresa puede gestionar vendedores de su empresa, pero no crear administradores ni cambiar roles; los cambios de rol quedan reservados al superadministrador global.
+
+El archivo SQL sigue terminando en ROLLBACK. Esta corrección es un borrador para revisión, no una migración ejecutada ni una prueba de RLS/JWT. El inventario multiempresa y los privilegios por defecto/secuencias/funciones continúan pendientes.
