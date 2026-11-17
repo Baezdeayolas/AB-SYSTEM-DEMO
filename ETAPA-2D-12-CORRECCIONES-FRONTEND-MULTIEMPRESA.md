@@ -13,6 +13,8 @@ En `cloud-sync-demo.js`:
 3. Si la carga de la empresa nueva falla, se restaura la empresa anterior y se intenta recargar su información.
 4. Se evita el doble envío del mismo pedido deshabilitando el botón durante el guardado.
 5. El resumen del archivo calcula y muestra la suma de los importes de los pedidos cargados.
+6. Si el pedido se guarda pero falla la recarga del archivo, la interfaz informa que el pedido sí fue guardado; así se evita inducir al usuario a repetirlo.
+7. Si falla el cambio de empresa, también se restauran las etiquetas visuales del contexto anterior.
 
 Se actualizó `README.md` para reflejar estos cambios y los bloqueos que siguen vigentes.
 
