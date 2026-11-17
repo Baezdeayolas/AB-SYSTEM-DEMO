@@ -217,3 +217,16 @@ El usuario ejecutó la consulta de claves foráneas entrantes hacia `public.cata
 Interpretación: la consulta no encontró FKs declaradas en otras tablas que referencien esas dos tablas. Esto reduce las dependencias referenciales declaradas que habría que migrar al cambiar sus claves; no descarta dependencias en código, vistas, funciones, triggers, procesos de importación ni consultas del frontend. Antes de cambiar PK o claves únicas todavía deben revisarse esos consumidores.
 
 El preflight sigue incompleto: faltan los resultados actuales de empresa/memberships/global_roles y conteos de tablas, o confirmación de que coinciden con el inventario documentado. No redactar ni ejecutar aún el SQL final.
+## Addendum — conteos de tablas confirmados
+
+El usuario compartió los conteos actuales de Supabase DEMO:
+
+| Tabla | Filas confirmadas |
+|---|---:|
+| `catalog_items` | 5 |
+| `catalog_clients` | 4 |
+| `catalog_import_rows` | 0 |
+| `orders` | 1 |
+| `seller_assignments` | 1 |
+
+Los conteos coinciden con el inventario previo documentado. Aún falta recibir la salida de `companies`, `company_memberships` y `global_roles` para validar empresa y membresías antes de cerrar el preflight.
