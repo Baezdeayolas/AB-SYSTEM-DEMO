@@ -50,6 +50,15 @@ La rama `work/adaptacion-multiempresa-v1` incorpora el primer tramo de adaptaci�
 - Resolución de empresas desde `company_memberships` y del rol global mediante RPC.
 - Lecturas de catálogo, clientes, vendedores y pedidos filtradas por `company_id`.
 - Pedidos nuevos guardados con `company_id`; crear pedidos no modifica `inventory_current`.
-- Borrador de migración SQL y políticas RLS en `supabase/migrations/20261117_multiempresa_scope.sql`.
+- Contrato frontend preparado para el esquema empresarial; la migración SQL queda pendiente de revisión del preflight y de una restauración de respaldo.
 
 **No aplicar todavía la migración ni publicar esta rama.** Antes se debe revisar el inventario de claves foráneas/índices y probar la migración en una copia aislada. Esta etapa tampoco completa todavía la paridad funcional con Ko'eju (PDF, edición/reutilización de pedidos, importación Excel y administración de usuarios).
+
+
+### Bloqueos antes de probar o publicar esta adaptación
+
+- El frontend ya consulta `company_id` en tablas comerciales y `created_by` al guardar pedidos; esas columnas todavía no están confirmadas en el esquema activo.
+- El guardado identifica al vendedor mediante la asignación de la empresa: `owner_id` es el usuario vendedor y `created_by` es quien creó el pedido.
+- Falta diseñar y aprobar el lote SQL completo, incluyendo claves compuestas, políticas RLS, validación de vendedor/membresía y rollback.
+- Falta probar la migración en una restauración independiente de DEMO. El respaldo actual del proyecto nuevo todavía no tiene restauración comprobada.
+- La adaptación funcional completa de Ko'eju (PDF, edición/reutilización de pedidos, importación Excel y administración) se realizará después de validar esta base multiempresa.
