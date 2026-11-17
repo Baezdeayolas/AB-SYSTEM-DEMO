@@ -12,6 +12,7 @@ let user=null,profile=null,items=[...window.DEMO_ITEMS],clients=[...window.DEMO_
 const money=n=>'Gs. '+Number(n||0).toLocaleString('es-PY');
 const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function showLogin(msg){$('login').hidden=false;$('app').hidden=true;$('login-message').textContent=msg||'Acceso protegido';}
+function withTimeout(promise,stage,ms=12000){let timer;const timeout=new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(stage+' no respondió en 12 segundos.')),ms);});return Promise.race([promise,timeout]).finally(()=>clearTimeout(timer));}
 function render(){
  $('metric-products').textContent=items.length;$('metric-clients').textContent=clients.length;
  const q=$('product-search').value.trim().toLowerCase();
@@ -25,43 +26,42 @@ function render(){
 function renderCartOnly(){render();}
 function add(code){const x=items.find(i=>String(i.c)===String(code));if(!x)return;const found=cart.find(i=>i.c===x.c);if(found)found.qty++;else cart.push({...x,qty:1});render();}
 async function loadData(){
- const [ir,cr]=await Promise.all([db.from('catalog_items').select('code,payload').order('code'),db.from('catalog_clients').select('code,payload').order('code')]);
+ showLogin('Perfil verificado. Cargando productos y clientes DEMO…');
+ const [ir,cr]=await withTimeout(Promise.all([db.from('catalog_items').select('code,payload').order('code'),db.from('catalog_clients').select('code,payload').order('code')]),'La carga de productos y clientes');
  if(ir.error)throw ir.error;if(cr.error)throw cr.error;
  if(ir.data.length)items=ir.data.map(x=>x.payload);if(cr.data.length)clients=cr.data.map(x=>x.payload);
  $('client').innerHTML='<option value="">Seleccionar cliente</option>'+clients.map(x=>'<option value="'+safe(x.c)+'">'+safe(x.n)+'</option>').join('');
  const labels=profile.role==='admin'?['VENDEDOR DEMO 1','VENDEDOR DEMO 2','VENDEDOR DEMO 3']:[];
- const {data:assignments,error}=await db.from('seller_assignments').select('seller_label').eq('user_id',user.id);
+ showLogin('Catálogo cargado. Verificando permisos de vendedor…');
+ const {data:assignments,error}=await withTimeout(db.from('seller_assignments').select('seller_label').eq('user_id',user.id),'La verificación de permisos');
  if(error)throw error;
  const allowed=profile.role==='admin'?labels:(assignments||[]).map(x=>x.seller_label);
  if(profile.role==='seller'&&!allowed.length)throw new Error('La cuenta no tiene vendedores DEMO asignados.');
  $('seller').innerHTML='<option value="">Seleccionar vendedor</option>'+allowed.map(x=>'<option>'+safe(x)+'</option>').join('');
- render();await loadOrders();
+ render();showLogin('Permisos verificados. Cargando pedidos DEMO…');await loadOrders();
 }
 async function loadOrders(){
- const {data,error}=await db.from('orders').select('id,legacy_id,legacy_source,payload,updated_at').order('updated_at',{ascending:false}).limit(30);
+ const {data,error}=await withTimeout(db.from('orders').select('id,legacy_id,legacy_source,payload,updated_at').order('updated_at',{ascending:false}).limit(30),'La carga de pedidos');
  if(error)throw error;
  $('metric-orders').textContent=data.length;
  $('orders').innerHTML=data.map(x=>'<div class="order-row"><div><strong>'+safe(x.payload?.cliente||'Pedido DEMO')+'</strong><small>'+safe(x.payload?.vendedor||'')+' · '+new Date(x.updated_at).toLocaleString('es-PY')+'</small></div><strong>'+money(x.payload?.total)+'</strong></div>').join('')||'<p class="muted">Todavía no hay pedidos guardados.</p>';
 }
 async function activate(sessionUser){
  user=sessionUser;
- const {data:p,error}=await db.from('profiles').select('role,seller_label').eq('id',user.id).single();
+ showLogin('Acceso autenticado. Verificando perfil DEMO…');
+ const {data:p,error}=await withTimeout(db.from('profiles').select('role,seller_label').eq('id',user.id).single(),'La consulta del perfil');
  if(error)throw error;profile=p;
  if(!['admin','seller'].includes(profile.role))throw new Error('Perfil sin permisos.');
  $('user-label').textContent=profile.role==='admin'?'Administrador DEMO':profile.seller_label||user.email;
  await loadData();$('login').hidden=true;$('app').hidden=false;$('connection').textContent='Conectado a Supabase DEMO';
 }
 $('login-form').addEventListener('submit',async e=>{
- e.preventDefault();const btn=$('login-form').querySelector('button[type="submit"]');if(btn)btn.disabled=true;showLogin('Verificando acceso…');
- let timeoutId;
+ e.preventDefault();const btn=$('login-form').querySelector('button[type="submit"]');if(btn)btn.disabled=true;showLogin('Conectando con Supabase DEMO…');
  try{
-  const timeout=new Promise((_,reject)=>{timeoutId=setTimeout(()=>reject(new Error('La solicitud a Supabase no respondió en 12 segundos. Revisá la conexión a Internet o intentá nuevamente más tarde.')),12000);});
-  const result=await Promise.race([db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value}),timeout]);
-  clearTimeout(timeoutId);
+  const result=await withTimeout(db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value}),'La autenticación');
   if(result.error)throw result.error;
   await activate(result.data.user);
  }catch(err){
-  clearTimeout(timeoutId);
   db.auth.signOut().catch(()=>{});
   showLogin('No se pudo ingresar: '+(err?.message||'Error desconocido'));
  }finally{if(btn)btn.disabled=false;}
