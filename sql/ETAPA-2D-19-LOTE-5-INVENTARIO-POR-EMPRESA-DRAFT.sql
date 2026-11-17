@@ -156,6 +156,13 @@ BEGIN
     RAISE EXCEPTION 'Se requiere una sesion autenticada.';
   END IF;
 
+  IF NOT EXISTS (
+    SELECT 1 FROM public.companies c
+    WHERE c.id = p_company_id AND c.status = 'active'
+  ) THEN
+    RAISE EXCEPTION 'La empresa no existe o esta suspendida.';
+  END IF;
+
   IF NOT (
     public.ab_is_global_superadmin()
     OR public.ab_is_company_admin(p_company_id)
@@ -237,6 +244,13 @@ BEGIN
     RAISE EXCEPTION 'Se requiere una sesion autenticada.';
   END IF;
 
+  IF NOT EXISTS (
+    SELECT 1 FROM public.companies c
+    WHERE c.id = p_company_id AND c.status = 'active'
+  ) THEN
+    RAISE EXCEPTION 'La empresa no existe o esta suspendida.';
+  END IF;
+
   IF NOT (public.ab_is_global_superadmin() OR public.ab_is_company_admin(p_company_id)) THEN
     RAISE EXCEPTION 'No tienes permiso para importar catalogo en esta empresa.';
   END IF;
@@ -249,6 +263,13 @@ BEGIN
           THEN jsonb_array_length(p_rows)
           ELSE 0 END = 0 THEN
     RAISE EXCEPTION 'El archivo no contiene filas para importar.';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM public.catalog_import_rows
+    WHERE company_id = p_company_id AND import_id = btrim(p_import_id)
+  ) THEN
+    RAISE EXCEPTION 'El identificador de importacion ya fue utilizado en esta empresa.';
   END IF;
 
   IF jsonb_array_length(p_rows) > 10000 THEN
