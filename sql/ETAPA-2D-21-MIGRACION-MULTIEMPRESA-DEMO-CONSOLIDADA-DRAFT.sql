@@ -1442,10 +1442,12 @@ $verify$;
 -- No cambia ACL de service_role ni objetos internos de auth/storage.
 -- Revoca EXECUTE de funciones legacy no usadas por el cliente y mantiene los
 -- helpers multiempresa/RPC necesarios para authenticated.
--- Endurece defaults de creacion en public para postgres y supabase_admin.
+-- Endurece defaults de creacion en public para el rol postgres, que es el
+-- unico rol creador modificable desde esta sesion. No intenta alterar ACL de
+-- supabase_admin, porque Supabase no concede ese permiso a postgres.
 -- La revocacion GLOBAL de EXECUTE por defecto a PUBLIC para funciones nuevas
--- creadas por esos dos roles afecta todos los esquemas de esos creadores; se
--- documenta expresamente y requiere aprobar ese alcance antes de COMMIT.
+-- creadas por postgres afecta todos los esquemas de ese creador; requiere
+-- revisar ese alcance antes de COMMIT.
 DO $preflight$
 DECLARE
   v_role text;
@@ -1460,7 +1462,7 @@ BEGIN
     RAISE EXCEPTION 'ABORTADO: faltan roles anon/authenticated/service_role.';
   END IF;
 
-  FOREACH v_role IN ARRAY ARRAY['postgres','supabase_admin'] LOOP
+  FOREACH v_role IN ARRAY ARRAY['postgres'] LOOP
     IF to_regrole(v_role) IS NULL THEN
       RAISE EXCEPTION 'ABORTADO: falta el rol creador %.', v_role;
     END IF;
@@ -1527,9 +1529,9 @@ FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.ab_import_company_catalog(uuid,text,jsonb)
 TO authenticated;
 
--- Default privileges para futuras tablas/secuencias/funciones creadas en public.
+-- Default privileges para futuras tablas/secuencias/funciones creadas por postgres en public.
 -- PUBLIC se revoca globalmente en funciones porque un revoke por-schema no
--- puede neutralizar un grant global heredado.
+-- puede neutralizar un grant global heredado. No se modifica supabase_admin.
 DO $defaults$
 DECLARE
   v_role text;
