@@ -190,3 +190,23 @@ Interpretación:
 Acción para SQL final: incluir revocación explícita de privilegios innecesarios a `anon` y `authenticated`, conceder únicamente los privilegios mínimos por tabla/operación y revisar privilegios por columna, secuencias, funciones, vistas y `ALTER DEFAULT PRIVILEGES`. Mantener `service_role` solo en backend seguro.
 
 Este hallazgo se basa en la salida compartida por el usuario. Aún faltan los resultados de conteos/backfill, memberships/global_roles, FKs entrantes y `pg_policies` para cerrar el preflight.
+
+# Addendum — resultado de auditoría RLS (consulta A)
+
+El usuario compartió `pg_policies` para las seis tablas actuales. Se confirma:
+
+- `catalog_items`: `demo_items_read` es PERMISSIVE SELECT para `authenticated` con `USING (true)`. `demo_items_admin_all` usa `is_demo_admin()` para ALL.
+- `catalog_clients`: `demo_clients_read` es PERMISSIVE SELECT con `USING (true)`. `demo_clients_admin_all` usa `is_demo_admin()` para ALL.
+- `inventory_current`: `demo_inventory_read` es PERMISSIVE SELECT con `USING (true)`. `demo_inventory_admin_all` usa `is_demo_admin()` para ALL.
+- `orders`: SELECT/UPDATE/DELETE permiten `owner_id = auth.uid()` o `is_demo_admin()`; INSERT usa esa misma condición en `WITH CHECK`. No hay comprobación de `company_id`, membership activa ni `created_by`.
+- `catalog_import_rows`: solo `demo_imports_admin_all` con `is_demo_admin()`.
+- `seller_assignments`: `demo_assignments_admin_all` usa `is_demo_admin()`; SELECT también permite al usuario leer su propia fila por `user_id`.
+
+Implicaciones para Etapa 2B:
+
+1. Las políticas `demo_items_read`, `demo_clients_read` y `demo_inventory_read` deben retirarse/reemplazarse explícitamente al activar RLS por empresa. Por ser PERMISSIVE, se combinan mediante OR con otras políticas permisivas; añadir una política restrictiva permisiva nueva no neutraliza el `USING (true)` existente.
+2. Las policies de `orders` deben migrarse conjuntamente a reglas multiempresa que validen empresa activa, membership y propiedad del pedido. `is_demo_admin()` no debe seguir siendo autoridad para el modelo multiempresa.
+3. Las policies de importaciones y asignaciones también deben pasar a autorización por empresa; la lectura de asignaciones propias debe quedar limitada a la empresa correspondiente.
+4. No ejecutar aún `DROP POLICY` ni cambios de grants. Primero completar preflight y preparar reemplazos exactos para evitar ventanas de acceso indebido o interrupciones.
+
+Falta todavía el resultado de la consulta B sobre FKs entrantes a `catalog_items` y `catalog_clients`. Sin él no se puede cerrar el análisis de dependencias de claves y referencias.
