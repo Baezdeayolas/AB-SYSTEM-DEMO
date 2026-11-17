@@ -97,6 +97,7 @@ Por tanto, el frontend actual no implementa la identidad acordada. No debe habil
 - No se modificó producción, no se abrió PR, no se hizo merge y no se publicó.
 
 **Resultado:** la fuente visual actual del stock está identificada (`catalog_items.payload.sc`), pero la migración del inventario y el aislamiento multiempresa siguen bloqueados hasta completar las verificaciones de importación, respaldo y RLS.
+
 ## 9. Estructura Excel confirmada por el usuario
 
 El usuario compartió registros reales de ejemplo del archivo `ListaPrecios_6571.xlsx`. Los encabezados observados son:
@@ -169,4 +170,18 @@ El usuario confirmó que los saldos Central y CDE deben mantenerse separados. La
 4. El catálogo maestro también puede almacenar `sc`/`sd` y precios, pero la carga de inventario compartido los sobrescribe en memoria; hay dos representaciones que deben unificarse.
 5. `cod_fabrica`, `envases`, `master` e `inner` no se conservan en el objeto normalizado de catálogo actual.
 
-**Próximo paso:** definir con el usuario la regla de asignación de stock al pedido. Luego documentar contrato de importación para los encabezados reales y preparar un plan de migración por empresa/depósito, todavía sin SQL mutante ni cambios de frontend.
+## 11. Regla funcional confirmada: disponibilidad combinada
+
+El usuario eligió expresamente la **opción B**:
+
+- Mantener los saldos de CENTRAL y CDE separados y visibles como cantidades independientes.
+- Para validar la disponibilidad de un pedido, permitir utilizar la suma de ambos saldos.
+- La validación se considera satisfecha cuando la cantidad solicitada no supera la disponibilidad combinada de los dos depósitos.
+- La suma se utiliza únicamente para comprobar disponibilidad; no reemplaza ni fusiona los saldos individuales almacenados o mostrados.
+- La importación y los movimientos deben seguir actualizando y auditando cada depósito por separado.
+
+**Distinción pendiente antes de implementar:** esta decisión define la validación de disponibilidad, pero todavía no especifica cómo se descuenta/reserva físicamente la cantidad vendida entre CENTRAL y CDE. Esa regla de asignación deberá definirse en una etapa posterior para que los movimientos y saldos no queden ambiguos. No inventar una distribución automática ni modificar inventario hasta acordarla.
+
+## 12. Próximo paso
+
+Continuar la revisión del contrato de importación del Excel y diseñar el modelo de inventario multiempresa por depósito, incorporando la regla de disponibilidad combinada confirmada. No ejecutar SQL mutante, no modificar el frontend y no tocar producción en esta etapa.
