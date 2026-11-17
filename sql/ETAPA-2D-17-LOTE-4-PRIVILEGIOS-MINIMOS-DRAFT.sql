@@ -116,7 +116,7 @@ DO $verify$
 DECLARE
   v_remaining text;
 BEGIN
-  SELECT string_agg(c.relname || ':' || r.rolname || ':' || p.privilege_type, ', ')
+  SELECT string_agg(c.relname || ':' || CASE WHEN p.grantee = 0 THEN 'PUBLIC' ELSE COALESCE(r.rolname, p.grantee::text) END || ':' || p.privilege_type, ', ')
     INTO v_remaining
   FROM pg_class c
   JOIN pg_namespace n ON n.oid=c.relnamespace
