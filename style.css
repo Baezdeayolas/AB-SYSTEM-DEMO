@@ -2246,3 +2246,19 @@ footer{padding:12px;text-align:center;color:#91a3b8;background:#111;font:10px va
 .login-card{border-radius:10px;border:1px solid var(--line);box-shadow:0 12px 40px #0005}
 @media(min-width:760px){main{max-width:1120px;padding:18px 16px 30px}.columns{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)}}
 @media(max-width:420px){.topbar{padding-left:12px;padding-right:12px}.metrics{gap:6px}.metrics article{padding:9px 7px}.metrics strong{font-size:18px}}
+
+
+/* Contexto multiempresa */
+.company-context select#company-select{
+  display:block;
+  width:100%;
+  max-width:220px;
+  margin-top:4px;
+  padding:7px 28px 7px 9px;
+  border:1px solid rgba(32,48,43,.22);
+  border-radius:8px;
+  background:#fff;
+  color:#20302B;
+  font:600 13px "IBM Plex Sans",sans-serif;
+}
+.company-context select#company-select[hidden]{display:none}
