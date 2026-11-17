@@ -44,3 +44,17 @@
 ## Estado de seguridad
 
 La inspección del JavaScript es estática y no certifica seguridad. No se modificó el frontend en esta etapa para evitar conectar una UI multiempresa a un backend que todavía no aplica aislamiento.
+
+
+## Decisión de identidad de pedidos (definida)
+
+Se separan propietario comercial y actor que registra:
+- Vendedor: `owner_id = auth.uid()` y `created_by = auth.uid()`.
+- Administrador que registra por un vendedor: `owner_id = UUID del vendedor seleccionado` y `created_by = auth.uid()` del administrador.
+- Superadministrador: opera dentro de la empresa seleccionada y conserva el mismo criterio de propietario/actor.
+
+El selector debe obtener UUIDs de membresías activas `seller` en la empresa seleccionada, nunca de nombres libres. RLS/backend debe volver a validar la membresía del propietario en esa empresa. Los vendedores solo leen pedidos donde `owner_id = auth.uid()`; no se concede acceso por `created_by`.
+
+Cambios de esquema necesarios antes de activar este flujo: `orders.company_id` y `orders.created_by`. Para pedidos históricos, `created_by` podrá quedar NULL si el actor original no es verificable. Detalle en `IDENTIDAD-VENDEDORES-Y-PEDIDOS.md`.
+
+**Bloqueo de despliegue:** las tablas de membresía ya existen, pero todavía no tienen políticas RLS que permitan consultarlas desde la aplicación. Las tablas comerciales tampoco tienen aún `company_id`, y `orders` no tiene `created_by`. Por tanto, no se debe activar todavía el nuevo flujo en el cliente ni permitir que el código vuelva silenciosamente al guardado legado.
