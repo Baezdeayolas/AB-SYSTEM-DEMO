@@ -15,26 +15,27 @@ UNION ALL SELECT 'company_memberships', count(*) FROM public.company_memberships
 ORDER BY table_name;
 
 -- B) Forma del JSONB de catálogo: tipo raíz y cantidad de claves, sin mostrar valores.
-SELECT 'catalog_items' AS table_name, jsonb_typeof(payload) AS json_type,
+-- Se cuenta jsonb_object_keys() por fila para compatibilidad.
+SELECT 'catalog_items' AS table_name, jsonb_typeof(c.payload) AS json_type,
        count(*) AS rows_count,
-       min(jsonb_object_length(payload)) FILTER (WHERE jsonb_typeof(payload) = 'object') AS min_object_keys,
-       max(jsonb_object_length(payload)) FILTER (WHERE jsonb_typeof(payload) = 'object') AS max_object_keys
-FROM public.catalog_items GROUP BY jsonb_typeof(payload)
+       min((SELECT count(*) FROM jsonb_object_keys(c.payload))) FILTER (WHERE jsonb_typeof(c.payload) = 'object') AS min_object_keys,
+       max((SELECT count(*) FROM jsonb_object_keys(c.payload))) FILTER (WHERE jsonb_typeof(c.payload) = 'object') AS max_object_keys
+FROM public.catalog_items AS c GROUP BY jsonb_typeof(c.payload)
 UNION ALL
-SELECT 'catalog_clients', jsonb_typeof(payload), count(*),
-       min(jsonb_object_length(payload)) FILTER (WHERE jsonb_typeof(payload) = 'object'),
-       max(jsonb_object_length(payload)) FILTER (WHERE jsonb_typeof(payload) = 'object')
-FROM public.catalog_clients GROUP BY jsonb_typeof(payload)
+SELECT 'catalog_clients', jsonb_typeof(c.payload), count(*),
+       min((SELECT count(*) FROM jsonb_object_keys(c.payload))) FILTER (WHERE jsonb_typeof(c.payload) = 'object'),
+       max((SELECT count(*) FROM jsonb_object_keys(c.payload))) FILTER (WHERE jsonb_typeof(c.payload) = 'object')
+FROM public.catalog_clients AS c GROUP BY jsonb_typeof(c.payload)
 UNION ALL
-SELECT 'inventory_current.items', jsonb_typeof(items), count(*),
-       NULL::integer, NULL::integer
-FROM public.inventory_current GROUP BY jsonb_typeof(items);
+SELECT 'inventory_current.items', jsonb_typeof(i.items), count(*),
+       NULL::bigint, NULL::bigint
+FROM public.inventory_current AS i GROUP BY jsonb_typeof(i.items);
 
 -- C) Forma del payload de pedidos: solo tipo raíz y cantidad de claves.
-SELECT jsonb_typeof(payload) AS json_type, count(*) AS rows_count,
-       min(jsonb_object_length(payload)) FILTER (WHERE jsonb_typeof(payload) = 'object') AS min_object_keys,
-       max(jsonb_object_length(payload)) FILTER (WHERE jsonb_typeof(payload) = 'object') AS max_object_keys
-FROM public.orders GROUP BY jsonb_typeof(payload);
+SELECT jsonb_typeof(o.payload) AS json_type, count(*) AS rows_count,
+       min((SELECT count(*) FROM jsonb_object_keys(o.payload))) FILTER (WHERE jsonb_typeof(o.payload) = 'object') AS min_object_keys,
+       max((SELECT count(*) FROM jsonb_object_keys(o.payload))) FILTER (WHERE jsonb_typeof(o.payload) = 'object') AS max_object_keys
+FROM public.orders AS o GROUP BY jsonb_typeof(o.payload);
 
 -- D) Duplicados de códigos en tablas cuyo código hoy es PK (se espera cero filas).
 SELECT 'catalog_items' AS table_name, code, count(*) AS duplicate_count
