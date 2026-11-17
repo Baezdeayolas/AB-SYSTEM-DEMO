@@ -136,3 +136,6 @@ No basta con que los SQL terminen sin errores. Se exige:
 - SQL en Supabase: no ejecutado.
 - Ko’ẽju producción: sin cambios.
 - Publicación/merge: no realizados.
+
+
+Se preparó también el Lote 6 para funciones, secuencias y default privileges. Este lote mantiene los grants explícitos de service_role, retira EXECUTE de PUBLIC/anon en las funciones de aplicación y endurece los defaults de postgres/supabase_admin. La revocación global del EXECUTE por defecto a PUBLIC para funciones futuras tiene alcance sobre todos los esquemas de esos creadores y debe revisarse antes de aprobarla.
