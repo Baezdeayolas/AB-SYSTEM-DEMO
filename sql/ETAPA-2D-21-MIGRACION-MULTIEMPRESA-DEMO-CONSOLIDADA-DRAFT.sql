@@ -646,7 +646,7 @@ ON public.companies FOR SELECT TO authenticated
 USING (public.ab_has_company_access(id) OR public.ab_is_global_superadmin());
 
 -- Membresias: usuario ve la propia; admin ve membresias de su empresa;
--- superadmin ve todas. Solo superadmin administra roles/membresias en este lote.
+-- superadmin ve todas. El admin gestiona vendedores de su empresa; el superadmin gestiona todos los roles.
 CREATE POLICY memberships_read_scoped
 ON public.company_memberships FOR SELECT TO authenticated
 USING (
