@@ -41,21 +41,13 @@ async function loadData(){
  render();showLogin('Permisos verificados. Cargando pedidos DEMO…');await loadOrders();
 }
 async function loadOrders(){
- showLogin('DIAGNÓSTICO DEMO: iniciando consulta de pedidos…');
- const watchdog=setTimeout(()=>showLogin('DIAGNÓSTICO DEMO: la consulta sigue pendiente después de 5 segundos.'),5000);
- try{
-  showLogin('DIAGNÓSTICO DEMO: enviando consulta a Supabase…');
-  const request=db.from('orders').select('id,legacy_id,legacy_source,payload,updated_at').order('updated_at',{ascending:false}).limit(30);
-  const result=await withTimeout(request,'La carga de pedidos');
-  clearTimeout(watchdog);
-  showLogin('DIAGNÓSTICO DEMO: respuesta recibida; procesando pedidos…');
-  if(result.error)throw result.error;
-  const data=result.data||[];
-  $('metric-orders').textContent=data.length;
-  $('orders').innerHTML=data.map(x=>'<div class="order-row"><div><strong>'+safe(x.payload?.cliente||'Pedido DEMO')+'</strong><small>'+safe(x.payload?.vendedor||'')+' · '+new Date(x.updated_at).toLocaleString('es-PY')+'</small></div><strong>'+money(x.payload?.total)+'</strong></div>').join('')||'<p class="muted">Todavía no hay pedidos guardados.</p>';
-  showLogin('DIAGNÓSTICO DEMO: pedidos procesados; finalizando acceso…');
- }catch(error){clearTimeout(watchdog);throw error;}
+ const {data,error}=await withTimeout(db.from('orders').select('id,legacy_id,legacy_source,payload,updated_at').order('updated_at',{ascending:false}).limit(30),'La carga de pedidos');
+ if(error)throw error;
+ const rows=data||[];
+ $('metric-orders').textContent=rows.length;
+ $('orders').innerHTML=rows.map(x=>'<div class="order-row"><div><strong>'+safe(x.payload?.cliente||'Pedido DEMO')+'</strong><small>'+safe(x.payload?.vendedor||'')+' · '+new Date(x.updated_at).toLocaleString('es-PY')+'</small></div><strong>'+money(x.payload?.total)+'</strong></div>').join('')||'<p class="muted">Todavía no hay pedidos guardados.</p>';
 }
+
 async function activate(sessionUser){
  user=sessionUser;
  showLogin('Acceso autenticado. Verificando perfil DEMO…');
@@ -78,6 +70,17 @@ $('login-form').addEventListener('submit',async e=>{
 });
 $('logout').addEventListener('click',async()=>{await db.auth.signOut();user=null;profile=null;cart=[];showLogin('Sesión cerrada.');});
 $('product-search').addEventListener('input',render);
+
+document.querySelectorAll('.bottom-nav [data-target]').forEach(button=>{
+ button.addEventListener('click',()=>{
+  const target=button.dataset.target;
+  const sections=['dashboard','catalog-panel','order-panel','history-panel'];
+  sections.forEach(id=>{const el=$(id);if(el)el.hidden=id!==target;});
+  document.querySelectorAll('.bottom-nav [data-target]').forEach(b=>b.classList.toggle('active',b===button));
+  window.scrollTo({top:0,behavior:'smooth'});
+ });
+});
+
 $('save-order').addEventListener('click',async()=>{
  const msg=$('order-message');if(!cart.length){msg.textContent='Agregá al menos un producto.';return;}
  const seller=$('seller').value,clientCode=$('client').value;if(!seller||!clientCode){msg.textContent='Seleccioná vendedor y cliente.';return;}
