@@ -119,6 +119,15 @@ No enviar secretos. Confirmar:
 - ¿Qué tablas están incluidas en `supabase_realtime`?
 - ¿Hay clientes externos que utilicen service_role para escribir catálogo, stock, clientes, importaciones o pedidos?
 
+## 6.1 Estado del respaldo confirmado por el usuario
+
+El usuario informó que actualmente no dispone de un backup de Supabase DEMO. Por tanto:
+- **Bloqueo de seguridad abierto:** no ejecutar DDL/DML ni cambios de RLS/grants sobre el proyecto activo.
+- Próxima tarea: el propietario/administrador del proyecto debe comprobar si el panel ofrece copias automáticas y, si no hay una copia utilizable, generar una exportación lógica fuera del proyecto.
+- Una exportación no se considera respaldo validado hasta comprobar que puede restaurarse en un proyecto separado no productivo.
+- El backup de la base de datos no incluye los objetos binarios almacenados mediante Storage API; esos archivos requieren exportación separada.
+- No compartir contraseñas, tokens, connection strings ni claves en el chat.
+
 ## 7. Estado de ejecución
 
 Este documento organiza correcciones y bloqueos. No se ejecutó SQL, no se cambió Supabase, no se importó Excel, no se modificó código de aplicación, no se tocó producción, no se abrió PR, no se fusionó ni publicó.
