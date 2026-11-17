@@ -41,3 +41,15 @@ La arquitectura objetivo está documentada en `ARQUITECTURA-MULTIEMPRESA.md`. La
 ## Datos DEMO
 
 Los catálogos de Supabase DEMO (`catalog_items` y `catalog_clients`) reemplazan los datos ficticios de respaldo al iniciar sesión, siempre que las consultas y sus columnas coincidan con el esquema configurado. Este entorno debe utilizar exclusivamente datos sintéticos.
+
+
+## Adaptación multiempresa en curso
+
+La rama `work/adaptacion-multiempresa-v1` incorpora el primer tramo de adaptación:
+- Contexto de empresa y selector cuando el usuario tiene varias empresas.
+- Resolución de empresas desde `company_memberships` y del rol global mediante RPC.
+- Lecturas de catálogo, clientes, vendedores y pedidos filtradas por `company_id`.
+- Pedidos nuevos guardados con `company_id`; crear pedidos no modifica `inventory_current`.
+- Borrador de migración SQL y políticas RLS en `supabase/migrations/20261117_multiempresa_scope.sql`.
+
+**No aplicar todavía la migración ni publicar esta rama.** Antes se debe revisar el inventario de claves foráneas/índices y probar la migración en una copia aislada. Esta etapa tampoco completa todavía la paridad funcional con Ko'eju (PDF, edición/reutilización de pedidos, importación Excel y administración de usuarios).
