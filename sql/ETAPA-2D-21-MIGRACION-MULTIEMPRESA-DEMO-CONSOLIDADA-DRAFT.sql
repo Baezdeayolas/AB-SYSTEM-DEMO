@@ -1275,9 +1275,11 @@ BEGIN
     RAISE EXCEPTION 'El identificador de importacion es obligatorio.';
   END IF;
 
-  IF CASE WHEN jsonb_typeof(p_rows) = 'array'
-          THEN jsonb_array_length(p_rows)
-          ELSE 0 END = 0 THEN
+  IF jsonb_typeof(p_rows) IS DISTINCT FROM 'array' THEN
+    RAISE EXCEPTION 'Las filas de importacion deben enviarse como un array JSON.';
+  END IF;
+
+  IF jsonb_array_length(p_rows) = 0 THEN
     RAISE EXCEPTION 'El archivo no contiene filas para importar.';
   END IF;
 
