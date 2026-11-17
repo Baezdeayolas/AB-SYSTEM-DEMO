@@ -32,7 +32,7 @@ BEGIN
       RAISE EXCEPTION 'ABORTADO: falta el rol creador %.', v_role;
     END IF;
     IF NOT COALESCE(v_is_super, false)
-       AND NOT pg_has_role(current_user, v_role, 'MEMBER') THEN
+       AND NOT pg_has_role(current_user, v_role::name, 'MEMBER') THEN
       RAISE EXCEPTION 'ABORTADO: % no puede modificar default privileges de %.', current_user, v_role;
     END IF;
   END LOOP;
