@@ -133,3 +133,40 @@ El ejemplo real del Excel usa encabezados `cod_articulo`, `stock_central`, `stoc
 **Riesgo/bloqueo actualizado:** existe una doble representación del inventario: el flujo de catálogo publica campos `sc`/`sd` dentro de `catalog_items.payload`, mientras que la importación de stock y precios actualiza `inventory_current.items` con `central`/`cde`/`p1`/`p2`/`p3`. Antes de multiempresa se debe decidir y probar una única fuente canónica por empresa y depósito, y definir una compatibilidad transitoria para pantallas y pedidos. No sumar depósitos ni borrar campos legacy durante la transición.
 
 **Siguiente inspección:** revisar `normalizeStockHeader()`, `parseStockNumber()`, `loadSharedInventory()` y todos los consumidores de `inventory_current.items`/`sc`/`sd`; verificar si la importación de inventario también actualiza catálogo/precios o si son flujos separados. No modificar producción ni ejecutar SQL.
+
+## 10. Revisión adicional de consumidores y normalización (solo lectura)
+
+Se inspeccionaron `app.js` y `cloud-sync.js` del repositorio de producción únicamente como referencia funcional. No se modificó ese repositorio.
+
+### 10.1 Normalización de encabezados
+
+`normalizeStockHeader()` aplica normalización Unicode NFD, elimina diacríticos, convierte a mayúsculas y elimina todo carácter que no sea A-Z o 0-9. Por ello, encabezados como `cod_articulo`, `stock_central` y `precio_1` se convierten respectivamente en `CODARTICULO`, `STOCKCENTRAL` y `PRECIO1`.
+
+**Hallazgo:** el importador actual busca `CODARTICULO`, `CENTRAL`, `CDE` y nombres de precios, pero el Excel real de muestra tiene `STOCKCENTRAL` y `STOCKCDE`. No se encontró alias para esos encabezados en el parser de inventario ni en el parser de catálogo. El Excel real podría no ser aceptado tal cual por la versión actual, aunque el ejemplo del usuario y los nombres de columna parecen equivalentes semánticamente. Debe probarse con el archivo real completo o un Excel anonimizado antes de cambiar aliases.
+
+### 10.2 Parseo numérico
+
+`parseStockNumber()` acepta valores numéricos y, para texto, elimina puntos y sustituye coma por punto decimal; valores no numéricos terminan como cero. Esto debe probarse con los formatos reales de cantidad y precio del Excel, especialmente si usa puntos decimales, separadores de miles o celdas vacías. No asumir que todo valor inválido debe convertirse a cero sin confirmar la regla comercial.
+
+### 10.3 Carga y consumidores de inventario
+
+- `loadSharedInventory()` consulta `inventory_current` para `id=1` y aplica cada fila a los productos en memoria mediante coincidencia `row.code` con el código del catálogo.
+- La carga sobrescribe en memoria `item.sc`, `item.sd`, `item.p1`, `item.p2` e `item.p3` con los campos `central`, `cde`, `p1`, `p2` y `p3` del inventario compartido.
+- El panel de stock (`refreshStockSnapshotFromCatalog()` y `renderStockPanel()`) consume `sc` como CENTRAL y `sd` como CDE; muestra ambos por separado y ofrece filtros separados.
+- Las tarjetas de producto también muestran CENTRAL y CDE por separado.
+- Sin embargo, al agregar un producto a un pedido, `app.js` calcula `disponible = sc + sd` y compara la cantidad solicitada contra el total combinado. La confirmación al usuario también comunica que el total está disponible entre ambos depósitos.
+- La selección de precio usa `p1`, `p2` o `p3` según la lista seleccionada.
+
+### 10.4 Consecuencia para el diseño multiempresa
+
+El usuario confirmó que los saldos Central y CDE deben mantenerse separados. La interfaz ya los muestra separados, pero la validación de cantidad del pedido actualmente los suma. No debe asumirse que la separación de inventario implica necesariamente reservar desde un depósito elegido: se requiere definir la regla de venta/compromiso de stock (elegir depósito, permitir surtido desde cualquiera, o mantener validación consolidada sin perder saldos separados).
+
+### 10.5 Bloqueos técnicos confirmados
+
+1. Los nombres de encabezados del Excel real (`STOCKCENTRAL`, `STOCKCDE`) no coinciden literalmente con los alias actuales (`CENTRAL`, `CDE`) después de normalizar; hace falta compatibilidad explícita y prueba.
+2. El inventario se persiste en `inventory_current` como un único registro compartido `id=1`, no segmentado por empresa.
+3. La UI muestra saldos separados, pero la comprobación de cantidad para pedidos suma ambos depósitos.
+4. El catálogo maestro también puede almacenar `sc`/`sd` y precios, pero la carga de inventario compartido los sobrescribe en memoria; hay dos representaciones que deben unificarse.
+5. `cod_fabrica`, `envases`, `master` e `inner` no se conservan en el objeto normalizado de catálogo actual.
+
+**Próximo paso:** definir con el usuario la regla de asignación de stock al pedido. Luego documentar contrato de importación para los encabezados reales y preparar un plan de migración por empresa/depósito, todavía sin SQL mutante ni cambios de frontend.
