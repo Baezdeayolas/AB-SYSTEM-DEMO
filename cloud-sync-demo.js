@@ -42,6 +42,8 @@ async function loadCompanyContext(u){
 }
 async function switchCompany(companyId){
  const next=companies.find(c=>c.id===companyId);if(!next||next.id===activeCompany?.id)return;
+ const previous=activeCompany,select=$('company-select');
+ select.disabled=true;
  activeCompany=next;profile={role:isGlobal?'company_admin':(next.memberRole||'seller')};
  cart=[];orders=[];items=[];clients=[];sellerRows=[];
  $('cliente-input').value='';$('cliente-input').dataset.code='';$('cliente-suggestions').classList.remove('open');$('vendedor-input').value='';
@@ -49,8 +51,15 @@ async function switchCompany(companyId){
  $('company-role').textContent=isGlobal?'Superadministrador global':(profile.role==='company_admin'?'Administrador de empresa':'Vendedor');
  $('dashboard-date').textContent='Actividad de hoy · '+activeCompany.name;
  $('dashboard-scope').textContent='Información de '+activeCompany.name+'.';
- try{await loadData();$('cloud-status-slot').textContent='Conectado · '+activeCompany.name;}
- catch(e){$('cloud-status-slot').textContent='Error: '+e.message;}
+ try{
+  await loadData();
+  $('cloud-status-slot').textContent='Conectado · '+activeCompany.name;
+ }catch(e){
+  activeCompany=previous;profile={role:isGlobal?'company_admin':(previous.memberRole||'seller')};select.value=previous.id;
+  cart=[];orders=[];items=[];clients=[];sellerRows=[];
+  $('cloud-status-slot').textContent='No se pudo cambiar de empresa: '+e.message;
+  try{await loadData();}catch(reloadError){$('cloud-status-slot').textContent='Error al recuperar '+previous.name+': '+reloadError.message;}
+ }finally{select.disabled=false;}
 }
 function total(){return cart.reduce((s,x)=>s+x['p'+tier]*x.qty,0);}
 function render(){
@@ -65,7 +74,7 @@ function render(){
  $('order-empty').hidden=cart.length>0;$('tab-order-count').textContent=cart.reduce((s,x)=>s+x.qty,0);
  $('dashboard-units').textContent=items.length;$('dashboard-sales').textContent=clients.length;
  $('dashboard-orders').textContent=orders.length;$('dashboard-pending').textContent=orders.filter(o=>o.payload?.estado!=='confirmado').length;
- $('archive-summary-count').textContent=orders.length+' pedidos';$('tab-archive-count').textContent=orders.length;
+ $('archive-summary-count').textContent=orders.length+' pedidos';$('archive-summary-value').textContent=money(orders.reduce((sum,o)=>sum+Number(o.payload?.total||0),0));$('tab-archive-count').textContent=orders.length;
  $('archive-list').innerHTML=orders.map(o=>'<article class="order-card"><div class="order-top"><div><strong>'+safe(o.payload?.cliente||'Pedido DEMO')+'</strong><small>'+safe(o.payload?.vendedor||'')+' · '+new Date(o.updated_at).toLocaleString('es-PY')+'</small></div><strong>'+money(o.payload?.total)+'</strong></div></article>').join('');
  $('archive-empty').hidden=orders.length>0;
  $('stock-list').innerHTML=items.map(x=>'<article class="order-card"><strong>'+safe(x.d)+'</strong><small>'+safe(x.c)+' · Stock: '+Number(x.sc||0)+'</small></article>').join('');
@@ -115,6 +124,7 @@ async function activate(u){
 $('login-form').addEventListener('submit',async e=>{e.preventDefault();const b=$('login-form').querySelector('button');b.disabled=true;gate('Conectando con Supabase DEMO…');try{const r=await timeout(db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value}),'El acceso');if(r.error)throw r.error;await activate(r.data.user);}catch(err){await db.auth.signOut();gate('No se pudo ingresar: '+(err.message||'Error desconocido'));}finally{b.disabled=false;}});
 $('logout').onclick=async()=>{await db.auth.signOut();user=null;profile=null;activeCompany=null;companies=[];isGlobal=false;items=[];clients=[];sellerRows=[];orders=[];cart=[];gate('Sesión cerrada.');};
 document.querySelectorAll('.tabs [data-panel]').forEach(b=>b.addEventListener('click',()=>showPanel(b.dataset.panel)));
+$('company-select').addEventListener('change',e=>switchCompany(e.target.value));
 $('search-input').addEventListener('input',render);$('discount-input').addEventListener('input',render);
 document.querySelectorAll('[data-tier]').forEach(b=>b.onclick=()=>{tier=Number(b.dataset.tier);document.querySelectorAll('[data-tier]').forEach(x=>x.classList.toggle('active',x===b));render();});
 document.querySelectorAll('[data-estado]').forEach(b=>b.onclick=()=>{estado=b.dataset.estado;document.querySelectorAll('[data-estado]').forEach(x=>x.classList.toggle('active',x===b));});
@@ -122,7 +132,10 @@ document.querySelectorAll('[data-condicion]').forEach(b=>b.onclick=()=>{condicio
 $('nuevo-cliente-toggle').onclick=()=>{$('nuevo-cliente-panel').hidden=!$('nuevo-cliente-panel').hidden;};
 $('cliente-input').addEventListener('input',()=>{const q=$('cliente-input').value.toLowerCase();const matches=clients.filter(c=>[c.c,c.n].some(v=>String(v||'').toLowerCase().includes(q))).slice(0,8);$('cliente-suggestions').innerHTML=matches.map(c=>'<button type="button" class="cliente-suggestion" data-client="'+safe(c.c)+'"><span class="cs-text"><span class="cs-name">'+safe(c.n)+'</span><span class="cs-meta">'+safe(c.c)+'</span></span></button>').join('');$('cliente-suggestions').classList.toggle('open',matches.length>0);$('cliente-suggestions').querySelectorAll('[data-client]').forEach(b=>b.onclick=()=>{const c=clients.find(x=>String(x.c)===b.dataset.client);$('cliente-input').value=c.n;$('cliente-input').dataset.code=c.c;$('cliente-suggestions').classList.remove('open');});});
 $('save-order').onclick=async()=>{
+ const saveButton=$('save-order');if(saveButton.disabled)return;
+ saveButton.disabled=true;
  const msg=$('order-message');const seller=$('vendedor-input').value,clientCode=$('cliente-input').dataset.code;
+ try{
  if(!cart.length){msg.textContent='Agregá al menos un artículo.';return;}
  if(!seller||!clientCode){msg.textContent='Seleccioná vendedor y cliente de la lista.';return;}
  const sellerMatches=sellerRows.filter(x=>x.seller_label===seller);
@@ -134,6 +147,8 @@ $('save-order').onclick=async()=>{
  const {error}=await db.from('orders').insert({company_id:activeCompany.id,owner_id:ownerId,created_by:user.id,legacy_id:id,legacy_source:'archive',payload,updated_at:now});
  if(error){msg.textContent='No se pudo guardar el pedido: '+error.message;return;}
  cart=[];$('discount-input').value='0';msg.textContent='Pedido guardado correctamente en '+activeCompany.name+'.';await loadOrders();showPanel('panel-archive');
+ }catch(e){msg.textContent='No se pudo completar el guardado: '+(e.message||'Error desconocido');}
+ finally{saveButton.disabled=false;}
 };
 $('btn-clear').onclick=()=>{cart=[];$('discount-input').value='0';$('cliente-input').value='';$('cliente-input').dataset.code='';render();showPanel('panel-search');};
 $('btn-pdf').onclick=()=>alert('La generación y el compartir PDF se integrarán en la siguiente etapa de funciones DEMO.');
