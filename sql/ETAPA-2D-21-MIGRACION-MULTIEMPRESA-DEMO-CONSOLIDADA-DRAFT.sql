@@ -14,7 +14,7 @@
 -- 3) Los pedidos y asignaciones corresponden a vendedores activos de esa empresa.
 -- 4) inventory_current conserva una fila id=1 con items=[].
 -- 5) Los valores payload.sc son numericos/no negativos.
--- 6) El ejecutor puede modificar default privileges de postgres y supabase_admin.
+-- 6) El ejecutor modifica default privileges solamente del rol postgres.
 --
 -- REGLAS DE NEGOCIO:
 -- - Pedidos no facturan, no reservan y no descuentan stock.
