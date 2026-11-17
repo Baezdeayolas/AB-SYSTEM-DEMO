@@ -12,9 +12,9 @@ const timeout=(p,label)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej
 function gate(msg){$('login').hidden=false;$('app').hidden=true;$('login-message').textContent=msg||'Acceso protegido';}
 function showPanel(id){document.querySelectorAll('main .panel').forEach(p=>p.classList.toggle('active',p.id===id));document.querySelectorAll('.tabs [data-panel]').forEach(b=>b.classList.toggle('active',b.dataset.panel===id));}
 async function loadCompanyContext(u){
- const {data:gr,error:ge}=await timeout(db.from('global_roles').select('role').eq('user_id',u.id).eq('role','superadmin_global'),'La consulta de permisos globales');
+ const {data:gr,error:ge}=await timeout(db.rpc('ab_is_global_superadmin'),'La consulta de permisos globales');
  if(ge)throw ge;
- isGlobal=!!(gr||[]).length;
+ isGlobal=gr===true;
  let memberships=[];
  if(isGlobal){
   const {data,error}=await timeout(db.from('companies').select('id,code,name,status').eq('status','active').order('name'),'La lista de empresas');
@@ -55,8 +55,8 @@ async function switchCompany(companyId){
 function total(){return cart.reduce((s,x)=>s+x['p'+tier]*x.qty,0);}
 function render(){
  const q=$('search-input').value.trim().toLowerCase(),filtered=items.filter(x=>[x.c,x.b,x.d].some(v=>String(v||'').toLowerCase().includes(q)));
- $('result-count').textContent=filtered.length+' productos DEMO';
- $('item-list').innerHTML=filtered.map(x=>'<article class="item-card"><div class="item-top"><span class="item-code">'+safe(x.c)+'</span><span class="item-stock">Stock DEMO '+Number(x.sc||0)+'</span></div><div class="item-desc">'+safe(x.d)+'</div><div class="item-bottom"><strong class="item-price">'+money(x['p'+tier])+'</strong><div class="item-actions"><input class="qty-input" type="number" min="1" value="1" aria-label="Cantidad" data-qty="'+safe(x.c)+'"><button class="add-btn" data-add="'+safe(x.c)+'">Agregar</button></div></div></article>').join('')||'<div class="empty-state">No se encontraron productos.</div>';
+ $('result-count').textContent=filtered.length+' productos · '+(activeCompany?.name||'empresa');
+ $('item-list').innerHTML=filtered.map(x=>'<article class="item-card"><div class="item-top"><span class="item-code">'+safe(x.c)+'</span><span class="item-stock">Stock '+Number(x.sc||0)+'</span></div><div class="item-desc">'+safe(x.d)+'</div><div class="item-bottom"><strong class="item-price">'+money(x['p'+tier])+'</strong><div class="item-actions"><input class="qty-input" type="number" min="1" value="1" aria-label="Cantidad" data-qty="'+safe(x.c)+'"><button class="add-btn" data-add="'+safe(x.c)+'">Agregar</button></div></div></article>').join('')||'<div class="empty-state">No se encontraron productos.</div>';
  $('item-list').querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const code=b.dataset.add,qty=Math.max(1,Number($('item-list').querySelector('[data-qty="'+CSS.escape(code)+'"]').value)||1);add(code,qty);});
  $('order-list').innerHTML=cart.map((x,i)=>'<article class="order-card"><div class="order-top"><div class="order-code-desc"><strong>'+safe(x.d)+'</strong><small>'+safe(x.c)+' · '+x.qty+' unidad(es)</small></div><button class="order-remove" data-remove="'+i+'" aria-label="Quitar">×</button></div><div class="order-bottom"><span>'+money(x['p'+tier])+' c/u</span><strong class="line-subtotal">'+money(x['p'+tier]*x.qty)+'</strong></div></article>').join('');
  $('order-list').querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{cart.splice(Number(b.dataset.remove),1);render();});
@@ -68,7 +68,7 @@ function render(){
  $('archive-summary-count').textContent=orders.length+' pedidos';$('tab-archive-count').textContent=orders.length;
  $('archive-list').innerHTML=orders.map(o=>'<article class="order-card"><div class="order-top"><div><strong>'+safe(o.payload?.cliente||'Pedido DEMO')+'</strong><small>'+safe(o.payload?.vendedor||'')+' · '+new Date(o.updated_at).toLocaleString('es-PY')+'</small></div><strong>'+money(o.payload?.total)+'</strong></div></article>').join('');
  $('archive-empty').hidden=orders.length>0;
- $('stock-list').innerHTML=items.map(x=>'<article class="order-card"><strong>'+safe(x.d)+'</strong><small>'+safe(x.c)+' · Stock ficticio: '+Number(x.sc||0)+'</small></article>').join('');
+ $('stock-list').innerHTML=items.map(x=>'<article class="order-card"><strong>'+safe(x.d)+'</strong><small>'+safe(x.c)+' · Stock: '+Number(x.sc||0)+'</small></article>').join('');
 }
 function add(code,qty){const item=items.find(x=>String(x.c)===String(code));if(!item)return;const row=cart.find(x=>x.c===item.c);if(row)row.qty+=qty;else cart.push({...item,qty});render();}
 async function loadData(){
@@ -80,7 +80,7 @@ async function loadData(){
  if(ir.error)throw ir.error;if(cr.error)throw cr.error;
  items=(ir.data||[]).map(x=>x.payload);
  clients=(cr.data||[]).map(x=>x.payload);
- if(activeCompany.code==='DEMO'){
+ if(String(activeCompany.code||'').toUpperCase()==='DEMO'){
   if(!items.length)items=[...window.DEMO_ITEMS];
   if(!clients.length)clients=[...window.DEMO_CLIENTS];
  }
