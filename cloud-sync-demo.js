@@ -103,7 +103,7 @@ async function loadData(){
  const [catalogRows,clientRows,balanceRows]=await Promise.all([
   fetchAllRows(()=>db.from('catalog_items').select('code,payload').eq('company_id',activeCompany.id).order('code'),'El catálogo'),
   fetchAllRows(()=>db.from('catalog_clients').select('code,payload').eq('company_id',activeCompany.id).order('code'),'Los clientes'),
-  fetchAllRows(()=>db.from('inventory_location_balances').select('product_code,location_code,quantity').eq('company_id',activeCompany.id).order('product_code'),'Los saldos CENTRAL/CDE')
+  fetchAllRows(()=>db.from('inventory_location_balances').select('product_code,location_code,quantity').eq('company_id',activeCompany.id).order('product_code').order('location_code'),'Los saldos CENTRAL/CDE')
  ]);
  const stockByCode=new Map();
  balanceRows.forEach(x=>{const k=String(x.product_code),v=stockByCode.get(k)||{central:0,cde:0};if(x.location_code==='CENTRAL')v.central=Number(x.quantity)||0;if(x.location_code==='CDE')v.cde=Number(x.quantity)||0;stockByCode.set(k,v);});
