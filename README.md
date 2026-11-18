@@ -1,83 +1,47 @@
-# AB SYSTEM DEMO
+# AB SYSTEM — versión candidata DEMO
 
-Entorno independiente para construir y validar la plataforma común AB SYSTEM antes de cualquier cambio en producción.
+Entorno independiente de desarrollo multiempresa. No es producción.
 
-## Componentes actuales en la rama de trabajo
+## Rama y destino
+- Repositorio: `Baezdeayolas/AB-SYSTEM-DEMO`
+- Rama: `work/adaptacion-multiempresa-v1`
+- Supabase DEMO: `https://druugcvqxxanhtdkqnjd.supabase.co`
+- Ko’ẽju histórico y su Supabase permanecen separados e intactos.
 
-- `index.html`: estructura DEMO con acceso, cabecera comercial, paneles de búsqueda, pedido, archivo, resumen, stock y administración.
-- `cloud-sync-demo.js`: autenticación Supabase DEMO, lectura de catálogo/clientes, asignaciones de vendedor y guardado/consulta básica de pedidos.
-- `data-demo.js`: catálogo y clientes ficticios de respaldo.
-- `style.css`: estilos de referencia y adaptaciones.
-- `service-worker.js`: caché independiente de DEMO.
-
-## Estado de la versión candidata
-
-La rama `work/adaptacion-multiempresa-v1` contiene la base multiempresa y una primera integración funcional de:
-- Acceso Supabase DEMO y resolución de empresas/membresías.
+## Funciones incorporadas
+- Inicio de sesión Supabase y contexto de empresa según membresía.
 - Catálogo, clientes, asignaciones y pedidos filtrados por empresa.
-- Pedidos guardados con `company_id`, `owner_id` y `created_by`; guardar un pedido no descuenta ni reserva stock.
-- Inventario separado por depósitos CENTRAL y CDE mediante tablas nuevas.
-- Previsualización e importación del Excel habitual, con validación de códigos duplicados, descripción, cantidades y listas de precios.
-- Conservación de productos ausentes del archivo.
-- Comprobante imprimible desde el navegador para guardar como PDF.
+- Pedidos con empresa, vendedor propietario y usuario creador.
+- Guardar un pedido no factura, no reserva y no descuenta existencias.
+- Stock por depósito CENTRAL y CDE.
+- Importación Excel con vista previa, detección de duplicados y validación de código, descripción, existencias y tres listas de precios.
+- Los productos nuevos se incorporan; los ausentes del archivo no se eliminan.
+- Comprobante imprimible que permite guardar como PDF desde el navegador.
 
-**Antes de probar esta versión**, ejecutar en Supabase AB-SYSTEM-DEMO el script `sql/ETAPA-2D-22-INVENTARIO-CENTRAL-CDE-IMPORTACION-EXCEL.sql`. No ejecutarlo en Ko’ẽju histórico. La migración conserva intactas las tablas legacy de inventario y crea tablas separadas para los depósitos, inicializadas en cero; la importación del Excel debe cargar los saldos reales de CENTRAL y CDE.
+## Instalación de la versión candidata
+Antes de abrir la aplicación, ejecutar **solo en AB-SYSTEM-DEMO**:
 
-No se ha desplegado ni publicado esta rama. La versión sigue requiriendo pruebas funcionales con cuentas de cada rol y una importación de prueba controlada antes de considerarse apta para producción.
+`sql/ETAPA-2D-22-INVENTARIO-CENTRAL-CDE-IMPORTACION-EXCEL.sql`
 
-## Arquitectura multiempresa
+Este lote crea las tablas de saldos por depósito, el historial de movimientos y las RPC de importación. Conserva las tablas legacy de inventario sin reasignar sus cantidades a CENTRAL o CDE. Después de ejecutar el lote, un administrador debe importar el Excel vigente para cargar los saldos reales de ambos depósitos.
 
-La arquitectura objetivo está documentada en `ARQUITECTURA-MULTIEMPRESA.md`. La matriz visual y su estado se describen en `MATRIZ-AB-SYSTEM.md`. El selector de empresa y los roles globales todavía no están implementados.
+La aplicación usa SheetJS desde CDN para leer archivos XLSX/XLS. Requiere conexión a internet para cargar esa biblioteca y Supabase.
 
-## Seguridad y límites
+## Reglas de negocio
+- No descontar ni reservar stock al guardar pedidos.
+- No borrar ni poner a cero productos ausentes del Excel.
+- CENTRAL y CDE son saldos independientes.
+- Los precios 1, 2 y 3 se guardan por producto y empresa.
+- Un precio cero es válido.
+- Los datos opcionales vacíos en un artículo existente no deben borrar valores anteriores.
+- Los pedidos históricos no se recalculan al importar un catálogo nuevo.
 
-- No importar clientes, vendedores, precios, pedidos ni credenciales reales de Ko'eju.
-- No copiar scripts de producción ni secretos al frontend.
-- No modificar el repositorio ni Supabase de producción.
-- No ejecutar migraciones en Supabase DEMO hasta contrastar el esquema existente.
-- Mantener RLS y validar los permisos en backend; los filtros del navegador no son una barrera de seguridad.
-- No fusionar ni publicar esta rama hasta completar las pruebas de autenticación, permisos, aislamiento entre empresas y comparación visual.
+## Pendiente antes de producción
+- Ejecutar el lote SQL 2D-22 en AB-SYSTEM-DEMO.
+- Importar el libro vigente y conciliar conteos y saldos CENTRAL/CDE.
+- Probar inicio de sesión y aislamiento con cuentas reales de superadministrador, administrador, vendedor y usuario sin membresía.
+- Probar cambio de empresa, creación/lectura de pedidos, archivo, stock e importación desde Android y escritorio.
+- Verificar despliegue en un destino de prueba y confirmar que no apunta a Ko’ẽju histórico.
+- El escáner de códigos de barras y la administración completa de altas de usuarios/empresas no forman parte de esta versión candidata.
 
-## Datos DEMO
-
-Los catálogos de Supabase DEMO (`catalog_items` y `catalog_clients`) reemplazan los datos ficticios de respaldo al iniciar sesión, siempre que las consultas y sus columnas coincidan con el esquema configurado. Este entorno debe utilizar exclusivamente datos sintéticos.
-
-
-## Adaptación multiempresa en curso
-
-La rama `work/adaptacion-multiempresa-v1` incorpora el primer tramo de adaptación:
-- Contexto de empresa y selector funcional cuando el usuario tiene varias empresas.
-- Resolución de empresas desde `company_memberships` y del rol global mediante RPC.
-- Lecturas de catálogo, clientes, vendedores y pedidos filtradas por `company_id`.
-- Cambio de empresa conectado a la recarga del contexto; si falla, se intenta recuperar la empresa anterior.
-- Bloqueo de doble envío de pedidos y cálculo del total mostrado en el archivo.
-- Pedidos nuevos guardados con `company_id`; crear pedidos no modifica inventario ni reserva stock.
-- Lote 5 preparado: saldos por empresa, historial de movimientos y RPC de importación que conserva artículos ausentes del archivo.
-- Contrato frontend preparado para el esquema empresarial; la migración SQL queda pendiente de revisión del preflight y de una restauración de respaldo.
-
-**No aplicar todavía la migración ni publicar esta rama.** Antes se debe revisar el inventario de claves foráneas/índices y probar la migración en una copia aislada. Esta etapa tampoco completa todavía la paridad funcional con Ko'eju (PDF, edición/reutilización de pedidos, importación Excel y administración de usuarios).
-
-
-### Bloqueos antes de probar o publicar esta adaptación
-
-- El frontend ya consulta `company_id` en tablas comerciales y `created_by` al guardar pedidos; esas columnas todavía no están confirmadas en el esquema activo.
-- El guardado identifica al vendedor mediante la asignación de la empresa: `owner_id` es el usuario vendedor y `created_by` es quien creó el pedido.
-- La migración SQL se consolidó en `sql/ETAPA-2D-21-MIGRACION-MULTIEMPRESA-DEMO-CONSOLIDADA-DRAFT.sql`; termina en ROLLBACK y no se ha ejecutado.
-- El respaldo AB-SYSTEM-DEMO ya tuvo una restauración local de estructura y datos públicos comprobada. Falta ensayar el SQL consolidado contra el proyecto DEMO y probar RLS con JWT reales.
-- La adaptación funcional completa de Ko'eju (PDF, edición/reutilización de pedidos, importación Excel y administración) se realizará después de validar esta base multiempresa.
-
-
-### Corrección de la iteración actual
-
-Se corrigió un defecto funcional: el selector de empresa se mostraba, pero no tenía conectado el evento que cambiaba el contexto. Ahora el cambio activa la recarga de catálogo, clientes, vendedores y pedidos; si la carga falla, se restaura el contexto anterior. También se evita el doble envío de pedidos y se completa el total del archivo.
-
-**Validación pendiente:** no se ejecutaron pruebas de navegador ni pruebas con JWT/RLS. La aplicación sigue sin ser compatible con el esquema Supabase activo hasta que se apruebe y ejecute una migración verificada que añada y proteja las relaciones empresariales. No publicar ni probar contra datos reales todavía.
-
-**Identidad de empresas pendiente de confirmar:** la empresa existente en DEMO figura con código `KOEJU`. La empresa `DEMO` para pruebas de prospectos debe ser una empresa separada; no cambiar el código ni reasignar los registros existentes por suposición.
-
-
-## Cierre de funcionalidades pendientes
-- El botón de comprobante genera una vista imprimible; desde el navegador se puede elegir Guardar como PDF.
-- El importador usa SheetJS desde CDN y reconoce los encabezados reales del libro (Cód.Artículo, CENTRAL, CDE y listas 1, 2, 3) o sus alias documentados.
-- El escáner de códigos de barras continúa pendiente y no se presenta como función disponible.
-- La administración de empresas y altas de usuarios no se considera terminada en esta versión candidata.
+No se ha creado PR, no se fusionó la rama y no se desplegó ni publicó esta versión.
