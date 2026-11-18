@@ -57,12 +57,15 @@ WHERE schemaname = 'public'
   )
 ORDER BY tablename, indexname;
 
--- 4) Empresas actuales: solo identificador técnico, código, nombre y estado.
--- Si alguna de estas columnas no existe, usar el resultado de la consulta 1
--- y adaptar esta consulta antes de ejecutarla.
-SELECT id, code, name, status
-FROM public.companies
-ORDER BY code;
+-- 4) Empresas actuales: lectura tolerante a diferencias de columnas.
+-- to_jsonb evita que la consulta falle si name/status aún no existen.
+SELECT
+  to_jsonb(c)->>'id' AS company_id,
+  to_jsonb(c)->>'code' AS company_code,
+  to_jsonb(c)->>'name' AS company_name,
+  to_jsonb(c)->>'status' AS company_status
+FROM public.companies c
+ORDER BY to_jsonb(c)->>'code';
 
 -- 5) Membresías resumidas, sin nombres, correos ni identificadores de usuarios.
 SELECT c.code AS company_code, m.role, m.status, count(*) AS memberships
