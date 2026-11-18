@@ -118,8 +118,9 @@ async function saveStockBalance(code,location,button){
   const result=await timeout(db.rpc('ab_set_inventory_location_balance',{p_company_id:activeCompany.id,p_product_code:String(code),p_location_code:location,p_quantity:quantity,p_movement_type:'adjustment',p_reason:reason,p_source_ref:'manual-'+crypto.randomUUID()}),'La actualización de stock');
   if(result.error)throw result.error;
   if(location==='CENTRAL')item.sc=quantity;else item.sd=quantity;
-  message.textContent='Stock '+location+' actualizado. Movimiento registrado.';
-  renderStock();render();
+  render();
+  const refreshedMessage=$('stock-list').querySelector('[data-stock-message="'+CSS.escape(code)+'"]');
+  if(refreshedMessage)refreshedMessage.textContent='Stock '+location+' actualizado. Movimiento registrado.';
  }catch(e){message.textContent='No se pudo actualizar: '+(e.message||'Error desconocido');button.disabled=false;}
 }
 async function loadData(){
