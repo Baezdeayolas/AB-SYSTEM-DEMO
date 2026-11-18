@@ -328,12 +328,12 @@ $('excel-import-confirm').addEventListener('click',async()=>{if(!pendingImport||
    if(candidate.code!==undefined&&candidate.name!==undefined){headerIndex=i;col=candidate;break;}
   }
   if(headerIndex<0)throw new Error('No se identificaron juntos los encabezados de código y nombre del cliente. La planilla original se debe validar para ajustar sus títulos exactos.');
-  const seen=new Map(),rows=[];
+  const seen=new Map(),rows=[],skippedRows=[];
   for(let i=headerIndex+1;i<matrix.length;i++){
    const r=matrix[i];if(!r||r.every(v=>v===null||String(v).trim()===''))continue;
    const line=i+1,code=String(r[col.code]??'').trim(),name=String(r[col.name]??'').trim();
    if(!code&&!name)continue;
-   if(!code||!name)throw new Error('Fila '+line+': código y nombre del cliente son obligatorios.');
+   if(!code||!name){skippedRows.push({line,code,name});continue;}
    if(seen.has(code))throw new Error('Código de cliente duplicado '+code+' en filas '+seen.get(code)+' y '+line+'.');
    seen.set(code,line);
    const payload={c:code,n:name};
@@ -342,8 +342,8 @@ $('excel-import-confirm').addEventListener('click',async()=>{if(!pendingImport||
    }
    rows.push({code,payload});
   }
-  if(!rows.length)throw new Error('No se encontraron clientes para importar.');
-  return {rows,sheetName,headerRow:headerIndex+1};
+  if(!rows.length)throw new Error('No se encontraron clientes completos para importar. Filas incompletas omitidas: '+skippedRows.length+'.');
+  return {rows,skippedRows,sheetName,headerRow:headerIndex+1};
  }
  $('client-excel-import-file').addEventListener('change',async e=>{
   const file=e.target.files&&e.target.files[0];pendingClientImport=null;$('client-excel-import-confirm').disabled=true;
@@ -353,8 +353,9 @@ $('excel-import-confirm').addEventListener('click',async()=>{if(!pendingImport||
    if(!window.XLSX)throw new Error('No se cargó el lector Excel.');
    const wb=window.XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:false}),parsed=readClientExcelRows(wb);
    const existing=new Set(clients.map(x=>String(x.c))),fresh=parsed.rows.filter(x=>!existing.has(x.code)).length;
-   pendingClientImport={rows:parsed.rows,fileName:file.name};
-   $('client-excel-import-preview').textContent='Archivo: '+file.name+' · Hoja: '+parsed.sheetName+' · Encabezados en fila: '+parsed.headerRow+' · Clientes: '+parsed.rows.length+' · Nuevos: '+fresh+' · Actualizar: '+(parsed.rows.length-fresh)+'. Los clientes ausentes se conservarán y los campos vacíos no borrarán datos existentes.';
+   pendingClientImport={rows:parsed.rows,skippedRows:parsed.skippedRows,fileName:file.name};
+   const skippedInfo=parsed.skippedRows.length?' · Filas incompletas omitidas: '+parsed.skippedRows.length+' (ej.: '+parsed.skippedRows.slice(0,8).map(x=>x.line).join(', ')+(parsed.skippedRows.length>8?'…':'')+')':'';
+   $('client-excel-import-preview').textContent='Archivo: '+file.name+' · Hoja: '+parsed.sheetName+' · Encabezados en fila: '+parsed.headerRow+' · Clientes válidos: '+parsed.rows.length+' · Nuevos: '+fresh+' · Actualizar: '+(parsed.rows.length-fresh)+skippedInfo+'. Los clientes ausentes se conservarán y los campos vacíos no borrarán datos existentes.';
    $('client-excel-import-confirm').disabled=false;
   }catch(err){$('client-excel-import-preview').textContent='No se puede importar: '+err.message;}
  });
@@ -374,7 +375,8 @@ $('excel-import-confirm').addEventListener('click',async()=>{if(!pendingImport||
     processed+=batchRows.length;
    }
    await loadData();
-   $('client-excel-import-preview').textContent='Importación completada: '+processed+' clientes procesados en '+totalBatches+' lotes. Los clientes ausentes se conservaron.';
+   const skipped=pendingClientImport.skippedRows||[];
+   $('client-excel-import-preview').textContent='Importación completada: '+processed+' clientes procesados en '+totalBatches+' lotes. '+(skipped.length?'Se omitieron '+skipped.length+' filas incompletas (ej.: '+skipped.slice(0,8).map(x=>x.line).join(', ')+(skipped.length>8?'…':'')+'). ':'')+'Los clientes ausentes se conservaron.';
    pendingClientImport=null;$('client-excel-import-file').value='';
   }catch(err){$('client-excel-import-preview').textContent='Importación detenida: '+(err.message||'Error desconocido')+' Si hubo lotes previos exitosos, podés volver a ejecutar la misma planilla para completar o actualizar los clientes.';}
   finally{b.textContent='Importar clientes';b.disabled=!pendingClientImport;}
