@@ -40,7 +40,7 @@ WHERE connamespace = 'public'::regnamespace
     )
     OR confrelid = to_regclass('public.companies')
   )
-ORDER BY table_name::text, constraint_type, constraint_name;
+ORDER BY conrelid::regclass::text, contype, conname;
 
 -- 3) Índices únicos de companies y tablas relacionadas.
 SELECT schemaname, tablename, indexname, indexdef
