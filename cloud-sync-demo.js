@@ -203,7 +203,7 @@ async function enterPublicDemo(){
  document.querySelector('.precio-estado-row').hidden=true;
  document.querySelector('.condicion-row').hidden=true;
  $('nuevo-cliente-toggle').hidden=true;
- $('footer').hidden=true;
+ document.querySelector('.footer').hidden=true;
  document.querySelectorAll('.tabs [data-panel="panel-order"],.tabs [data-panel="panel-archive"],.tabs [data-panel="panel-admin"]').forEach(x=>x.hidden=true);
  $('logout').textContent='Salir demo';
  $('dashboard-date').textContent='Datos ficticios · demostración';
