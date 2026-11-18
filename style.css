@@ -2685,3 +2685,60 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   .tab-label { font-size: 10.5px; }
   .stock-summary-card span { font-size: 11px; }
 }
+
+
+/* Control manual de existencias por depósito (solo administradores) */
+.stock-item-card { gap:8px; }
+.stock-edit-grid {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:7px 9px;
+  align-items:end;
+  margin-top:9px;
+  padding-top:9px;
+  border-top:1px solid rgba(220,235,250,.18);
+}
+.stock-edit-grid label {
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+  color:#dcecff;
+  font-size:11px;
+  font-weight:700;
+}
+.stock-edit-grid input {
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  min-height:36px;
+  padding:7px 9px;
+  border:1px solid rgba(220,235,250,.28);
+  border-radius:8px;
+  background:#202a34;
+  color:#fff;
+  font:600 13px var(--font-body);
+}
+.stock-save-btn {
+  min-height:36px;
+  padding:7px 10px;
+  border:1px solid rgba(32,179,107,.45);
+  border-radius:8px;
+  background:#176b4a;
+  color:#fff;
+  font:700 10px var(--font-body);
+}
+.stock-save-btn:disabled { opacity:.55; }
+.stock-edit-grid .stock-reason-label { grid-column:1 / -1; }
+.stock-edit-message {
+  grid-column:1 / -1;
+  min-height:14px;
+  margin:0;
+  color:#bdebd5;
+  font-size:10px;
+  line-height:1.35;
+}
+@media (max-width:360px) {
+  .stock-edit-grid { grid-template-columns:minmax(0,1fr); }
+  .stock-edit-grid .stock-reason-label { grid-column:1; }
+}
