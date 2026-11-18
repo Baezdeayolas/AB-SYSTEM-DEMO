@@ -19,6 +19,20 @@
 #app .topbar .cliente-field #cliente-suggestions .cs-name { display:block !important; color:#fff !important; font-size:15px !important; font-weight:700 !important; line-height:1.4 !important; }
 #app .topbar .cliente-field #cliente-suggestions .cs-meta { display:block !important; margin-top:4px !important; color:#d5e8fa !important; font-size:12px !important; font-weight:700 !important; }
 </style>
+<style id="barcode-scanner-styles">
+#barcode-scanner-modal[hidden]{display:none!important}
+.scanner-modal{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(3,12,22,.82)}
+.scanner-dialog{width:min(100%,520px);max-height:90dvh;overflow:auto;background:#172b40;color:#f5f8fc;border:1px solid #6d8ba8;border-radius:18px;padding:16px;box-shadow:0 20px 60px rgba(0,0,0,.55)}
+.scanner-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.scanner-head h2{margin:0;font-size:19px;color:#fff}.scanner-head p{margin:6px 0 0;color:#d5e8fa;font-size:13px}
+.scanner-close{width:40px;height:40px;flex:0 0 40px;border:1px solid #7895b1;border-radius:10px;background:#29435d;color:#fff;font-size:28px;line-height:1}
+.barcode-reader{width:100%;min-height:220px;overflow:hidden;border-radius:12px;background:#071522}
+.barcode-reader video{width:100%!important;max-height:55dvh;object-fit:cover;border-radius:12px}
+.barcode-reader__scan_region{min-height:220px}
+.barcode-reader__dashboard{color:#fff!important}
+.barcode-reader button{background:#29435d!important;color:#fff!important;border:1px solid #7895b1!important;border-radius:8px!important;padding:8px 12px!important}
+.scanner-help{margin:12px 0 0;color:#d5e8fa;font-size:13px}
+</style>
 </head>
 <body>
 <section id="login" class="gate">
@@ -59,6 +73,13 @@
  <div class="tier-row"><span class="tier-label">Estado</span><div class="tier-options"><button class="tier-btn active" data-estado="pendiente" type="button">Pendiente</button><button class="tier-btn" data-estado="confirmado" type="button">Confirmado</button></div></div>
 </div>
 <div class="condicion-row"><span class="tier-label">Condición</span><div class="condicion-quick"><button class="tier-btn" data-condicion="Contado" type="button">Contado</button><button class="tier-btn" data-condicion="Crédito" type="button">Crédito</button></div><input id="condicion-input" class="condicion-input" placeholder="Escribir..."></div>
+<div id="barcode-scanner-modal" class="scanner-modal" hidden>
+ <div class="scanner-dialog" role="dialog" aria-modal="true" aria-labelledby="scanner-title">
+  <div class="scanner-head"><div><h2 id="scanner-title">Escanear código de barras</h2><p id="scanner-status">Apuntá la cámara al código del artículo.</p></div><button type="button" id="scanner-close" class="scanner-close" aria-label="Cerrar escáner">×</button></div>
+  <div id="barcode-reader" class="barcode-reader"></div>
+  <p class="scanner-help">Usá la cámara trasera y mantené el código dentro del recuadro.</p>
+ </div>
+</div>
 <main>
  <section id="panel-dashboard" class="panel">
   <div class="dashboard-head"><div><h2>Resumen del día</h2><p id="dashboard-date">Actividad de hoy · DEMO</p></div><button type="button" class="btn-outline btn-sm" id="dashboard-refresh">Actualizar</button></div>
@@ -134,6 +155,6 @@
 </nav>
 <footer class="footer"><div class="total-block"><div class="total-label">Total pedido</div><div class="total-value" id="total-value">Gs. 0</div></div><div class="footer-actions"><button class="btn btn-ghost" id="btn-clear" type="button">Nuevo</button><button class="btn btn-primary" id="btn-pdf" type="button">Compartir PDF</button></div></footer>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="data-demo.js"></script><script src="cloud-sync-demo.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script><script src="data-demo.js"></script><script src="cloud-sync-demo.js"></script>
 <script>if('serviceWorker'in navigator&&location.protocol==='https:'){addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));}</script>
 </body></html>
