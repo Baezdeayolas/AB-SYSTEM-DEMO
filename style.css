@@ -2971,3 +2971,49 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   font-size: 12px;
   font-weight: 600;
 }
+
+
+/* AB SYSTEM — corrección definitiva: sugerencias están en el encabezado, no en main */
+#app .topbar .cliente-field #cliente-suggestions.cliente-suggestions {
+  background: #1f3348 !important;
+  border: 1px solid #7892ad !important;
+  border-radius: 12px !important;
+  box-shadow: 0 14px 32px rgba(0,0,0,.48) !important;
+  color: #f3f7fc !important;
+  z-index: 10000 !important;
+}
+#app .topbar .cliente-field #cliente-suggestions .cliente-suggestion {
+  display: flex !important;
+  width: 100% !important;
+  min-height: 56px !important;
+  padding: 11px 14px !important;
+  background: #2b4158 !important;
+  color: #f3f7fc !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(190,211,233,.24) !important;
+  text-align: left !important;
+}
+#app .topbar .cliente-field #cliente-suggestions .cliente-suggestion:last-child {
+  border-bottom: 0 !important;
+}
+#app .topbar .cliente-field #cliente-suggestions .cliente-suggestion:hover,
+#app .topbar .cliente-field #cliente-suggestions .cliente-suggestion:focus-visible {
+  background: #456482 !important;
+  color: #fff !important;
+  outline: 2px solid #b7d8f5 !important;
+  outline-offset: -2px !important;
+}
+#app .topbar .cliente-field #cliente-suggestions .cs-name {
+  display: block !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+}
+#app .topbar .cliente-field #cliente-suggestions .cs-meta {
+  display: block !important;
+  margin-top: 3px !important;
+  color: #d0e3f6 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
