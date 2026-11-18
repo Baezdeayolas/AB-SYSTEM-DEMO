@@ -104,6 +104,15 @@
 <p class="muted">Se reconocerán los encabezados del archivo habitual: Cód.Artículo, Descripción, CENTRAL, CDE y listas 1, 2 y 3.</p>
 <div id="excel-import-preview" class="message" role="status">Seleccioná un archivo para validar antes de importar.</div>
 <button id="excel-import-confirm" class="btn btn-primary" type="button" disabled>Confirmar importación</button>
+<div class="global-admin-divider"></div>
+<section class="client-import-tools" aria-labelledby="client-import-title">
+ <h3 id="client-import-title">Carga masiva de clientes</h3>
+ <p class="muted">Solo administradores de esta empresa. Campos reconocidos: código, nombre o razón social, ciudad, departamento, distrito, teléfono, tipo de documento e identificación.</p>
+ <label for="client-excel-import-file">Archivo Excel de clientes</label>
+ <input id="client-excel-import-file" type="file" accept=".xlsx,.xls">
+ <div id="client-excel-import-preview" class="message" role="status">Seleccioná una planilla para validar sus columnas antes de importar.</div>
+ <button id="client-excel-import-confirm" class="btn btn-primary" type="button" disabled>Importar clientes</button>
+</section>
 </div></div></section>
 </main>
 <nav class="tabs" aria-label="Navegación principal">
