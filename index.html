@@ -19,7 +19,19 @@
   <label>Correo electrónico<input id="email" type="email" autocomplete="username" required></label>
   <label>Contraseña<input id="password" type="password" autocomplete="current-password" required></label>
   <button class="primary" type="submit">Ingresar</button>
+  <button id="demo-access" class="demo-access-btn" type="button">Ver demostración</button>
+  <p class="demo-caption">La demostración utiliza datos ficticios y funciona en modo de solo lectura.</p>
   <p id="login-message" class="message" role="status">Acceso protegido · entorno de prueba</p>
+ </form>
+</section>
+<section id="company-gate" class="gate" hidden>
+ <form id="company-gate-form" class="login-card">
+  <div class="brand">AB SYSTEM <span>SELECCIÓN DE EMPRESA</span></div>
+  <h1>¿Dónde querés trabajar?</h1>
+  <p>Elegí una empresa habilitada para tu cuenta.</p>
+  <label>Empresa<select id="company-gate-select" required></select></label>
+  <button class="primary" type="submit">Continuar</button>
+  <p id="company-gate-message" class="message" role="status">Tu acceso está validado. Seleccioná una empresa.</p>
  </form>
 </section>
 <div id="app" hidden>
@@ -60,7 +72,32 @@
  </section>
  <section id="panel-archive" class="panel"><div class="search-wrap"><input id="archive-search-input" type="search" placeholder="Buscar cliente en archivo e histórico..."></div><div class="archive-summary" id="archive-summary"><strong id="archive-summary-count">0 pedidos</strong><span id="archive-summary-value">Gs. 0</span></div><div class="archive-list" id="archive-list"></div><div class="empty-state" id="archive-empty"><div class="big">Todavía no hay pedidos</div></div></section>
  <section id="panel-stock" class="panel"><div class="stock-import-head"><h2>Control de stock</h2><p>Existencias separadas por depósito · CENTRAL y CDE</p></div><div class="stock-controls"><input id="stock-search" type="search" placeholder="Buscar código o descripción..."></div><div class="stock-list" id="stock-list"></div></section>
- <section id="panel-admin" class="panel"><div id="admin-panel-content"><h2>Administración de empresa</h2><p>Importación controlada del catálogo, precios y existencias.</p>
+ <section id="panel-admin" class="panel"><div id="admin-panel-content"><h2>Administración</h2><p>Herramientas de la empresa activa y administración global.</p>
+<div id="global-admin-tools" class="admin-tools" hidden>
+ <h3>Administración global</h3>
+ <p>Alta de empresas, invitación de usuarios y gestión de membresías.</p>
+ <form id="company-create-form" class="global-admin-form">
+  <label>Nombre de la empresa<input id="new-company-name" maxlength="120" required placeholder="Ej.: Distribuidora Norte"></label>
+  <label>Código único<input id="new-company-code" maxlength="24" required placeholder="Ej.: DISTNORTE"></label>
+  <button class="btn btn-primary" type="submit">Crear empresa</button>
+  <p id="company-create-message" class="message" role="status"></p>
+ </form>
+ <div class="global-admin-divider"></div>
+ <form id="member-invite-form" class="global-admin-form">
+  <h3>Invitar vendedor o administrador</h3>
+  <label>Empresa<select id="invite-company" required></select></label>
+  <label>Nombre visible<input id="invite-name" maxlength="120" required placeholder="Nombre y apellido"></label>
+  <label>Correo electrónico<input id="invite-email" type="email" required placeholder="usuario@empresa.com"></label>
+  <label>Rol<select id="invite-role"><option value="seller">Vendedor</option><option value="company_admin">Administrador de empresa</option></select></label>
+  <button class="btn btn-primary" type="submit">Enviar invitación</button>
+  <p id="member-invite-message" class="message" role="status"></p>
+ </form>
+ <div class="global-admin-divider"></div>
+ <div class="global-admin-list-head"><h3>Empresas registradas</h3><button id="global-admin-refresh" class="btn-outline btn-sm" type="button">Actualizar</button></div>
+ <div id="global-company-list" class="global-admin-list"></div>
+ <h3>Usuarios y membresías</h3>
+ <div id="global-members-list" class="global-admin-list"></div>
+</div>
 <div class="admin-tools">
 <label for="excel-import-file">Archivo Excel de precios y stock</label>
 <input id="excel-import-file" type="file" accept=".xlsx,.xls">
