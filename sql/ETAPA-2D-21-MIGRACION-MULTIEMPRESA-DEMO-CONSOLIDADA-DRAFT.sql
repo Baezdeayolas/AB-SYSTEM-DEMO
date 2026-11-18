@@ -8,13 +8,15 @@
 -- Solo despues de revisar el resultado del ensayo y aprobar expresamente,
 -- se cambiara la ultima instruccion a COMMIT para ejecutar una unica vez.
 --
--- PRECONDICIONES:
--- 1) Respaldo DEMO restaurado localmente (estructura y datos publicos verificados).
--- 2) Existe exactamente una empresa inicial code=KOEJU.
--- 3) Los pedidos y asignaciones corresponden a vendedores activos de esa empresa.
--- 4) inventory_current conserva una fila id=1 con items=[].
--- 5) Los valores payload.sc son numericos/no negativos.
--- 6) El ejecutor modifica default privileges solamente del rol postgres.
+-- PRECONDICIONES PENDIENTES DE VALIDACION:
+-- 1) Respaldo DEMO completo, restaurable y verificado.
+-- 2) Confirmar manualmente la empresa inicial y su codigo objetivo ABDEMO.
+-- 3) Revisar el mapeo de perfiles/membresias y propietarios de pedidos.
+-- 4) Verificar estructura y datos actuales de inventario legacy.
+-- 5) Validar payloads y cantidades del catalogo antes de migrar inventario.
+-- 6) Revisar el alcance de default privileges para el rol postgres.
+-- ATENCION: el bloque de backfill aun busca code=KOEJU y NO esta adaptado
+-- a la nueva decision AB SYSTEM DEMO. No ejecutar este archivo.
 --
 -- REGLAS DE NEGOCIO:
 -- - Pedidos no facturan, no reservan y no descuentan stock.
@@ -36,7 +38,7 @@ BEGIN;
 --   * Agrega company_id a catalog_items, catalog_clients, catalog_import_rows,
 --     orders y seller_assignments.
 --   * Agrega orders.created_by (historico queda NULL si no se conoce el actor).
---   * Asigna los registros existentes a la empresa cuyo code = 'KOEJU',
+--   * El backfill actual todavia espera code = 'KOEJU'; pendiente de adaptar a ABDEMO.
 --     solo si las comprobaciones de pertenencia pasan.
 --   * Agrega FK e indices compuestos de transicion.
 --
@@ -1594,5 +1596,7 @@ BEGIN
 END
 $verify$;
 
--- Aplicación autorizada: confirmar cambios únicamente en AB-SYSTEM-DEMO.
-COMMIT;
+-- SEGURIDAD: este archivo permanece como borrador no ejecutable.
+-- No cambiar a COMMIT ni ejecutar hasta completar adaptacion ABDEMO,
+-- anonimización, respaldo restaurable, pruebas y aprobacion especifica.
+ROLLBACK;
