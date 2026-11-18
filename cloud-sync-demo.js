@@ -290,7 +290,53 @@ $('save-order').onclick=async()=>{
 };
 $('btn-clear').onclick=()=>{cart=[];$('discount-input').value='0';$('cliente-input').value='';$('cliente-input').dataset.code='';render();showPanel('panel-search');};
 $('btn-pdf').onclick=()=>{if(!cart.length){alert('Agregá artículos al pedido antes de generar el comprobante.');return;}const lines=cart.map(x=>'<tr><td>'+safe(x.c)+'</td><td>'+safe(x.d)+'</td><td>'+x.qty+'</td><td>'+money(x['p'+tier])+'</td><td>'+money(x.qty*x['p'+tier])+'</td></tr>').join('');const sub=total(),discount=Math.min(100,Math.max(0,Number($('discount-input').value)||0)),grand=sub-sub*discount/100;const w=window.open('','_blank');if(!w){alert('El navegador bloqueó la ventana. Permití ventanas emergentes para generar el PDF.');return;}w.onload=()=>w.print();w.document.write('<!doctype html><html lang="es"><meta charset="utf-8"><title>Pedido AB SYSTEM</title><style>body{font:14px Arial;padding:28px;color:#17212b}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left}</style><h1>AB SYSTEM · Pedido</h1><p>Empresa: '+safe(activeCompany.name)+'</p><p>Cliente: '+safe($('cliente-input').value)+'</p><p>Vendedor: '+safe($('vendedor-input').value)+'</p><table><thead><tr><th>Código</th><th>Descripción</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr></thead><tbody>'+lines+'</tbody></table><h2>Total: '+money(grand)+'</h2></html>');w.document.close();};
-$('btn-scan-barcode').onclick=()=>alert('El escáner se integrará después de validar el flujo de búsqueda DEMO.');
+let barcodeScanner=null,barcodeScannerRunning=false;
+async function closeBarcodeScanner(){
+ const modal=$('barcode-scanner-modal');
+ if(barcodeScanner&&barcodeScannerRunning){try{await barcodeScanner.stop();}catch(e){}}
+ barcodeScannerRunning=false;
+ if(barcodeScanner){try{barcodeScanner.clear();}catch(e){}barcodeScanner=null;}
+ modal.hidden=true;
+}
+async function openBarcodeScanner(){
+ const modal=$('barcode-scanner-modal'),status=$('scanner-status');
+ modal.hidden=false;status.textContent='Solicitando acceso a la cámara…';
+ if(!window.Html5Qrcode){status.textContent='No se pudo cargar el lector. Revisá tu conexión e intentá nuevamente.';return;}
+ try{
+  barcodeScanner=new Html5Qrcode('barcode-reader',false);
+  const formats=[
+   Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,
+   Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,
+   Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39,
+   Html5QrcodeSupportedFormats.ITF
+  ];
+  await barcodeScanner.start({facingMode:'environment'},{fps:12,qrbox:{width:Math.min(300,Math.floor(window.innerWidth*.78)),height:130},aspectRatio:1.777,formatsToSupport:formats,rememberLastUsedCamera:true},
+   async(decodedText)=>{
+    if(!barcodeScannerRunning)return;
+    barcodeScannerRunning=false;
+    const code=String(decodedText||'').trim();
+    $('search-input').value=code;
+    render();
+    const match=items.some(x=>[x.c,x.b].some(v=>String(v??'').trim().toLowerCase()===code.toLowerCase()));
+    status.textContent=match?'Código leído: '+code+'. Artículo encontrado.':'Código leído: '+code+'. No se encontró coincidencia en el catálogo.';
+    await closeBarcodeScanner();
+    $('search-input').focus();
+   },
+   ()=>{}
+  );
+  barcodeScannerRunning=true;
+  status.textContent='Cámara activa. Enfocá el código de barras.';
+ }catch(e){
+  barcodeScannerRunning=false;
+  const msg=String(e?.message||e||'');
+  status.textContent=msg.toLowerCase().includes('permission')||msg.toLowerCase().includes('notallowed')?'No se concedió permiso para usar la cámara. Habilitalo en el navegador.':'No se pudo iniciar la cámara. Verificá los permisos y que otra aplicación no la esté usando.';
+  if(barcodeScanner){try{barcodeScanner.clear();}catch(err){}barcodeScanner=null;}
+ }
+}
+$('btn-scan-barcode').onclick=openBarcodeScanner;
+$('scanner-close').onclick=closeBarcodeScanner;
+$('barcode-scanner-modal').addEventListener('click',e=>{if(e.target===$('barcode-scanner-modal'))closeBarcodeScanner();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('barcode-scanner-modal').hidden)closeBarcodeScanner();});
 $('dashboard-refresh').onclick=()=>{if(isPublicDemo){render();return;}loadOrders().catch(e=>$('cloud-status-slot').textContent=e.message);};
 function normalizeHeader(v){return String(v??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]/g,'');}
 function excelNumber(v,label,row){if(v===null||v===undefined||String(v).trim()==='')throw new Error('Fila '+row+': falta '+label+'.');let n;if(typeof v==='number')n=v;else{let t=String(v).trim().replace(/\s/g,'');if(t.includes(',')&&t.includes('.'))t=t.replace(/\./g,'').replace(',','.');else if(t.includes(','))t=t.replace(',','.');n=Number(t);}if(!Number.isFinite(n)||n<0)throw new Error('Fila '+row+': '+label+' debe ser un número no negativo.');return n;}
