@@ -290,46 +290,62 @@ $('save-order').onclick=async()=>{
 };
 $('btn-clear').onclick=()=>{cart=[];$('discount-input').value='0';$('cliente-input').value='';$('cliente-input').dataset.code='';render();showPanel('panel-search');};
 $('btn-pdf').onclick=()=>{if(!cart.length){alert('Agregá artículos al pedido antes de generar el comprobante.');return;}const lines=cart.map(x=>'<tr><td>'+safe(x.c)+'</td><td>'+safe(x.d)+'</td><td>'+x.qty+'</td><td>'+money(x['p'+tier])+'</td><td>'+money(x.qty*x['p'+tier])+'</td></tr>').join('');const sub=total(),discount=Math.min(100,Math.max(0,Number($('discount-input').value)||0)),grand=sub-sub*discount/100;const w=window.open('','_blank');if(!w){alert('El navegador bloqueó la ventana. Permití ventanas emergentes para generar el PDF.');return;}w.onload=()=>w.print();w.document.write('<!doctype html><html lang="es"><meta charset="utf-8"><title>Pedido AB SYSTEM</title><style>body{font:14px Arial;padding:28px;color:#17212b}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left}</style><h1>AB SYSTEM · Pedido</h1><p>Empresa: '+safe(activeCompany.name)+'</p><p>Cliente: '+safe($('cliente-input').value)+'</p><p>Vendedor: '+safe($('vendedor-input').value)+'</p><table><thead><tr><th>Código</th><th>Descripción</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr></thead><tbody>'+lines+'</tbody></table><h2>Total: '+money(grand)+'</h2></html>');w.document.close();};
-let barcodeScanner=null,barcodeScannerRunning=false;
+let barcodeScanner=null,barcodeScannerRunning=false,barcodeLibraryPromise=null;
+async function ensureBarcodeLibrary(){
+ if(window.Html5Qrcode&&window.Html5QrcodeSupportedFormats)return true;
+ if(!barcodeLibraryPromise)barcodeLibraryPromise=new Promise(resolve=>{
+  const sources=['https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js','https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'];
+  let index=0;
+  const next=()=>{
+   if(window.Html5Qrcode&&window.Html5QrcodeSupportedFormats){resolve(true);return;}
+   if(index>=sources.length){resolve(false);return;}
+   const script=document.createElement('script');script.src=sources[index++];script.async=true;
+   script.onload=()=>resolve(!!(window.Html5Qrcode&&window.Html5QrcodeSupportedFormats));
+   script.onerror=next;document.head.appendChild(script);
+  };
+  next();
+ });
+ return barcodeLibraryPromise;
+}
 async function closeBarcodeScanner(){
  const modal=$('barcode-scanner-modal');
- if(barcodeScanner){try{await barcodeScanner.stop();}catch(e){}}
- barcodeScannerRunning=false;
- if(barcodeScanner){try{barcodeScanner.clear();}catch(e){}barcodeScanner=null;}
- modal.hidden=true;
+ if(barcodeScanner){try{await barcodeScanner.stop();}catch(e){}try{barcodeScanner.clear();}catch(e){}barcodeScanner=null;}
+ barcodeScannerRunning=false;modal.hidden=true;
 }
 async function openBarcodeScanner(){
  const modal=$('barcode-scanner-modal'),status=$('scanner-status');
- modal.hidden=false;status.textContent='Solicitando acceso a la cámara…';
- if(!window.Html5Qrcode){status.textContent='No se pudo cargar el lector. Revisá tu conexión e intentá nuevamente.';return;}
+ modal.hidden=false;status.textContent='Preparando el lector…';
+ const loaded=await ensureBarcodeLibrary();
+ if(!loaded){status.textContent='No se pudo descargar el lector. Revisá tu conexión a internet e intentá nuevamente.';return;}
  try{
   barcodeScanner=new Html5Qrcode('barcode-reader',false);
-  const formats=[
-   Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,
-   Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,
-   Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39,
-   Html5QrcodeSupportedFormats.ITF
-  ];
-  await barcodeScanner.start({facingMode:'environment'},{fps:12,qrbox:{width:Math.min(300,Math.floor(window.innerWidth*.78)),height:130},aspectRatio:1.777,formatsToSupport:formats,rememberLastUsedCamera:true},
-   async(decodedText)=>{
-    if(!barcodeScannerRunning)return;
-    barcodeScannerRunning=false;
-    const code=String(decodedText||'').trim();
-    $('search-input').value=code;
-    render();
-    const match=items.some(x=>[x.c,x.b].some(v=>String(v??'').trim().toLowerCase()===code.toLowerCase()));
-    status.textContent=match?'Código leído: '+code+'. Artículo encontrado.':'Código leído: '+code+'. No se encontró coincidencia en el catálogo.';
-    await closeBarcodeScanner();
-    $('search-input').focus();
-   },
-   ()=>{}
-  );
+  const formats=[Html5QrcodeSupportedFormats.EAN_13,Html5QrcodeSupportedFormats.EAN_8,Html5QrcodeSupportedFormats.UPC_A,Html5QrcodeSupportedFormats.UPC_E,Html5QrcodeSupportedFormats.CODE_128,Html5QrcodeSupportedFormats.CODE_39,Html5QrcodeSupportedFormats.ITF];
+  const config={fps:10,qrbox:(w,h)=>({width:Math.max(180,Math.min(360,Math.floor(w*.82))),height:Math.max(90,Math.min(160,Math.floor(h*.38)))}),aspectRatio:1.777,formatsToSupport:formats,rememberLastUsedCamera:true};
+  status.textContent='Solicitando permiso para usar la cámara…';
   barcodeScannerRunning=true;
+  let cameras=[];
+  try{cameras=await Html5Qrcode.getCameras();}catch(e){}
+  const rear=cameras.find(c=>/back|rear|environment|trasera|posterior/i.test(c.label||''))||cameras[cameras.length-1];
+  const onSuccess=async(decodedText)=>{
+   if(!barcodeScannerRunning)return;
+   barcodeScannerRunning=false;
+   const code=String(decodedText||'').trim();
+   $('search-input').value=code;render();
+   const match=items.some(x=>[x.c,x.b].some(v=>String(v??'').trim().toLowerCase()===code.toLowerCase()));
+   status.textContent=match?'Código leído: '+code+'. Artículo encontrado.':'Código leído: '+code+'. No se encontró coincidencia en el catálogo.';
+   await closeBarcodeScanner();$('search-input').focus();
+  };
+  try{
+   await barcodeScanner.start(rear?.id||{facingMode:{ideal:'environment'}},config,onSuccess,()=>{});
+  }catch(firstError){
+   if(rear?.id)await barcodeScanner.start({facingMode:{ideal:'environment'}},config,onSuccess,()=>{});
+   else throw firstError;
+  }
   status.textContent='Cámara activa. Enfocá el código de barras.';
  }catch(e){
   barcodeScannerRunning=false;
-  const msg=String(e?.message||e||'');
-  status.textContent=msg.toLowerCase().includes('permission')||msg.toLowerCase().includes('notallowed')?'No se concedió permiso para usar la cámara. Habilitalo en el navegador.':'No se pudo iniciar la cámara. Verificá los permisos y que otra aplicación no la esté usando.';
+  const msg=String(e?.message||e||'Error desconocido');
+  status.textContent=/permission|notallowed|denied/i.test(msg)?'El navegador bloqueó el permiso de cámara. Revisá los permisos del sitio.':'No se pudo iniciar la cámara: '+msg;
   if(barcodeScanner){try{barcodeScanner.clear();}catch(err){}barcodeScanner=null;}
  }
 }
