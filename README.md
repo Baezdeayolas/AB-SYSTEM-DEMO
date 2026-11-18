@@ -10,20 +10,20 @@ Entorno independiente para construir y validar la plataforma común AB SYSTEM an
 - `style.css`: estilos de referencia y adaptaciones.
 - `service-worker.js`: caché independiente de DEMO.
 
-## Estado de validación
+## Estado de la versión candidata
 
-La reconstrucción de estructura y navegación está en curso en la rama `work/ab-system-multempresa-ui`. No se considera lista para publicar.
+La rama `work/adaptacion-multiempresa-v1` contiene la base multiempresa y una primera integración funcional de:
+- Acceso Supabase DEMO y resolución de empresas/membresías.
+- Catálogo, clientes, asignaciones y pedidos filtrados por empresa.
+- Pedidos guardados con `company_id`, `owner_id` y `created_by`; guardar un pedido no descuenta ni reserva stock.
+- Inventario separado por depósitos CENTRAL y CDE mediante tablas nuevas.
+- Previsualización e importación del Excel habitual, con validación de códigos duplicados, descripción, cantidades y listas de precios.
+- Conservación de productos ausentes del archivo.
+- Comprobante imprimible desde el navegador para guardar como PDF.
 
-Pendiente de verificar en un entorno de prueba:
-- Compatibilidad de las consultas con las columnas reales de Supabase DEMO.
-- Inicio/cierre de sesión y perfiles `admin` / `seller`.
-- Lectura de catálogo, clientes y asignaciones.
-- Guardado y lectura de pedidos, incluidas las políticas RLS.
-- Flujo completo en móvil y escritorio y comparación visual con Ko'eju.
-- Generación/compartir PDF y escáner, que todavía son marcadores pendientes.
-- Alta de clientes, edición de pedidos, gestión real de stock y selector multiempresa.
+**Antes de probar esta versión**, ejecutar en Supabase AB-SYSTEM-DEMO el script `sql/ETAPA-2D-22-INVENTARIO-CENTRAL-CDE-IMPORTACION-EXCEL.sql`. No ejecutarlo en Ko’ẽju histórico. La migración conserva intactas las tablas legacy de inventario y crea tablas separadas para los depósitos, inicializadas en cero; la importación del Excel debe cargar los saldos reales de CENTRAL y CDE.
 
-No se ha ejecutado una prueba integral de navegador ni una auditoría de RLS. La existencia de código para una función no implica que haya sido validada.
+No se ha desplegado ni publicado esta rama. La versión sigue requiriendo pruebas funcionales con cuentas de cada rol y una importación de prueba controlada antes de considerarse apta para producción.
 
 ## Arquitectura multiempresa
 
@@ -74,3 +74,10 @@ Se corrigió un defecto funcional: el selector de empresa se mostraba, pero no t
 **Validación pendiente:** no se ejecutaron pruebas de navegador ni pruebas con JWT/RLS. La aplicación sigue sin ser compatible con el esquema Supabase activo hasta que se apruebe y ejecute una migración verificada que añada y proteja las relaciones empresariales. No publicar ni probar contra datos reales todavía.
 
 **Identidad de empresas pendiente de confirmar:** la empresa existente en DEMO figura con código `KOEJU`. La empresa `DEMO` para pruebas de prospectos debe ser una empresa separada; no cambiar el código ni reasignar los registros existentes por suposición.
+
+
+## Cierre de funcionalidades pendientes
+- El botón de comprobante genera una vista imprimible; desde el navegador se puede elegir Guardar como PDF.
+- El importador usa SheetJS desde CDN y reconoce los encabezados reales del libro (Cód.Artículo, CENTRAL, CDE y listas 1, 2, 3) o sus alias documentados.
+- El escáner de códigos de barras continúa pendiente y no se presenta como función disponible.
+- La administración de empresas y altas de usuarios no se considera terminada en esta versión candidata.
