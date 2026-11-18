@@ -316,8 +316,10 @@ $('excel-import-confirm').addEventListener('click',async()=>{if(!pendingImport||
    name:['NOMBRE','NOMBRECLIENTE','CLIENTE','RAZONSOCIAL','RAZONSOCIALCLIENTE','DESCRIPCION'],
    city:['CIUDAD','LOCALIDAD'],department:['DEPARTAMENTO','DPTO'],district:['DISTRITO'],
    phone:['TELEFONO','TELEFONOS','TEL','CELULAR','MOVIL','TELEFONOMOVIL'],
-   docType:['TIPODOCUMENTO','TIPODOC','TIPOIDENTIFICACION','DOCUMENTO'],
-   ident:['IDENTIFICACION','NUMEROIDENTIFICACION','NUMERODOCUMENTO','NRODOCUMENTO','RUC','CEDULA','CI']
+   docType:['TIPODOCUMENTO','TIPODOC','TIPOIDENTIFICACION','DOCUMENTO','TIPIDENT'],
+   ident:['IDENTIFICACION','NUMEROIDENTIFICACION','NUMERODOCUMENTO','NRODOCUMENTO','NROIDENTIFICACION','RUC','CEDULA','CI'],
+   balanceGs:['SALDOACTGS','SALDOACTUALGS'],balanceExt:['SALDOACTEXT','SALDOACTUALEXT'],
+   debtAccount:['CTACBLEDEUDA','CUENTACONTABLEDEUDA']
   };
   let headerIndex=-1,col={};
   for(let i=0;i<matrix.length;i++){
@@ -335,7 +337,7 @@ $('excel-import-confirm').addEventListener('click',async()=>{if(!pendingImport||
    if(seen.has(code))throw new Error('Código de cliente duplicado '+code+' en filas '+seen.get(code)+' y '+line+'.');
    seen.set(code,line);
    const payload={c:code,n:name};
-   for(const [key,field] of [['city','ciu'],['department','dep'],['district','dst'],['phone','tel'],['docType','tip'],['ident','ident']]){
+   for(const [key,field] of [['city','ciu'],['department','dep'],['district','dst'],['phone','tel'],['docType','tip'],['ident','ident'],['balanceGs','saldoActGs'],['balanceExt','saldoActExt'],['debtAccount','ctaCbleDeuda']]){
     if(col[key]!==undefined&&r[col[key]]!==null&&String(r[col[key]]).trim()!=='')payload[field]=String(r[col[key]]).trim();
    }
    rows.push({code,payload});
