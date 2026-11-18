@@ -19,11 +19,13 @@ Entorno independiente de desarrollo multiempresa. No es producción.
 - Comprobante imprimible que permite guardar como PDF desde el navegador.
 
 ## Instalación de la versión candidata
-Antes de abrir la aplicación, ejecutar **solo en AB-SYSTEM-DEMO**:
+## Estado de migración (NO ejecutar SQL todavía)
 
-`sql/ETAPA-2D-22-INVENTARIO-CENTRAL-CDE-IMPORTACION-EXCEL.sql`
+La empresa inicial de demostración será **AB SYSTEM DEMO** (código objetivo provisional: `ABDEMO`). La fila empresarial que actualmente se identifica como `KOEJU` en la base DEMO se transformará conservando los registros comerciales que correspondan, sin modificar Ko’ẽju producción.
 
-Este lote crea las tablas de saldos por depósito, el historial de movimientos y las RPC de importación. Conserva las tablas legacy de inventario sin reasignar sus cantidades a CENTRAL o CDE. Después de ejecutar el lote, un administrador debe importar el Excel vigente para cargar los saldos reales de ambos depósitos.
+La migración consolidada 2D-21 sigue en revisión: su backfill histórico todavía busca `code='KOEJU'`. Se corrigió su cierre de seguridad a `ROLLBACK` para impedir confirmaciones accidentales. **No ejecutar 2D-21 ni 2D-22** hasta completar la adaptación de empresa, el respaldo restaurable, la revisión de membresías y la anonimización de datos personales destinados a demostraciones.
+
+El lote 2D-22 depende del esquema multiempresa creado por 2D-21; no es una migración inicial independiente. Cuando el esquema y los permisos estén validados, se revisará y probará en una transacción separada.
 
 La aplicación usa SheetJS desde CDN para leer archivos XLSX/XLS. Requiere conexión a internet para cargar esa biblioteca y Supabase.
 
