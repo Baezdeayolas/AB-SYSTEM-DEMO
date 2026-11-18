@@ -5,7 +5,7 @@ const SUPABASE_KEY='sb_publishable_M6W3DMCqPcH92cT96ioP5A_wi64QmcA';
 const $=id=>document.getElementById(id);
 if(!window.supabase?.createClient){$('login-message').textContent='No se pudo cargar el servicio de acceso DEMO.';return;}
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let user=null,profile=null,companies=[],activeCompany=null,isGlobal=false,items=[],clients=[],sellerRows=[],cart=[],orders=[],tier=1,estado='pendiente',condicion='Contado',pendingImport=null;
+let user=null,profile=null,companies=[],activeCompany=null,isGlobal=false,isPublicDemo=false,items=[],clients=[],sellerRows=[],cart=[],orders=[],tier=1,estado='pendiente',condicion='Contado',pendingImport=null;
 const money=n=>'Gs. '+Math.round(Number(n||0)).toLocaleString('es-PY');
 const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const timeout=(p,label)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error(label+' no respondió.')),12000))]);
@@ -35,7 +35,7 @@ async function loadCompanyContext(u){
  const select=$('company-select');
  select.innerHTML=companies.map(c=>'<option value="'+safe(c.id)+'">'+safe(c.name)+'</option>').join('');
  select.value=activeCompany.id;
- select.hidden=companies.length<2;
+ select.hidden=!(isGlobal||companies.length>1);
  $('company-role').textContent=isGlobal?'Superadministrador global':(profile.role==='company_admin'?'Administrador de empresa':'Vendedor');
  $('dashboard-date').textContent='Actividad de hoy · '+activeCompany.name;
  $('dashboard-scope').textContent='Información de '+activeCompany.name+'.';
@@ -96,7 +96,7 @@ async function fetchAllRows(makeQuery,label){
 function renderStock(){
  const q=$('stock-search').value.trim().toLowerCase();
  const filtered=items.filter(x=>[x.c,x.d].some(v=>String(v||'').toLowerCase().includes(q)));
- const canAdjust=isGlobal||profile?.role==='company_admin';
+ const canAdjust=!isPublicDemo&&(isGlobal||profile?.role==='company_admin');
  $('stock-list').innerHTML=filtered.slice(0,100).map(x=>{
   const code=safe(x.c),central=Number(x.sc||0),cde=Number(x.sd||0);
   const controls=canAdjust?'<div class="stock-edit-grid"><label>CENTRAL<input type="number" min="0" step="0.001" inputmode="decimal" data-stock-qty="'+code+'" data-location="CENTRAL" value="'+central+'"></label><button type="button" class="stock-save-btn" data-stock-set="'+code+'" data-location="CENTRAL">Actualizar CENTRAL</button><label>CDE<input type="number" min="0" step="0.001" inputmode="decimal" data-stock-qty="'+code+'" data-location="CDE" value="'+cde+'"></label><button type="button" class="stock-save-btn" data-stock-set="'+code+'" data-location="CDE">Actualizar CDE</button><label class="stock-reason-label">Motivo del ajuste<input type="text" maxlength="180" placeholder="Ej.: conteo físico" data-stock-reason="'+code+'"></label><p class="stock-edit-message" data-stock-message="'+code+'" role="status"></p></div>':'';
@@ -164,13 +164,96 @@ async function loadOrders(){
  const {data,error}=await timeout(db.from('orders').select('id,company_id,legacy_id,legacy_source,payload,updated_at').eq('company_id',activeCompany.id).order('updated_at',{ascending:false}).limit(50),'La carga de pedidos');
  if(error)throw error;orders=data||[];render();
 }
-async function activate(u){
- user=u;await loadCompanyContext(u);await loadData();
- $('login').hidden=true;$('app').hidden=false;$('cloud-status-slot').textContent='Conectado · '+activeCompany.name;
- $('admin-menu-tab').hidden=!(isGlobal||profile.role==='company_admin');showPanel('panel-search');
+async function finishCompanyLogin(){
+ $('company-gate').hidden=true;
+ try{
+  await loadData();
+  $('login').hidden=true;$('app').hidden=false;
+  $('cloud-status-slot').textContent='Conectado · '+activeCompany.name;
+  $('company-select').hidden=!(isGlobal||companies.length>1);
+  $('admin-menu-tab').hidden=!(isGlobal||profile.role==='company_admin');
+  $('global-admin-tools').hidden=!isGlobal;
+  if(isGlobal)await loadGlobalAdminData();
+  showPanel('panel-search');
+ }catch(err){$('company-gate').hidden=false;$('company-gate-message').textContent='No se pudo cargar la empresa: '+(err.message||'Error desconocido');}
 }
-$('login-form').addEventListener('submit',async e=>{e.preventDefault();const b=$('login-form').querySelector('button');b.disabled=true;gate('Conectando con Supabase DEMO…');try{const r=await timeout(db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value}),'El acceso');if(r.error)throw r.error;await activate(r.data.user);}catch(err){await db.auth.signOut();gate('No se pudo ingresar: '+(err.message||'Error desconocido'));}finally{b.disabled=false;}});
-$('logout').onclick=async()=>{await db.auth.signOut();user=null;profile=null;activeCompany=null;companies=[];isGlobal=false;items=[];clients=[];sellerRows=[];orders=[];cart=[];gate('Sesión cerrada.');};
+async function activate(u){
+ user=u;await loadCompanyContext(u);
+ if(isGlobal||companies.length>1){
+  const pick=$('company-gate-select');
+  pick.innerHTML=companies.map(c=>'<option value="'+safe(c.id)+'">'+safe(c.name)+'</option>').join('');
+  pick.value=activeCompany.id;
+  $('login').hidden=true;$('company-gate').hidden=false;
+  $('company-gate-message').textContent=isGlobal?'Acceso global validado. Elegí la empresa que querés administrar.':'Acceso validado. Elegí una de tus empresas.';
+  return;
+ }
+ await finishCompanyLogin();
+}
+async function enterPublicDemo(){
+ await db.auth.signOut().catch(()=>{});
+ isPublicDemo=true;user=null;isGlobal=false;profile={role:'demo'};
+ activeCompany={id:'public-demo',code:'DEMO',name:'Demostración AB SYSTEM'};
+ companies=[];items=(window.DEMO_ITEMS||[]).map(x=>({...x}));clients=(window.DEMO_CLIENTS||[]).map(x=>({...x}));
+ sellerRows=[];cart=[];orders=[];pendingImport=null;
+ $('login').hidden=true;$('company-gate').hidden=true;$('app').hidden=false;
+ $('company-select').hidden=true;$('company-role').textContent='Modo demostración · solo lectura';
+ $('cloud-status-slot').textContent='Demostración pública · solo lectura';
+ $('admin-menu-tab').hidden=true;$('global-admin-tools').hidden=true;
+ document.querySelector('.meta-fields').hidden=true;
+ document.querySelector('.precio-estado-row').hidden=true;
+ document.querySelector('.condicion-row').hidden=true;
+ $('nuevo-cliente-toggle').hidden=true;
+ $('footer').hidden=true;
+ document.querySelectorAll('.tabs [data-panel="panel-order"],.tabs [data-panel="panel-archive"],.tabs [data-panel="panel-admin"]').forEach(x=>x.hidden=true);
+ $('logout').textContent='Salir demo';
+ $('dashboard-date').textContent='Datos ficticios · demostración';
+ $('dashboard-scope').textContent='Entorno de muestra. No se guardan cambios ni se consulta información de clientes reales.';
+ $('search-input').value='';$('stock-search').value='';
+ render();showPanel('panel-search');
+}
+async function callGlobalAdmin(action,payload={}){
+ const {data,error}=await timeout(db.functions.invoke('admin-users',{body:{action,...payload}}),'La administración global');
+ if(error)throw error;if(data?.error)throw new Error(data.error);return data||{};
+}
+async function loadGlobalAdminData(){
+ if(!isGlobal)return;
+ const {data:allCompanies,error}=await timeout(db.from('companies').select('id,code,name,status').order('name'),'La lista global de empresas');
+ if(error)throw error;
+ $('global-company-list').innerHTML=(allCompanies||[]).map(c=>'<article class="global-admin-row"><div><strong>'+safe(c.name)+'</strong><small>'+safe(c.code)+' · '+safe(c.status)+'</small></div><button type="button" class="btn-outline btn-sm" data-company-status="'+safe(c.id)+'" data-status="'+safe(c.status)+'">'+(c.status==='active'?'Suspender':'Activar')+'</button></article>').join('')||'<p>No hay empresas registradas.</p>';
+ $('invite-company').innerHTML=(allCompanies||[]).filter(c=>c.status==='active').map(c=>'<option value="'+safe(c.id)+'">'+safe(c.name)+'</option>').join('');
+ const result=await callGlobalAdmin('list');
+ $('global-members-list').innerHTML=(result.memberships||[]).map(m=>'<article class="global-admin-row member-admin-row"><div><strong>'+safe(m.display_name||m.email||'Usuario sin correo')+'</strong><small>'+safe(m.email||'')+' · '+safe(m.company_name||'')+'</small></div><div class="member-admin-controls"><select aria-label="Rol" data-member-role="'+safe(m.company_id)+'|'+safe(m.user_id)+'"><option value="seller" '+(m.role==='seller'?'selected':'')+'>Vendedor</option><option value="company_admin" '+(m.role==='company_admin'?'selected':'')+'>Administrador</option></select><select aria-label="Estado" data-member-status="'+safe(m.company_id)+'|'+safe(m.user_id)+'"><option value="active" '+(m.status==='active'?'selected':'')+'>Activo</option><option value="suspended" '+(m.status==='suspended'?'selected':'')+'>Suspendido</option></select><button type="button" class="btn-outline btn-sm" data-member-save="'+safe(m.company_id)+'|'+safe(m.user_id)+'">Guardar</button></div></article>').join('')||'<p>Todavía no hay usuarios asignados.</p>';
+ $('global-members-list').querySelectorAll('[data-member-save]').forEach(b=>b.onclick=async()=>{
+  const [companyId,userId]=b.dataset.memberSave.split('|');
+  const key=b.dataset.memberSave;
+  const role=$('global-members-list').querySelector('[data-member-role="'+key+'"]').value;
+  const status=$('global-members-list').querySelector('[data-member-status="'+key+'"]').value;
+  b.disabled=true;try{await callGlobalAdmin('update-membership',{companyId,userId,role,status});await loadGlobalAdminData();}catch(e){alert('No se pudo actualizar la membresía: '+e.message);}finally{b.disabled=false;}
+ });
+ $('global-company-list').querySelectorAll('[data-company-status]').forEach(b=>b.onclick=async()=>{
+  const status=b.dataset.status==='active'?'suspended':'active';b.disabled=true;
+  try{const {error}=await timeout(db.from('companies').update({status}).eq('id',b.dataset.companyStatus),'La actualización de empresa');if(error)throw error;await loadGlobalAdminData();await loadCompanyContext(user);if(activeCompany?.status==='suspended')activeCompany=companies[0]||null;}catch(e){alert('No se pudo cambiar el estado: '+e.message);}finally{b.disabled=false;}
+ });
+}
+$('company-create-form').addEventListener('submit',async e=>{
+ e.preventDefault();if(!isGlobal)return;
+ const name=$('new-company-name').value.trim(),code=$('new-company-code').value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g,'');
+ const msg=$('company-create-message');if(!name||!code){msg.textContent='Completá el nombre y un código válido.';return;}
+ const b=$('company-create-form').querySelector('button');b.disabled=true;
+ try{const {error}=await timeout(db.from('companies').insert({name,code,status:'active'}),'La creación de empresa');if(error)throw error;msg.textContent='Empresa creada correctamente.';$('company-create-form').reset();await loadCompanyContext(user);await loadGlobalAdminData();}
+ catch(err){msg.textContent='No se pudo crear la empresa: '+err.message;}finally{b.disabled=false;}
+});
+$('member-invite-form').addEventListener('submit',async e=>{
+ e.preventDefault();if(!isGlobal)return;
+ const msg=$('member-invite-message'),b=$('member-invite-form').querySelector('button');b.disabled=true;
+ try{const data=await callGlobalAdmin('invite',{companyId:$('invite-company').value,email:$('invite-email').value.trim(),displayName:$('invite-name').value.trim(),role:$('invite-role').value});msg.textContent=data.invited?'Invitación enviada por correo.':'Usuario existente asignado a la empresa.';$('member-invite-form').reset();await loadGlobalAdminData();}
+ catch(err){msg.textContent='No se pudo invitar al usuario: '+err.message;}finally{b.disabled=false;}
+});
+$('global-admin-refresh').onclick=()=>loadGlobalAdminData().catch(e=>alert(e.message));
+$('company-gate-form').addEventListener('submit',async e=>{e.preventDefault();const chosen=companies.find(c=>c.id===$('company-gate-select').value);if(!chosen)return;activeCompany=chosen;profile={role:isGlobal?'company_admin':(chosen.memberRole||'seller')};await finishCompanyLogin();});
+$('demo-access').onclick=()=>enterPublicDemo();
+$('login-form').addEventListener('submit',async e=>{e.preventDefault();const b=$('login-form').querySelector('button[type="submit"]');b.disabled=true;gate('Conectando con Supabase DEMO…');try{const r=await timeout(db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value}),'El acceso');if(r.error)throw r.error;await activate(r.data.user);}catch(err){await db.auth.signOut();gate('No se pudo ingresar: '+(err.message||'Error desconocido'));}finally{b.disabled=false;}});
+$('logout').onclick=async()=>{if(isPublicDemo){window.location.reload();return;}await db.auth.signOut();user=null;profile=null;activeCompany=null;companies=[];isGlobal=false;isPublicDemo=false;items=[];clients=[];sellerRows=[];orders=[];cart=[];$('company-gate').hidden=true;gate('Sesión cerrada.');};
 document.querySelectorAll('.tabs [data-panel]').forEach(b=>b.addEventListener('click',()=>showPanel(b.dataset.panel)));
 $('company-select').addEventListener('change',e=>switchCompany(e.target.value));
 $('search-input').addEventListener('input',render);$('discount-input').addEventListener('input',render);
@@ -184,6 +267,7 @@ $('save-order').onclick=async()=>{
  saveButton.disabled=true;
  const msg=$('order-message');const seller=$('vendedor-input').value,clientCode=$('cliente-input').dataset.code;
  try{
+ if(isPublicDemo){msg.textContent='La demostración es de solo lectura.';return;}
  if(!cart.length){msg.textContent='Agregá al menos un artículo.';return;}
  if(!seller||!clientCode){msg.textContent='Seleccioná vendedor y cliente de la lista.';return;}
  const sellerMatches=sellerRows.filter(x=>x.seller_label===seller);
