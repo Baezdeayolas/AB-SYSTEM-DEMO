@@ -16,6 +16,8 @@ jobs:
           node-version: 22
       - name: Check JavaScript syntax
         run: node --check cloud-sync-demo.js
+      - name: Check database migration exists
+        run: test -s sql/ETAPA-2D-22-INVENTARIO-CENTRAL-CDE-IMPORTACION-EXCEL.sql
       - name: Check release wiring
         run: |
           grep -q "inventory_location_balances" cloud-sync-demo.js
