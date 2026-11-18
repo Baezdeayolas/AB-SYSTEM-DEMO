@@ -5,7 +5,7 @@ const SUPABASE_KEY='sb_publishable_M6W3DMCqPcH92cT96ioP5A_wi64QmcA';
 const $=id=>document.getElementById(id);
 if(!window.supabase?.createClient){$('login-message').textContent='No se pudo cargar el servicio de acceso DEMO.';return;}
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let user=null,profile=null,companies=[],activeCompany=null,isGlobal=false,isPublicDemo=false,items=[],clients=[],sellerRows=[],cart=[],orders=[],tier=1,estado='pendiente',condicion='Contado',pendingImport=null;
+let user=null,profile=null,companies=[],activeCompany=null,isGlobal=false,isPublicDemo=false,items=[],clients=[],sellerRows=[],cart=[],orders=[],tier=1,estado='pendiente',condicion='Contado',pendingImport=null,pendingClientImport=null;
 const money=n=>'Gs. '+Math.round(Number(n||0)).toLocaleString('es-PY');
 const safe=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const timeout=(p,label)=>Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error(label+' no respondió.')),12000))]);
@@ -45,7 +45,7 @@ async function switchCompany(companyId){
  const previous=activeCompany,select=$('company-select');
  select.disabled=true;
  activeCompany=next;profile={role:isGlobal?'company_admin':(next.memberRole||'seller')};
- cart=[];orders=[];items=[];clients=[];sellerRows=[];
+ cart=[];orders=[];items=[];clients=[];sellerRows=[];pendingClientImport=null;
  $('cliente-input').value='';$('cliente-input').dataset.code='';$('cliente-suggestions').classList.remove('open');$('vendedor-input').value='';
  $('order-message').textContent='';$('discount-input').value='0';
  $('company-role').textContent=isGlobal?'Superadministrador global':(profile.role==='company_admin'?'Administrador de empresa':'Vendedor');
@@ -155,9 +155,13 @@ async function loadData(){
  $('vendedor-input').innerHTML='<option value="">Vendedor</option>'+[...new Set(sellers)].map(x=>'<option value="'+safe(x)+'">'+safe(x)+'</option>').join('');
  $('save-order').textContent='Guardar pedido · '+activeCompany.name;
  $('stock-list').setAttribute('aria-label','Stock de '+activeCompany.name);
- $('excel-import-confirm').disabled=!(isGlobal||profile.role==='company_admin');
- $('excel-import-file').disabled=!(isGlobal||profile.role==='company_admin');
- $('excel-import-preview').textContent=(isGlobal||profile.role==='company_admin')?'La importación está disponible para administradores.':'Solo un administrador de empresa puede importar catálogo y stock.';
+ const canManageCatalog=(isGlobal||profile.role==='company_admin');
+ $('excel-import-confirm').disabled=!canManageCatalog;
+ $('excel-import-file').disabled=!canManageCatalog;
+ $('excel-import-preview').textContent=canManageCatalog?'La importación está disponible para administradores.':'Solo un administrador de empresa puede importar catálogo y stock.';
+ $('client-excel-import-file').disabled=!canManageCatalog;
+ $('client-excel-import-confirm').disabled=true;
+ $('client-excel-import-preview').textContent=canManageCatalog?'La carga de clientes está disponible para administradores de esta empresa.':'Solo un administrador de empresa puede importar clientes.';
  render();await loadOrders();
 }
 async function loadOrders(){
@@ -303,7 +307,78 @@ $('excel-import-confirm').addEventListener('click',async()=>{if(!pendingImport||
  }
  await loadData();$('excel-import-preview').textContent='Importación completada: '+processed+' artículos procesados en '+totalBatches+' lotes. Los artículos ausentes se conservaron y los stocks CENTRAL/CDE se actualizaron por separado.';pendingImport=null;$('excel-import-file').value='';
 }catch(err){$('excel-import-preview').textContent='Importación detenida: '+(err.message||'Error desconocido')+' Si hubo lotes previos exitosos, sus cambios ya quedaron guardados; puedes volver a ejecutar el mismo archivo para completar/actualizar el catálogo.';}finally{b.textContent='Confirmar importación';b.disabled=!pendingImport;}});
-$('stock-search').addEventListener('input',renderStock);
+
+ function readClientExcelRows(workbook){
+  const sheetName=workbook.SheetNames[0];if(!sheetName)throw new Error('El libro no contiene hojas.');
+  const matrix=window.XLSX.utils.sheet_to_json(workbook.Sheets[sheetName],{header:1,defval:null,raw:false});
+  const aliases={
+   code:['CODIGO','CODIGOCLIENTE','CODCLIENTE','CODCLI','COD'],
+   name:['NOMBRE','NOMBRECLIENTE','CLIENTE','RAZONSOCIAL','RAZONSOCIALCLIENTE','DESCRIPCION'],
+   city:['CIUDAD','LOCALIDAD'],department:['DEPARTAMENTO','DPTO'],district:['DISTRITO'],
+   phone:['TELEFONO','TELEFONOS','TEL','CELULAR','MOVIL','TELEFONOMOVIL'],
+   docType:['TIPODOCUMENTO','TIPODOC','TIPOIDENTIFICACION','DOCUMENTO'],
+   ident:['IDENTIFICACION','NUMEROIDENTIFICACION','NUMERODOCUMENTO','NRODOCUMENTO','RUC','CEDULA','CI']
+  };
+  let headerIndex=-1,col={};
+  for(let i=0;i<matrix.length;i++){
+   const headers=(matrix[i]||[]).map(normalizeHeader),candidate={};
+   for(const [key,names] of Object.entries(aliases)){const found=names.map(n=>headers.indexOf(n)).filter(n=>n>=0);if(found.length>1)throw new Error('Hay encabezados duplicados para '+key+'.');if(found.length)candidate[key]=found[0];}
+   if(candidate.code!==undefined&&candidate.name!==undefined){headerIndex=i;col=candidate;break;}
+  }
+  if(headerIndex<0)throw new Error('No se identificaron juntos los encabezados de código y nombre del cliente. La planilla original se debe validar para ajustar sus títulos exactos.');
+  const seen=new Map(),rows=[];
+  for(let i=headerIndex+1;i<matrix.length;i++){
+   const r=matrix[i];if(!r||r.every(v=>v===null||String(v).trim()===''))continue;
+   const line=i+1,code=String(r[col.code]??'').trim(),name=String(r[col.name]??'').trim();
+   if(!code&&!name)continue;
+   if(!code||!name)throw new Error('Fila '+line+': código y nombre del cliente son obligatorios.');
+   if(seen.has(code))throw new Error('Código de cliente duplicado '+code+' en filas '+seen.get(code)+' y '+line+'.');
+   seen.set(code,line);
+   const payload={c:code,n:name};
+   for(const [key,field] of [['city','ciu'],['department','dep'],['district','dst'],['phone','tel'],['docType','tip'],['ident','ident']]){
+    if(col[key]!==undefined&&r[col[key]]!==null&&String(r[col[key]]).trim()!=='')payload[field]=String(r[col[key]]).trim();
+   }
+   rows.push({code,payload});
+  }
+  if(!rows.length)throw new Error('No se encontraron clientes para importar.');
+  return {rows,sheetName,headerRow:headerIndex+1};
+ }
+ $('client-excel-import-file').addEventListener('change',async e=>{
+  const file=e.target.files&&e.target.files[0];pendingClientImport=null;$('client-excel-import-confirm').disabled=true;
+  if(!file)return;
+  if(isPublicDemo||!(isGlobal||profile?.role==='company_admin'))return;
+  try{
+   if(!window.XLSX)throw new Error('No se cargó el lector Excel.');
+   const wb=window.XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:false}),parsed=readClientExcelRows(wb);
+   const existing=new Set(clients.map(x=>String(x.c))),fresh=parsed.rows.filter(x=>!existing.has(x.code)).length;
+   pendingClientImport={rows:parsed.rows,fileName:file.name};
+   $('client-excel-import-preview').textContent='Archivo: '+file.name+' · Hoja: '+parsed.sheetName+' · Encabezados en fila: '+parsed.headerRow+' · Clientes: '+parsed.rows.length+' · Nuevos: '+fresh+' · Actualizar: '+(parsed.rows.length-fresh)+'. Los clientes ausentes se conservarán y los campos vacíos no borrarán datos existentes.';
+   $('client-excel-import-confirm').disabled=false;
+  }catch(err){$('client-excel-import-preview').textContent='No se puede importar: '+err.message;}
+ });
+ $('client-excel-import-confirm').addEventListener('click',async()=>{
+  if(!pendingClientImport||isPublicDemo||!(isGlobal||profile?.role==='company_admin'))return;
+  const b=$('client-excel-import-confirm');b.disabled=true;b.textContent='Importando…';
+  try{
+   const rows=pendingClientImport.rows,batchSize=250,totalBatches=Math.ceil(rows.length/batchSize);let processed=0;
+   for(let offset=0,batch=1;offset<rows.length;offset+=batchSize,batch++){
+    const batchRows=rows.slice(offset,offset+batchSize).map(row=>{
+     const previous=clients.find(c=>String(c.c)===String(row.code))||{};
+     return {company_id:activeCompany.id,code:row.code,payload:{...previous,...row.payload}};
+    });
+    $('client-excel-import-preview').textContent='Importando lote '+batch+' de '+totalBatches+' · '+processed+' de '+rows.length+' clientes procesados…';
+    const result=await timeout(db.from('catalog_clients').upsert(batchRows,{onConflict:'company_id,code'}),'El lote '+batch+' de clientes');
+    if(result.error)throw new Error('Lote '+batch+'/'+totalBatches+': '+result.error.message+' · Procesados antes del error: '+processed+'.');
+    processed+=batchRows.length;
+   }
+   await loadData();
+   $('client-excel-import-preview').textContent='Importación completada: '+processed+' clientes procesados en '+totalBatches+' lotes. Los clientes ausentes se conservaron.';
+   pendingClientImport=null;$('client-excel-import-file').value='';
+  }catch(err){$('client-excel-import-preview').textContent='Importación detenida: '+(err.message||'Error desconocido')+' Si hubo lotes previos exitosos, podés volver a ejecutar la misma planilla para completar o actualizar los clientes.';}
+  finally{b.textContent='Importar clientes';b.disabled=!pendingClientImport;}
+ });
+
+ $('stock-search').addEventListener('input',renderStock);
 $('archive-search-input').addEventListener('input',()=>{const q=$('archive-search-input').value.toLowerCase();$('archive-list').querySelectorAll('article').forEach(el=>el.hidden=!el.textContent.toLowerCase().includes(q));});
 $('vendedor-input').addEventListener('change',()=>{});
 gate('Ingresá con tu cuenta de AB SYSTEM.');
