@@ -2506,3 +2506,182 @@ main { background:#202a34; }
   .client-tools-row { justify-content: flex-start; }
   .status { font-size: 8px; }
 }
+
+ 
+/* ---------- Ajuste de contraste: réplica visual Ko'eju ---------- */
+/* Reducir superficies blancas y reforzar lectura en pantallas móviles. */
+:root {
+  --ink: #e8f1fc;
+  --ink-soft: #c2d5eb;
+  --paper: #202a34;
+  --paper-dim: #26384b;
+  --line: rgba(210,225,240,.22);
+}
+html, body, main,
+#panel-dashboard, #panel-stock, #panel-archive, #panel-admin,
+#panel-order, #panel-search {
+  background-color: #202a34;
+  color: #e8f1fc;
+}
+#panel-search {
+  background-color: #302f29;
+}
+#panel-search::before {
+  background-image:
+    linear-gradient(rgba(27,37,49,.78), rgba(27,37,49,.78)),
+    url('./Icons/ventafondo.jpg');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.search-wrap,
+.stock-controls,
+.stock-import-head,
+.precio-estado-row,
+.tier-row,
+.condicion-row {
+  background-color: #202a34;
+  color: #e8f1fc;
+}
+.search-wrap input,
+.search-filters select,
+.condicion-input,
+.qty-input,
+.stock-controls input,
+.stock-controls select,
+#archive-search-input,
+.admin-tools input:not([type="file"]),
+.admin-tools select,
+.admin-panel-content input:not([type="file"]),
+.admin-panel-content select,
+.nuevo-cliente-panel input {
+  background: #25251f;
+  color: #fff;
+  border: 1px solid rgba(220,235,250,.28);
+}
+.search-wrap input::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: #c0cbd8;
+  opacity: 1;
+}
+.scan-btn {
+  background: #25251f;
+  color: #f0f5fc;
+  border: 1px solid rgba(220,235,250,.3);
+}
+.item-card,
+.order-card,
+.archive-card,
+.dashboard-card,
+.stock-summary-card,
+.admin-tools,
+.admin-panel-content,
+.historico-toggle,
+.order-discount-panel,
+.order-visual-panel,
+#excel-import-preview {
+  background: #26384b;
+  color: #f1f6fc;
+  border-color: rgba(220,235,250,.2);
+}
+.item-card,
+.order-card,
+.archive-card,
+.dashboard-card,
+.stock-summary-card,
+.admin-tools {
+  box-shadow: 0 3px 10px rgba(0,0,0,.18);
+}
+.item-desc,
+.item-price,
+.order-card,
+.archive-client,
+.archive-total,
+.stock-summary-card strong,
+.stock-import-head h2,
+.modal-sheet h3,
+.admin-tools label,
+.admin-panel-content label {
+  color: #f4f8ff;
+}
+.item-code,
+.item-stock,
+.archive-meta,
+.archive-sub,
+.cs-meta-inline,
+.stock-import-head p,
+.stock-updated,
+.stock-result-count,
+.hint,
+.result-count,
+.empty-state {
+  color: #c2d5eb;
+}
+.stock-badge {
+  background: #35516d;
+  color: #f2f7ff;
+}
+.stock-badge.low {
+  background: rgba(225,29,72,.22);
+  color: #ffb8c8;
+}
+.historico-toggle {
+  color: #e8f1fc;
+  border-color: rgba(220,235,250,.24);
+}
+.archive-summary {
+  background: #26384b;
+  color: #f1f6fc;
+  border-color: rgba(220,235,250,.2);
+}
+.archive-summary-label,
+.archive-summary-value {
+  color: #dcecff;
+}
+.modal-sheet {
+  background: #202a34;
+  color: #f1f6fc;
+}
+.modal-sheet p { color: #c2d5eb; }
+.cliente-suggestions {
+  background: #26384b;
+  border-color: rgba(220,235,250,.22);
+}
+.cliente-suggestion {
+  color: #f1f6fc;
+  border-color: rgba(220,235,250,.16);
+}
+.cliente-suggestion .cs-meta { color: #c2d5eb; }
+.tabs {
+  background: #111820;
+  border-top-color: rgba(255,255,255,.14);
+}
+.tab-btn { color: #c2d5eb; }
+.tab-btn.active {
+  color: #fff;
+  background: #172b24;
+  box-shadow: inset 0 3px 0 #20b36b;
+}
+.tab-label { font-size: 11px; font-weight: 700; }
+.tab-icon { font-size: 20px; }
+.footer {
+  background: #174477;
+  color: #fff;
+}
+.total-block .total-label { color: #c7ddf3; }
+.total-block .total-value { color: #fff; }
+.btn-primary, #btn-pdf { background: #168fe0; color: #fff; }
+.add-btn { background: #20b36b; color: #fff; }
+.btn-ghost, #btn-clear { color: #fff; }
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid #63c6ff;
+  outline-offset: 2px;
+}
+@media (max-width: 420px) {
+  .item-desc { font-size: 14px; line-height: 1.3; }
+  .item-price { font-size: 15px; }
+  .item-code, .item-stock { font-size: 11px; }
+  .tab-label { font-size: 10.5px; }
+  .stock-summary-card span { font-size: 11px; }
+}
