@@ -96,7 +96,31 @@ async function fetchAllRows(makeQuery,label){
 function renderStock(){
  const q=$('stock-search').value.trim().toLowerCase();
  const filtered=items.filter(x=>[x.c,x.d].some(v=>String(v||'').toLowerCase().includes(q)));
- $('stock-list').innerHTML=filtered.slice(0,100).map(x=>'<article class="order-card"><strong>'+safe(x.d)+'</strong><small>'+safe(x.c)+' · CENTRAL: '+Number(x.sc||0)+' · CDE: '+Number(x.sd||0)+' · Total: '+(Number(x.sc||0)+Number(x.sd||0))+'</small></article>').join('')||'<div class="empty-state">No se encontraron artículos.</div>';
+ const canAdjust=isGlobal||profile?.role==='company_admin';
+ $('stock-list').innerHTML=filtered.slice(0,100).map(x=>{
+  const code=safe(x.c),central=Number(x.sc||0),cde=Number(x.sd||0);
+  const controls=canAdjust?'<div class="stock-edit-grid"><label>CENTRAL<input type="number" min="0" step="0.001" inputmode="decimal" data-stock-qty="'+code+'" data-location="CENTRAL" value="'+central+'"></label><button type="button" class="stock-save-btn" data-stock-set="'+code+'" data-location="CENTRAL">Actualizar CENTRAL</button><label>CDE<input type="number" min="0" step="0.001" inputmode="decimal" data-stock-qty="'+code+'" data-location="CDE" value="'+cde+'"></label><button type="button" class="stock-save-btn" data-stock-set="'+code+'" data-location="CDE">Actualizar CDE</button><label class="stock-reason-label">Motivo del ajuste<input type="text" maxlength="180" placeholder="Ej.: conteo físico" data-stock-reason="'+code+'"></label><p class="stock-edit-message" data-stock-message="'+code+'" role="status"></p></div>':'';
+  return '<article class="order-card stock-item-card"><strong>'+safe(x.d)+'</strong><small>'+code+' · CENTRAL: '+central+' · CDE: '+cde+' · Total: '+(central+cde)+'</small>'+controls+'</article>';
+ }).join('')||'<div class="empty-state">No se encontraron artículos.</div>';
+ $('stock-list').querySelectorAll('[data-stock-set]').forEach(b=>b.onclick=()=>saveStockBalance(b.dataset.stockSet,b.dataset.location,b));
+}
+async function saveStockBalance(code,location,button){
+ const item=items.find(x=>String(x.c)===String(code));
+ const qtyInput=$('stock-list').querySelector('[data-stock-qty="'+CSS.escape(code)+'"][data-location="'+location+'"]');
+ const reasonInput=$('stock-list').querySelector('[data-stock-reason="'+CSS.escape(code)+'"]');
+ const message=$('stock-list').querySelector('[data-stock-message="'+CSS.escape(code)+'"]');
+ const raw=qtyInput?.value,quantity=Number(raw),reason=reasonInput?.value.trim()||'';
+ if(raw===''||!Number.isFinite(quantity)||quantity<0||!/^\\d+(\\.\\d{1,3})?$/.test(raw.trim())){message.textContent='Ingresá una cantidad válida (máximo 3 decimales).';return;}
+ if(!reason){message.textContent='Indicá el motivo del ajuste.';reasonInput?.focus();return;}
+ if(!item||!(isGlobal||profile?.role==='company_admin')){message.textContent='No tienes permiso para ajustar este stock.';return;}
+ button.disabled=true;message.textContent='Guardando ajuste…';
+ try{
+  const result=await timeout(db.rpc('ab_set_inventory_location_balance',{p_company_id:activeCompany.id,p_product_code:String(code),p_location_code:location,p_quantity:quantity,p_movement_type:'adjustment',p_reason:reason,p_source_ref:'manual-'+crypto.randomUUID()}),'La actualización de stock');
+  if(result.error)throw result.error;
+  if(location==='CENTRAL')item.sc=quantity;else item.sd=quantity;
+  message.textContent='Stock '+location+' actualizado. Movimiento registrado.';
+  renderStock();render();
+ }catch(e){message.textContent='No se pudo actualizar: '+(e.message||'Error desconocido');button.disabled=false;}
 }
 async function loadData(){
  if(!activeCompany?.id)throw new Error('No hay una empresa activa.');
