@@ -68,7 +68,7 @@ function total(){return cart.reduce((s,x)=>s+x['p'+tier]*x.qty,0);}
 function render(){
  const q=$('search-input').value.trim().toLowerCase(),filtered=q?items.filter(x=>[x.c,x.b,x.d].some(v=>String(v||'').toLowerCase().includes(q))):[];
  $('result-count').textContent=q?(filtered.length+' productos · mostrando '+Math.min(filtered.length,100)+' · '+(activeCompany?.name||'empresa')):'Ingresá un código, código de barra o descripción para buscar.';
- $('item-list').innerHTML=q?(filtered.slice(0,100).map(x=>'<article class="item-card"><div class="item-top"><span class="item-code">'+safe(x.c)+'</span><span class="item-stock">CENTRAL '+Number(x.sc||0)+' · CDE '+Number(x.sd||0)+'</span></div><div class="item-desc">'+safe(x.d)+'</div><div class="item-bottom"><strong class="item-price">'+money(x['p'+tier])+'</strong><div class="item-actions"><input class="qty-input" type="number" min="1" value="1" aria-label="Cantidad" data-qty="'+safe(x.c)+'"><button class="add-btn" data-add="'+safe(x.c)+'">Agregar</button></div></div></article>').join('')||'<div class="empty-state">No se encontraron productos.</div>'):'<div class="empty-state">Los artículos aparecerán aquí cuando realices una búsqueda.</div>';
+ $('item-list').innerHTML=q?(filtered.slice(0,100).map(x=>'<article class="item-card"><div class="item-top"><span class="item-code">'+safe(x.c)+'</span><span class="item-stock">CENTRAL '+Number(x.sc||0)+' · CDE '+Number(x.sd||0)+'</span></div><div class="item-desc">'+safe(x.d)+'</div><div class="item-bottom"><strong class="item-price">'+money(x['p'+tier])+'</strong><div class="item-actions"><input class="qty-input" type="number" min="1" value="1" aria-label="Cantidad" data-qty="'+safe(x.c)+'"><button class="add-btn" data-add="'+safe(x.c)+'"'+(isPublicDemo?' disabled':'')+'>Agregar</button></div></div></article>').join('')||'<div class="empty-state">No se encontraron productos.</div>'):'<div class="empty-state">Los artículos aparecerán aquí cuando realices una búsqueda.</div>';
  $('item-list').querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const code=b.dataset.add,qty=Math.max(1,Number($('item-list').querySelector('[data-qty="'+CSS.escape(code)+'"]').value)||1);add(code,qty);});
  $('order-list').innerHTML=cart.map((x,i)=>'<article class="order-card"><div class="order-top"><div class="order-code-desc"><strong>'+safe(x.d)+'</strong><small>'+safe(x.c)+' · '+x.qty+' unidad(es) · Disponible: '+(Number(x.sc||0)+Number(x.sd||0))+' (CENTRAL '+Number(x.sc||0)+' / CDE '+Number(x.sd||0)+')</small></div><button class="order-remove" data-remove="'+i+'" aria-label="Quitar">×</button></div><div class="order-bottom"><span>'+money(x['p'+tier])+' c/u</span><strong class="line-subtotal">'+money(x['p'+tier]*x.qty)+'</strong></div></article>').join('');
  $('order-list').querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{cart.splice(Number(b.dataset.remove),1);render();});
@@ -173,7 +173,7 @@ async function finishCompanyLogin(){
   $('company-select').hidden=!(isGlobal||companies.length>1);
   $('admin-menu-tab').hidden=!(isGlobal||profile.role==='company_admin');
   $('global-admin-tools').hidden=!isGlobal;
-  if(isGlobal)await loadGlobalAdminData();
+  if(isGlobal){try{await loadGlobalAdminData();}catch(adminError){$('global-members-list').textContent='La gestión de usuarios requiere habilitar la función segura admin-users en Supabase DEMO.';}}
   showPanel('panel-search');
  }catch(err){$('company-gate').hidden=false;$('company-gate-message').textContent='No se pudo cargar la empresa: '+(err.message||'Error desconocido');}
 }
