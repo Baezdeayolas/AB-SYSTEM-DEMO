@@ -67,8 +67,8 @@ async function switchCompany(companyId){
 function total(){return cart.reduce((s,x)=>s+x['p'+tier]*x.qty,0);}
 function render(){
  const q=$('search-input').value.trim().toLowerCase(),filtered=items.filter(x=>[x.c,x.b,x.d].some(v=>String(v||'').toLowerCase().includes(q)));
- $('result-count').textContent=filtered.length+' productos · '+(activeCompany?.name||'empresa');
- $('item-list').innerHTML=filtered.map(x=>'<article class="item-card"><div class="item-top"><span class="item-code">'+safe(x.c)+'</span><span class="item-stock">CENTRAL '+Number(x.sc||0)+' · CDE '+Number(x.sd||0)+'</span></div><div class="item-desc">'+safe(x.d)+'</div><div class="item-bottom"><strong class="item-price">'+money(x['p'+tier])+'</strong><div class="item-actions"><input class="qty-input" type="number" min="1" value="1" aria-label="Cantidad" data-qty="'+safe(x.c)+'"><button class="add-btn" data-add="'+safe(x.c)+'">Agregar</button></div></div></article>').join('')||'<div class="empty-state">No se encontraron productos.</div>';
+ $('result-count').textContent=filtered.length+' productos · mostrando '+Math.min(filtered.length,100)+' · '+(activeCompany?.name||'empresa');
+ $('item-list').innerHTML=filtered.slice(0,100).map(x=>'<article class="item-card"><div class="item-top"><span class="item-code">'+safe(x.c)+'</span><span class="item-stock">CENTRAL '+Number(x.sc||0)+' · CDE '+Number(x.sd||0)+'</span></div><div class="item-desc">'+safe(x.d)+'</div><div class="item-bottom"><strong class="item-price">'+money(x['p'+tier])+'</strong><div class="item-actions"><input class="qty-input" type="number" min="1" value="1" aria-label="Cantidad" data-qty="'+safe(x.c)+'"><button class="add-btn" data-add="'+safe(x.c)+'">Agregar</button></div></div></article>').join('')||'<div class="empty-state">No se encontraron productos.</div>';
  $('item-list').querySelectorAll('[data-add]').forEach(b=>b.onclick=()=>{const code=b.dataset.add,qty=Math.max(1,Number($('item-list').querySelector('[data-qty="'+CSS.escape(code)+'"]').value)||1);add(code,qty);});
  $('order-list').innerHTML=cart.map((x,i)=>'<article class="order-card"><div class="order-top"><div class="order-code-desc"><strong>'+safe(x.d)+'</strong><small>'+safe(x.c)+' · '+x.qty+' unidad(es) · Disponible: '+(Number(x.sc||0)+Number(x.sd||0))+' (CENTRAL '+Number(x.sc||0)+' / CDE '+Number(x.sd||0)+')</small></div><button class="order-remove" data-remove="'+i+'" aria-label="Quitar">×</button></div><div class="order-bottom"><span>'+money(x['p'+tier])+' c/u</span><strong class="line-subtotal">'+money(x['p'+tier]*x.qty)+'</strong></div></article>').join('');
  $('order-list').querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{cart.splice(Number(b.dataset.remove),1);render();});
@@ -80,21 +80,35 @@ function render(){
  $('archive-summary-count').textContent=orders.length+' pedidos';$('archive-summary-value').textContent=money(orders.reduce((sum,o)=>sum+Number(o.payload?.total||0),0));$('tab-archive-count').textContent=orders.length;
  $('archive-list').innerHTML=orders.map(o=>'<article class="order-card"><div class="order-top"><div><strong>'+safe(o.payload?.cliente||'Pedido DEMO')+'</strong><small>'+safe(o.payload?.vendedor||'')+' · '+new Date(o.updated_at).toLocaleString('es-PY')+'</small></div><strong>'+money(o.payload?.total)+'</strong></div></article>').join('');
  $('archive-empty').hidden=orders.length>0;
- $('stock-list').innerHTML=items.map(x=>'<article class="order-card"><strong>'+safe(x.d)+'</strong><small>'+safe(x.c)+' · CENTRAL: '+Number(x.sc||0)+' · CDE: '+Number(x.sd||0)+' · Total: '+(Number(x.sc||0)+Number(x.sd||0))+'</small></article>').join('');
+ renderStock();
 }
 function add(code,qty){const item=items.find(x=>String(x.c)===String(code));if(!item)return;const row=cart.find(x=>x.c===item.c);if(row)row.qty+=qty;else cart.push({...item,qty});render();}
+async function fetchAllRows(makeQuery,label){
+ const all=[];const pageSize=1000;
+ for(let from=0;;from+=pageSize){
+  const {data,error}=await timeout(makeQuery().range(from,from+pageSize-1), 'Carga de '+label);
+  if(error)throw error;
+  const page=data||[];all.push(...page);
+  if(page.length<pageSize)break;
+ }
+ return all;
+}
+function renderStock(){
+ const q=$('stock-search').value.trim().toLowerCase();
+ const filtered=items.filter(x=>[x.c,x.d].some(v=>String(v||'').toLowerCase().includes(q)));
+ $('stock-list').innerHTML=filtered.slice(0,100).map(x=>'<article class="order-card"><strong>'+safe(x.d)+'</strong><small>'+safe(x.c)+' · CENTRAL: '+Number(x.sc||0)+' · CDE: '+Number(x.sd||0)+' · Total: '+(Number(x.sc||0)+Number(x.sd||0))+'</small></article>').join('')||'<div class="empty-state">No se encontraron artículos.</div>';
+}
 async function loadData(){
  if(!activeCompany?.id)throw new Error('No hay una empresa activa.');
- const [ir,cr,br]=await timeout(Promise.all([
-  db.from('catalog_items').select('code,payload').eq('company_id',activeCompany.id).order('code'),
-  db.from('catalog_clients').select('code,payload').eq('company_id',activeCompany.id).order('code'),
-  db.from('inventory_location_balances').select('product_code,location_code,quantity').eq('company_id',activeCompany.id)
- ]),'La carga de catálogo e inventario');
- if(ir.error)throw ir.error;if(cr.error)throw cr.error;if(br.error)throw br.error;
+ const [catalogRows,clientRows,balanceRows]=await Promise.all([
+  fetchAllRows(()=>db.from('catalog_items').select('code,payload').eq('company_id',activeCompany.id).order('code'),'El catálogo'),
+  fetchAllRows(()=>db.from('catalog_clients').select('code,payload').eq('company_id',activeCompany.id).order('code'),'Los clientes'),
+  fetchAllRows(()=>db.from('inventory_location_balances').select('product_code,location_code,quantity').eq('company_id',activeCompany.id).order('product_code'),'Los saldos CENTRAL/CDE')
+ ]);
  const stockByCode=new Map();
- (br.data||[]).forEach(x=>{const k=String(x.product_code),v=stockByCode.get(k)||{central:0,cde:0};if(x.location_code==='CENTRAL')v.central=Number(x.quantity)||0;if(x.location_code==='CDE')v.cde=Number(x.quantity)||0;stockByCode.set(k,v);});
- items=(ir.data||[]).map(x=>{const stock=stockByCode.get(String(x.code))||{central:0,cde:0};return {...x.payload,c:x.payload?.c??x.code,sc:stock.central,sd:stock.cde};});
- clients=(cr.data||[]).map(x=>x.payload);
+ balanceRows.forEach(x=>{const k=String(x.product_code),v=stockByCode.get(k)||{central:0,cde:0};if(x.location_code==='CENTRAL')v.central=Number(x.quantity)||0;if(x.location_code==='CDE')v.cde=Number(x.quantity)||0;stockByCode.set(k,v);});
+ items=catalogRows.map(x=>{const stock=stockByCode.get(String(x.code))||{central:0,cde:0};return {...x.payload,c:x.payload?.c??x.code,sc:stock.central,sd:stock.cde};});
+ clients=clientRows.map(x=>x.payload);
  if(String(activeCompany.code||'').toUpperCase()==='DEMO'){
   if(!items.length)items=[...window.DEMO_ITEMS];
   if(!clients.length)clients=[...window.DEMO_CLIENTS];
@@ -169,8 +183,18 @@ function normalizeHeader(v){return String(v??'').normalize('NFD').replace(/[\u03
 function excelNumber(v,label,row){if(v===null||v===undefined||String(v).trim()==='')throw new Error('Fila '+row+': falta '+label+'.');let n;if(typeof v==='number')n=v;else{let t=String(v).trim().replace(/\s/g,'');if(t.includes(',')&&t.includes('.'))t=t.replace(/\./g,'').replace(',','.');else if(t.includes(','))t=t.replace(',','.');n=Number(t);}if(!Number.isFinite(n)||n<0)throw new Error('Fila '+row+': '+label+' debe ser un número no negativo.');return n;}
 function readExcelRows(workbook){const sheetName=workbook.SheetNames[0];if(!sheetName)throw new Error('El libro no contiene hojas.');const matrix=window.XLSX.utils.sheet_to_json(workbook.Sheets[sheetName],{header:1,defval:null,raw:true});const headerIndex=matrix.findIndex(r=>r.some(v=>normalizeHeader(v)==='CODARTICULO'));if(headerIndex<0)throw new Error('No se encontró Cód.Artículo.');const headers=matrix[headerIndex].map(normalizeHeader);const aliases={code:['CODARTICULO','CODIGOARTICULO'],factory:['CODFABRICA'],barcode:['CODBARRA'],g1:['AGRUP1'],g2:['AGRUP2'],g3:['AGRUP3'],description:['DESCRIPCION'],packages:['ENVASES'],master:['MASTER'],inner:['INNER'],central:['CENTRAL','STOCKCENTRAL'],cde:['CDE','STOCKCDE'],p1:['1','PRECIO1'],p2:['2','PRECIO2'],p3:['3','PRECIO3']};const col={};for(const [k,ns] of Object.entries(aliases)){const ix=ns.map(n=>headers.indexOf(n)).filter(i=>i>=0);if(ix.length>1)throw new Error('Columnas duplicadas para '+k+'.');if(ix.length)col[k]=ix[0];}for(const k of ['code','description','central','cde','p1','p2','p3'])if(col[k]===undefined)throw new Error('Falta columna obligatoria: '+k+'.');const seen=new Map(),rows=[];for(let i=headerIndex+1;i<matrix.length;i++){const r=matrix[i];if(!r||r.every(v=>v===null||String(v).trim()===''))continue;const line=i+1,code=String(r[col.code]??'').trim(),desc=String(r[col.description]??'').trim();if(!code||!desc)throw new Error('Fila '+line+': código y descripción son obligatorios.');if(seen.has(code))throw new Error('Código duplicado '+code+' en filas '+seen.get(code)+' y '+line+'.');seen.set(code,line);const central=excelNumber(r[col.central],'CENTRAL',line),cde=excelNumber(r[col.cde],'CDE',line),p1=excelNumber(r[col.p1],'precio 1',line),p2=excelNumber(r[col.p2],'precio 2',line),p3=excelNumber(r[col.p3],'precio 3',line);const payload={c:code,d:desc,p1:p1,p2:p2,p3:p3,sc:central,sd:cde};for(const [k,f] of [['factory','factoryCode'],['barcode','b'],['g1','g1'],['g2','g2'],['g3','g3'],['packages','envases'],['master','master'],['inner','inner']])if(col[k]!==undefined&&r[col[k]]!==null&&String(r[col[k]]).trim()!=='')payload[f]=String(r[col[k]]).trim();rows.push({code:code,payload:payload,stock_central:central,stock_cde:cde});}if(!rows.length)throw new Error('No se encontraron artículos.');return {rows:rows,sheetName:sheetName,headerRow:headerIndex+1};}
 $('excel-import-file').addEventListener('change',async e=>{const file=e.target.files&&e.target.files[0];pendingImport=null;$('excel-import-confirm').disabled=true;if(!file)return;if(!(isGlobal||profile?.role==='company_admin'))return;try{if(!window.XLSX)throw new Error('No se cargó el lector Excel.');const wb=window.XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:false}),parsed=readExcelRows(wb),existing=new Set(items.map(x=>String(x.c))),fresh=parsed.rows.filter(x=>!existing.has(x.code)).length;pendingImport={rows:parsed.rows,fileName:file.name};$('excel-import-preview').textContent='Archivo: '+file.name+' · Hoja: '+parsed.sheetName+' · Fila encabezado: '+parsed.headerRow+' · Artículos: '+parsed.rows.length+' · Nuevos: '+fresh+' · Actualizar: '+(parsed.rows.length-fresh)+'. Los ausentes se conservan.';$('excel-import-confirm').disabled=false;}catch(err){$('excel-import-preview').textContent='No se puede importar: '+err.message;}});
-$('excel-import-confirm').addEventListener('click',async()=>{if(!pendingImport||!(isGlobal||profile?.role==='company_admin'))return;const b=$('excel-import-confirm');b.disabled=true;b.textContent='Importando…';try{const importId=crypto.randomUUID(),r=await timeout(db.rpc('ab_import_company_catalog_v2',{p_company_id:activeCompany.id,p_import_id:importId,p_rows:pendingImport.rows}),'La importación Excel');if(r.error)throw r.error;await loadData();$('excel-import-preview').textContent='Importación completada: '+Number(r.data||0)+' artículos. Los productos ausentes se conservaron.';pendingImport=null;$('excel-import-file').value='';}catch(err){$('excel-import-preview').textContent='No se pudo completar: '+(err.message||'Error desconocido');}finally{b.textContent='Confirmar importación';b.disabled=!pendingImport;}});
-$('stock-search').addEventListener('input',()=>{const q=$('stock-search').value.toLowerCase();$('stock-list').querySelectorAll('article').forEach(el=>el.hidden=!el.textContent.toLowerCase().includes(q));});
+$('excel-import-confirm').addEventListener('click',async()=>{if(!pendingImport||!(isGlobal||profile?.role==='company_admin'))return;const b=$('excel-import-confirm');b.disabled=true;b.textContent='Importando…';try{
+ const rows=pendingImport.rows,batchSize=250,totalBatches=Math.ceil(rows.length/batchSize),runId=crypto.randomUUID();let processed=0;
+ for(let offset=0,batch=1;offset<rows.length;offset+=batchSize,batch++){
+  const batchRows=rows.slice(offset,offset+batchSize),importId=runId+'-'+String(batch).padStart(3,'0');
+  $('excel-import-preview').textContent='Importando lote '+batch+' de '+totalBatches+' · '+processed+' de '+rows.length+' artículos procesados…';
+  const result=await timeout(db.rpc('ab_import_company_catalog_v2',{p_company_id:activeCompany.id,p_import_id:importId,p_rows:batchRows}),'El lote '+batch+' de importación');
+  if(result.error)throw new Error('Lote '+batch+'/'+totalBatches+': '+result.error.message+' · Procesados antes del error: '+processed+'.');
+  processed+=Number(result.data||0);
+ }
+ await loadData();$('excel-import-preview').textContent='Importación completada: '+processed+' artículos procesados en '+totalBatches+' lotes. Los artículos ausentes se conservaron y los stocks CENTRAL/CDE se actualizaron por separado.';pendingImport=null;$('excel-import-file').value='';
+}catch(err){$('excel-import-preview').textContent='Importación detenida: '+(err.message||'Error desconocido')+' Si hubo lotes previos exitosos, sus cambios ya quedaron guardados; puedes volver a ejecutar el mismo archivo para completar/actualizar el catálogo.';}finally{b.textContent='Confirmar importación';b.disabled=!pendingImport;}});
+$('stock-search').addEventListener('input',renderStock);
 $('archive-search-input').addEventListener('input',()=>{const q=$('archive-search-input').value.toLowerCase();$('archive-list').querySelectorAll('article').forEach(el=>el.hidden=!el.textContent.toLowerCase().includes(q));});
 $('vendedor-input').addEventListener('change',()=>{});
 gate('Ingresá con tu cuenta de AB SYSTEM.');
