@@ -23,6 +23,12 @@ jobs:
           grep -q "inventory_location_balances" cloud-sync-demo.js
           grep -q "ab_import_company_catalog_v2" cloud-sync-demo.js
           grep -q "excel-import-file" index.html
+          grep -q "company-gate-select" index.html
+          grep -q "demo-access" index.html
+          grep -q "global-admin-tools" index.html
+          test -s supabase/functions/admin-users/index.ts
+          grep -q "superadmin_global" supabase/functions/admin-users/index.ts
+          ! grep -q "SUPABASE_SERVICE_ROLE_KEY" cloud-sync-demo.js
           grep -q "druugcvqxxanhtdkqnjd.supabase.co" cloud-sync-demo.js
           ! grep -q "service_role" cloud-sync-demo.js
           ! grep -q "dazdaiutdbvotmzislxr" cloud-sync-demo.js
