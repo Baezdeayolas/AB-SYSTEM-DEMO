@@ -82,3 +82,19 @@ UNION ALL SELECT 'orders', count(*) FROM public.orders
 UNION ALL SELECT 'seller_assignments', count(*) FROM public.seller_assignments
 UNION ALL SELECT 'inventory_current', count(*) FROM public.inventory_current
 ORDER BY table_name;
+
+-- 7) Funciones y vistas que todavía contienen literalmente el código KOEJU.
+-- Devuelve solo nombres técnicos, no el código fuente ni datos de usuarios.
+SELECT 'function' AS object_type,
+       n.nspname || '.' || p.proname AS object_name
+FROM pg_proc p
+JOIN pg_namespace n ON n.oid = p.pronamespace
+WHERE n.nspname = 'public'
+  AND p.prosrc ILIKE '%KOEJU%'
+UNION ALL
+SELECT 'view' AS object_type,
+       schemaname || '.' || viewname AS object_name
+FROM pg_views
+WHERE schemaname = 'public'
+  AND definition ILIKE '%KOEJU%'
+ORDER BY object_type, object_name;
