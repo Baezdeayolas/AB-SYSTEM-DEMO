@@ -293,7 +293,7 @@ $('btn-pdf').onclick=()=>{if(!cart.length){alert('Agregá artículos al pedido a
 let barcodeScanner=null,barcodeScannerRunning=false;
 async function closeBarcodeScanner(){
  const modal=$('barcode-scanner-modal');
- if(barcodeScanner&&barcodeScannerRunning){try{await barcodeScanner.stop();}catch(e){}}
+ if(barcodeScanner){try{await barcodeScanner.stop();}catch(e){}}
  barcodeScannerRunning=false;
  if(barcodeScanner){try{barcodeScanner.clear();}catch(e){}barcodeScanner=null;}
  modal.hidden=true;
