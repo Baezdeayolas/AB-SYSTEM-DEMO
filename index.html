@@ -9,7 +9,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=client-search-35">
+<style id="client-search-header-override">
+#app .topbar .cliente-field #cliente-suggestions.cliente-suggestions { display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:99999 !important; background:#172b40 !important; border:2px solid #8fb5d8 !important; border-radius:12px !important; box-shadow:0 16px 36px rgba(0,0,0,.55) !important; max-height:300px; overflow-y:auto; }
+#app .topbar .cliente-field #cliente-suggestions.cliente-suggestions.open { display:block !important; }
+#app .topbar .cliente-field #cliente-suggestions .cliente-suggestion { display:block !important; width:100% !important; min-height:58px !important; padding:12px 15px !important; background:#29435d !important; color:#fff !important; border:0 !important; border-bottom:1px solid #607d99 !important; text-align:left !important; }
+#app .topbar .cliente-field #cliente-suggestions .cliente-suggestion:last-child { border-bottom:0 !important; }
+#app .topbar .cliente-field #cliente-suggestions .cliente-suggestion:hover, #app .topbar .cliente-field #cliente-suggestions .cliente-suggestion:focus-visible { background:#496b8c !important; outline:2px solid #c4e0fa !important; outline-offset:-2px !important; }
+#app .topbar .cliente-field #cliente-suggestions .cs-name { display:block !important; color:#fff !important; font-size:15px !important; font-weight:700 !important; line-height:1.4 !important; }
+#app .topbar .cliente-field #cliente-suggestions .cs-meta { display:block !important; margin-top:4px !important; color:#d5e8fa !important; font-size:12px !important; font-weight:700 !important; }
+</style>
 </head>
 <body>
 <section id="login" class="gate">
