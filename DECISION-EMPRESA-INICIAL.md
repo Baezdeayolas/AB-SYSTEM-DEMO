@@ -7,17 +7,18 @@
 
 ## Decisión
 
-La empresa que representará los datos comerciales de demostración será **AB SYSTEM DEMO**. La empresa que actualmente figura con código `KOEJU` en la base DEMO se convertirá en esta empresa de demostración, conservando su catálogo y aprovechando sus registros de clientes como base de demostración.
+La empresa que representará los datos comerciales de demostración será **AB SYSTEM DEMO**, utilizando la fila existente `DEMO2` y conservando su UUID. La empresa `KOEJU` dentro de la misma base DEMO se mantendrá intacta como origen. Se copiará el catálogo de productos a DEMO2 y se generarán clientes ficticios, sin trasladar datos personales ni financieros reales.
 
 Esto no convierte a Ko’ẽju producción en parte de AB SYSTEM. Ko’ẽju conserva su repositorio, su Supabase y su operación independientes. No se copiarán credenciales, perfiles de acceso ni dependencias de producción.
 
 ## Conservación y tratamiento de datos
 
 - **Productos:** conservar los registros y campos del catálogo existente, incluidos códigos, descripciones, categorías, códigos de barras y listas de precios, sujeto a revisión de que no contengan datos confidenciales de proveedores.
-- **Clientes:** conservar la estructura, códigos y campos comerciales útiles para que la DEMO tenga un catálogo de clientes representativo. Antes de exponer la DEMO a terceros, anonimizar nombres identificables de personas, teléfonos, direcciones particulares, RUC/identificadores personales y cualquier otro dato que permita identificar a clientes reales. No publicar ni habilitar acceso público a datos personales reales.
-- **Pedidos:** revisar y anonimizar los datos de clientes, vendedores y cualquier referencia identificable. Conservar únicamente registros que sean apropiados como ejemplos de demostración.
-- **Usuarios, perfiles y membresías:** no reutilizar credenciales ni identidades de Ko’ẽju. Mapear los perfiles existentes manualmente y crear accesos DEMO propios.
-- **Inventario:** conservar cantidades solo si su procedencia y significado se verifican. Los saldos CENTRAL y CDE se mantienen separados; no inferir cantidades de una estructura legacy vacía.
+- **Clientes:** generar registros sintéticos para DEMO2, manteniendo solo la estructura de campos necesaria para el frontend. No copiar nombres, códigos identificables, teléfonos, direcciones, identificadores personales, deudas ni saldos reales.
+- **Pedidos:** no copiar el pedido histórico de KOEJU en esta fase.
+- **Usuarios, perfiles y membresías:** no copiar usuarios, perfiles, credenciales, membresías ni asignaciones desde KOEJU. Configurar accesos propios de DEMO2.
+- **Historial de importación:** no copiar inicialmente; la DEMO generará sus propios registros de importación.
+- **Inventario:** no copiar la fila singleton legacy ni inferir cantidades. Crear saldos CENTRAL y CDE separados y cargarlos mediante el Excel completo aprobado.
 
 ## Alcance de la asignación inicial
 
@@ -46,8 +47,8 @@ Estos conteos son históricos y deben volver a verificarse en la base actual ant
 ## Trabajo autorizado
 
 1. Auditar el código, la rama y el esquema actual de AB SYSTEM DEMO.
-2. Adaptar la identidad inicial de empresa de `KOEJU` a `ABDEMO` o a un código DEMO estable, revisando todas las dependencias antes de elegir el valor definitivo.
-3. Preparar una migración revisable que conserve los registros válidos, anonimice los datos personales de clientes/pedidos destinados a demostración y mantenga las relaciones multiempresa.
+2. Mantener KOEJU como origen y utilizar DEMO2 como destino, conservando el UUID de DEMO2.
+3. Preparar una migración revisable que copie el payload completo de productos, genere clientes sintéticos y preserve las relaciones multiempresa.
 4. Adaptar documentación, datos de muestra y frontend para que la DEMO no dependa de Ko’ẽju.
 5. Probar aislamiento entre AB SYSTEM DEMO y una segunda empresa ficticia.
 
