@@ -2927,3 +2927,47 @@ button:focus-visible, input:focus-visible, select:focus-visible {
 #app main .result-count {
   color: #c3d5e8;
 }
+
+/* AB SYSTEM — resultados de búsqueda de clientes: alto contraste */
+#app main #cliente-suggestions.cliente-suggestions {
+  z-index: 1000;
+  background: #1f3348;
+  border: 1px solid rgba(190, 211, 233, .34);
+  border-radius: 12px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, .42);
+}
+#app main #cliente-suggestions .cliente-suggestion {
+  width: 100%;
+  min-height: 54px;
+  padding: 10px 13px;
+  background: #2b4158;
+  color: #f3f7fc;
+  border: 0;
+  border-bottom: 1px solid rgba(190, 211, 233, .18);
+  text-align: left;
+  cursor: pointer;
+}
+#app main #cliente-suggestions .cliente-suggestion:last-child {
+  border-bottom: 0;
+}
+#app main #cliente-suggestions .cliente-suggestion:hover,
+#app main #cliente-suggestions .cliente-suggestion:focus-visible {
+  background: #405e7c;
+  color: #ffffff;
+  outline: 2px solid #9fc4e8;
+  outline-offset: -2px;
+}
+#app main #cliente-suggestions .cs-name {
+  display: block;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+#app main #cliente-suggestions .cs-meta {
+  display: block;
+  margin-top: 3px;
+  color: #c5d8eb;
+  font-size: 12px;
+  font-weight: 600;
+}
