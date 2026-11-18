@@ -112,9 +112,9 @@ BEGIN
   IF NOT (public.ab_is_global_superadmin() OR public.ab_is_company_admin(p_company_id)) THEN
     RAISE EXCEPTION 'No tienes permiso para actualizar el inventario de esta empresa.';
   END IF;
-  IF p_location_code NOT IN ('CENTRAL','CDE') THEN RAISE EXCEPTION 'Deposito no valido.'; END IF;
+  IF p_location_code IS NULL OR p_location_code NOT IN ('CENTRAL','CDE') THEN RAISE EXCEPTION 'Deposito no valido.'; END IF;
   IF p_quantity IS NULL OR p_quantity < 0 THEN RAISE EXCEPTION 'La cantidad debe ser mayor o igual a cero.'; END IF;
-  IF p_movement_type NOT IN ('import','adjustment') THEN RAISE EXCEPTION 'Tipo de movimiento no permitido.'; END IF;
+  IF p_movement_type IS NULL OR p_movement_type NOT IN ('import','adjustment') THEN RAISE EXCEPTION 'Tipo de movimiento no permitido.'; END IF;
   IF NULLIF(btrim(p_reason),'') IS NULL THEN RAISE EXCEPTION 'El motivo es obligatorio.'; END IF;
 
   SELECT b.quantity INTO v_before
@@ -182,6 +182,157 @@ BEGIN
   FROM jsonb_array_elements(p_rows) e
   WHERE NULLIF(btrim(e.value->>'code'),'') IS NULL
      OR jsonb_typeof(e.value->'payload') IS DISTINCT FROM 'object'
+     OR NULLIF(btrim(e.value->'payload'->>'d'),'') IS NULL
+     OR NULLIF(btrim(e.value->'payload'->>'p1'),'') IS NULL
+     OR NULLIF(btrim(e.value->'payload'->>'p2'),'') IS NULL
+     OR NULLIF(btrim(e.value->'payload'->>'p3'),'') IS NULL
+     OR (e.value->'payload'->>'p1') !~ '^[0-9]+([.][0-9]{1,3})?(btrim(e.value->>'stock_central'),'') IS NULL
+     OR NULLIF(btrim(e.value->>'stock_cde'),'') IS NULL
+     OR (e.value->>'stock_central') !~ '^[0-9]+([.][0-9]{1,3})?$'
+     OR (e.value->>'stock_cde') !~ '^[0-9]+([.][0-9]{1,3})?$';
+  IF v_count>0 THEN RAISE EXCEPTION 'Hay % filas sin codigo, payload o stock valido.',v_count; END IF;
+
+  SELECT count(*) INTO v_count FROM (
+    SELECT e.value->>'code' FROM jsonb_array_elements(p_rows) e
+    GROUP BY e.value->>'code' HAVING count(*)>1
+  ) d;
+  IF v_count>0 THEN RAISE EXCEPTION 'El archivo contiene codigos duplicados.'; END IF;
+
+  FOR v_row IN SELECT value FROM jsonb_array_elements(p_rows)
+  LOOP
+    v_code := btrim(v_row->>'code');
+    v_payload := v_row->'payload';
+    v_central := (v_row->>'stock_central')::numeric;
+    v_cde := (v_row->>'stock_cde')::numeric;
+
+    INSERT INTO public.catalog_items(company_id,code,payload,updated_at)
+    VALUES (p_company_id,v_code,v_payload,now())
+    ON CONFLICT (company_id,code)
+    DO UPDATE SET payload=public.catalog_items.payload || EXCLUDED.payload, updated_at=now();
+
+    PERFORM public.ab_set_inventory_location_balance(
+      p_company_id,v_code,'CENTRAL',v_central,'import',
+      'Importacion Excel '||btrim(p_import_id),btrim(p_import_id)
+    );
+    PERFORM public.ab_set_inventory_location_balance(
+      p_company_id,v_code,'CDE',v_cde,'import',
+      'Importacion Excel '||btrim(p_import_id),btrim(p_import_id)
+    );
+
+    INSERT INTO public.catalog_import_rows(company_id,import_id,catalog_type,code,payload,created_at)
+    VALUES (p_company_id,btrim(p_import_id),'items',v_code,v_payload,now());
+    v_processed := v_processed+1;
+  END LOOP;
+  RETURN v_processed;
+END;
+$fn$;
+
+REVOKE ALL ON FUNCTION public.ab_set_inventory_location_balance(uuid,text,text,numeric,text,text,text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.ab_set_inventory_location_balance(uuid,text,text,numeric,text,text,text) TO authenticated;
+REVOKE ALL ON FUNCTION public.ab_import_company_catalog_v2(uuid,text,jsonb) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.ab_import_company_catalog_v2(uuid,text,jsonb) TO authenticated;
+REVOKE ALL ON FUNCTION public.ab_inventory_create_location_balances() FROM PUBLIC, anon, authenticated;
+
+COMMIT;
+
+     OR (e.value->'payload'->>'p2') !~ '^[0-9]+([.][0-9]{1,3})?(btrim(e.value->>'stock_central'),'') IS NULL
+     OR NULLIF(btrim(e.value->>'stock_cde'),'') IS NULL
+     OR (e.value->>'stock_central') !~ '^[0-9]+([.][0-9]{1,3})?$'
+     OR (e.value->>'stock_cde') !~ '^[0-9]+([.][0-9]{1,3})?$';
+  IF v_count>0 THEN RAISE EXCEPTION 'Hay % filas sin codigo, payload o stock valido.',v_count; END IF;
+
+  SELECT count(*) INTO v_count FROM (
+    SELECT e.value->>'code' FROM jsonb_array_elements(p_rows) e
+    GROUP BY e.value->>'code' HAVING count(*)>1
+  ) d;
+  IF v_count>0 THEN RAISE EXCEPTION 'El archivo contiene codigos duplicados.'; END IF;
+
+  FOR v_row IN SELECT value FROM jsonb_array_elements(p_rows)
+  LOOP
+    v_code := btrim(v_row->>'code');
+    v_payload := v_row->'payload';
+    v_central := (v_row->>'stock_central')::numeric;
+    v_cde := (v_row->>'stock_cde')::numeric;
+
+    INSERT INTO public.catalog_items(company_id,code,payload,updated_at)
+    VALUES (p_company_id,v_code,v_payload,now())
+    ON CONFLICT (company_id,code)
+    DO UPDATE SET payload=public.catalog_items.payload || EXCLUDED.payload, updated_at=now();
+
+    PERFORM public.ab_set_inventory_location_balance(
+      p_company_id,v_code,'CENTRAL',v_central,'import',
+      'Importacion Excel '||btrim(p_import_id),btrim(p_import_id)
+    );
+    PERFORM public.ab_set_inventory_location_balance(
+      p_company_id,v_code,'CDE',v_cde,'import',
+      'Importacion Excel '||btrim(p_import_id),btrim(p_import_id)
+    );
+
+    INSERT INTO public.catalog_import_rows(company_id,import_id,catalog_type,code,payload,created_at)
+    VALUES (p_company_id,btrim(p_import_id),'items',v_code,v_payload,now());
+    v_processed := v_processed+1;
+  END LOOP;
+  RETURN v_processed;
+END;
+$fn$;
+
+REVOKE ALL ON FUNCTION public.ab_set_inventory_location_balance(uuid,text,text,numeric,text,text,text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.ab_set_inventory_location_balance(uuid,text,text,numeric,text,text,text) TO authenticated;
+REVOKE ALL ON FUNCTION public.ab_import_company_catalog_v2(uuid,text,jsonb) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.ab_import_company_catalog_v2(uuid,text,jsonb) TO authenticated;
+REVOKE ALL ON FUNCTION public.ab_inventory_create_location_balances() FROM PUBLIC, anon, authenticated;
+
+COMMIT;
+
+     OR (e.value->'payload'->>'p3') !~ '^[0-9]+([.][0-9]{1,3})?(btrim(e.value->>'stock_central'),'') IS NULL
+     OR NULLIF(btrim(e.value->>'stock_cde'),'') IS NULL
+     OR (e.value->>'stock_central') !~ '^[0-9]+([.][0-9]{1,3})?$'
+     OR (e.value->>'stock_cde') !~ '^[0-9]+([.][0-9]{1,3})?$';
+  IF v_count>0 THEN RAISE EXCEPTION 'Hay % filas sin codigo, payload o stock valido.',v_count; END IF;
+
+  SELECT count(*) INTO v_count FROM (
+    SELECT e.value->>'code' FROM jsonb_array_elements(p_rows) e
+    GROUP BY e.value->>'code' HAVING count(*)>1
+  ) d;
+  IF v_count>0 THEN RAISE EXCEPTION 'El archivo contiene codigos duplicados.'; END IF;
+
+  FOR v_row IN SELECT value FROM jsonb_array_elements(p_rows)
+  LOOP
+    v_code := btrim(v_row->>'code');
+    v_payload := v_row->'payload';
+    v_central := (v_row->>'stock_central')::numeric;
+    v_cde := (v_row->>'stock_cde')::numeric;
+
+    INSERT INTO public.catalog_items(company_id,code,payload,updated_at)
+    VALUES (p_company_id,v_code,v_payload,now())
+    ON CONFLICT (company_id,code)
+    DO UPDATE SET payload=public.catalog_items.payload || EXCLUDED.payload, updated_at=now();
+
+    PERFORM public.ab_set_inventory_location_balance(
+      p_company_id,v_code,'CENTRAL',v_central,'import',
+      'Importacion Excel '||btrim(p_import_id),btrim(p_import_id)
+    );
+    PERFORM public.ab_set_inventory_location_balance(
+      p_company_id,v_code,'CDE',v_cde,'import',
+      'Importacion Excel '||btrim(p_import_id),btrim(p_import_id)
+    );
+
+    INSERT INTO public.catalog_import_rows(company_id,import_id,catalog_type,code,payload,created_at)
+    VALUES (p_company_id,btrim(p_import_id),'items',v_code,v_payload,now());
+    v_processed := v_processed+1;
+  END LOOP;
+  RETURN v_processed;
+END;
+$fn$;
+
+REVOKE ALL ON FUNCTION public.ab_set_inventory_location_balance(uuid,text,text,numeric,text,text,text) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.ab_set_inventory_location_balance(uuid,text,text,numeric,text,text,text) TO authenticated;
+REVOKE ALL ON FUNCTION public.ab_import_company_catalog_v2(uuid,text,jsonb) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.ab_import_company_catalog_v2(uuid,text,jsonb) TO authenticated;
+REVOKE ALL ON FUNCTION public.ab_inventory_create_location_balances() FROM PUBLIC, anon, authenticated;
+
+COMMIT;
+
      OR NULLIF(btrim(e.value->>'stock_central'),'') IS NULL
      OR NULLIF(btrim(e.value->>'stock_cde'),'') IS NULL
      OR (e.value->>'stock_central') !~ '^[0-9]+([.][0-9]{1,3})?$'
