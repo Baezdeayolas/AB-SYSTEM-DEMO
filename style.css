@@ -3124,3 +3124,140 @@ main{background:#1f2932!important;color:#e4edf7!important}#panel-search{position
     url('./Icons/ventafondo.jpg') center 44% / cover no-repeat !important;
 }
 #app #panel-search .result-count:empty { display:none !important; }
+
+
+/* AB SYSTEM — temática azul marino/celeste unificada en todos los menús */
+:root {
+  --ink:#eaf3fb !important;
+  --ink-soft:#c1d3e3 !important;
+  --paper:#172b40 !important;
+  --paper-dim:#203a53 !important;
+  --rust:#278fc5 !important;
+  --rust-dark:#1e78aa !important;
+  --gold:#8ed8f5 !important;
+  --green:#65b9d9 !important;
+  --line:rgba(161,195,222,.22) !important;
+}
+#app main {
+  background:linear-gradient(180deg,#102b43 0%,#142f47 48%,#192f43 100%) !important;
+  color:#edf6ff !important;
+}
+#app #panel-order,
+#app #panel-archive,
+#app #panel-dashboard,
+#app #panel-stock,
+#app #panel-admin {
+  min-height:100%;
+  color:#edf6ff !important;
+  background:transparent !important;
+}
+#app #panel-order h2,#app #panel-order h3,
+#app #panel-archive h2,#app #panel-archive h3,
+#app #panel-dashboard h2,#app #panel-stock h2,
+#app #panel-admin h2,#app #panel-admin h3,
+#app #panel-admin label { color:#f1f7fd !important; }
+#app #panel-order .order-card,
+#app #panel-order .order-discount-panel,
+#app #panel-archive .archive-card,
+#app #panel-archive .archive-summary,
+#app #panel-archive .historico-toggle,
+#app #panel-dashboard .dashboard-card,
+#app #panel-dashboard .dashboard-note,
+#app #panel-stock .stock-summary-card,
+#app #panel-stock .stock-row,
+#app #panel-admin .admin-tools,
+#app #panel-admin .global-admin-form,
+#app #panel-admin .global-admin-list,
+#app #panel-admin .global-admin-list > *,
+#app #panel-admin .client-import-tools {
+  background:linear-gradient(145deg,#29445e 0%,#20384f 100%) !important;
+  color:#edf6ff !important;
+  border:1px solid rgba(157,194,222,.25) !important;
+  box-shadow:0 5px 15px rgba(2,13,25,.16) !important;
+}
+#app #panel-order .order-card *,
+#app #panel-archive .archive-card *,
+#app #panel-dashboard .dashboard-card *,
+#app #panel-stock .stock-row *,
+#app #panel-admin .admin-tools *,
+#app #panel-admin .global-admin-list * { color:inherit; }
+#app #panel-order .order-discount-panel label,
+#app #panel-archive .archive-client,
+#app #panel-archive .archive-total,
+#app #panel-dashboard .dashboard-card strong,
+#app #panel-stock .stock-row-main strong { color:#f5faff !important; }
+#app #panel-order .order-discount-panel input,
+#app #panel-order .order-tier-select,
+#app #panel-archive .search-wrap input,
+#app #panel-stock .stock-controls input,
+#app #panel-stock .stock-controls select,
+#app #panel-admin input,
+#app #panel-admin select,
+#app #panel-admin textarea,
+#app #panel-admin .global-admin-form input,
+#app #panel-admin .global-admin-form select {
+  background:#142a3e !important;
+  color:#f1f7fd !important;
+  border:1px solid #54738f !important;
+  border-radius:9px !important;
+}
+#app #panel-order input::placeholder,
+#app #panel-archive input::placeholder,
+#app #panel-stock input::placeholder,
+#app #panel-admin input::placeholder { color:#a9bfd2 !important; }
+#app #panel-order .order-bottom,
+#app #panel-archive .archive-meta,
+#app #panel-archive .archive-sub,
+#app #panel-dashboard .dashboard-head p,
+#app #panel-dashboard .dashboard-card span,
+#app #panel-dashboard .dashboard-card small,
+#app #panel-dashboard .dashboard-note,
+#app #panel-stock .stock-import-head p,
+#app #panel-stock .stock-updated,
+#app #panel-stock .stock-values,
+#app #panel-stock .stock-more,
+#app #panel-admin .muted,
+#app #panel-admin p { color:#c1d3e3 !important; }
+#app #panel-stock .stock-values span,
+#app #panel-stock .stock-badge,
+#app #panel-order .discount-summary {
+  background:#36536d !important;
+  color:#e7f4ff !important;
+}
+#app #panel-order .btn-primary,
+#app #panel-archive .btn-primary,
+#app #panel-dashboard .btn-primary,
+#app #panel-stock .btn-primary,
+#app #panel-admin .btn-primary,
+#app #panel-admin button:not(.btn-outline) {
+  background:linear-gradient(135deg,#258fc2,#36acd7) !important;
+  color:#fff !important;
+  border:1px solid rgba(165,224,247,.3) !important;
+}
+#app #panel-archive .btn-outline,
+#app #panel-dashboard .btn-outline,
+#app #panel-stock .btn-outline,
+#app #panel-admin .btn-outline {
+  background:#29445e !important;
+  color:#eaf5ff !important;
+  border:1px solid #6687a3 !important;
+}
+#app #panel-order .empty-state,
+#app #panel-archive .empty-state { color:#bfd2e3 !important; }
+#app .tabs {
+  background:#10283e !important;
+  border-top:1px solid #42627e !important;
+  box-shadow:0 -5px 18px rgba(2,13,25,.3) !important;
+}
+#app .tab-btn { color:#b9ccdc !important; }
+#app .tab-btn.active {
+  color:#eaf8ff !important;
+  background:linear-gradient(180deg,rgba(39,143,197,.28),rgba(39,143,197,.12)) !important;
+  box-shadow:inset 0 2px 0 #65c9ed !important;
+}
+#app .footer {
+  background:linear-gradient(110deg,#0b2033,#17364f) !important;
+  border-top:1px solid rgba(142,216,245,.2) !important;
+}
+#app .total-block .total-label { color:#8ed8f5 !important; }
+#app .topbar { background:linear-gradient(120deg,#081d30,#16405d) !important; }
