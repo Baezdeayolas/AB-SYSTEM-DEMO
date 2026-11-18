@@ -23,6 +23,9 @@ Los conteos son del diagnóstico anterior y se deben revalidar con ETAPA 2D-25 a
 ## Productos
 La copia futura insertará en DEMO2 el `code` y el objeto `payload` completo de cada producto KOEJU. No reconstruirá los campos manualmente. Antes se comprobarán códigos duplicados, payloads válidos, claves únicas por empresa y triggers de inventario. No se permitirá un UPSERT que sobrescriba productos DEMO existentes sin autorización.
 
+## Compatibilidad de clientes con el frontend
+La inspección de `cloud-sync-demo.js` confirma que el buscador y el guardado de pedidos consumen de los clientes únicamente `c` (código) y `n` (nombre). Los campos opcionales `ciu`, `dep`, `dst`, `tel`, `tip`, `ident`, `saldoActGs`, `saldoActExt` y `ctaCbleDeuda` se admiten durante la importación Excel, pero no se necesitan para seleccionar un cliente ni guardar un pedido en el flujo actual. Por tanto, la primera carga sintética puede usar códigos DEMO estables y nombres ficticios, con saldos cero si se decide conservar esas claves para compatibilidad. No es necesario replicar los valores originales.
+
 ## Clientes sintéticos
 El frontend debe inspeccionarse para identificar los campos realmente requeridos. Se crearán códigos nuevos y estables, nombres ficticios y valores sintéticos para identificación, teléfono, ubicación y campos financieros. No se derivarán valores ficticios de los datos reales ni se trasladarán deudas/saldos.
 
