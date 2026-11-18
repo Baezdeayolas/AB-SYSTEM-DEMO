@@ -1,0 +1,26 @@
+name: Validate AB SYSTEM release candidate
+
+on:
+  push:
+    branches:
+      - work/adaptacion-multiempresa-v1
+  pull_request:
+
+jobs:
+  syntax-and-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check JavaScript syntax
+        run: node --check cloud-sync-demo.js
+      - name: Check release wiring
+        run: |
+          grep -q "inventory_location_balances" cloud-sync-demo.js
+          grep -q "ab_import_company_catalog_v2" cloud-sync-demo.js
+          grep -q "excel-import-file" index.html
+          grep -q "druugcvqxxanhtdkqnjd.supabase.co" cloud-sync-demo.js
+          ! grep -q "service_role" cloud-sync-demo.js
+          ! grep -q "dazdaiutdbvotmzislxr" cloud-sync-demo.js
