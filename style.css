@@ -3101,3 +3101,26 @@ main{background:#1f2932!important;color:#e4edf7!important}#panel-search{position
   #app .meta-fields input, #app .meta-fields select { min-height:38px !important; font-size:13px !important; }
   #app .search-wrap input, #app .scan-btn { min-height:58px !important; }
 }
+
+
+/* Buscar: eliminar franja plana y fusionar el fondo con la fotografía */
+#app main { background:linear-gradient(180deg,#0b2b43 0%,#102f45 38%,#1b2b36 100%) !important; }
+#app #panel-search { background:transparent !important; }
+#app #panel-search::before {
+  top:0 !important;
+  left:0 !important;
+  right:0 !important;
+  height:100% !important;
+  min-height:560px !important;
+  opacity:1 !important;
+  background:
+    linear-gradient(180deg,
+      rgba(8,39,61,.96) 0%,
+      rgba(10,48,73,.86) 14%,
+      rgba(12,47,70,.52) 30%,
+      rgba(15,35,50,.30) 48%,
+      rgba(19,31,42,.52) 76%,
+      rgba(25,39,51,.92) 100%),
+    url('./Icons/ventafondo.jpg') center 44% / cover no-repeat !important;
+}
+#app #panel-search .result-count:empty { display:none !important; }
