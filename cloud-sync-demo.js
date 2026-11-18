@@ -95,13 +95,13 @@ async function fetchAllRows(makeQuery,label){
 }
 function renderStock(){
  const q=$('stock-search').value.trim().toLowerCase();
- const filtered=items.filter(x=>[x.c,x.d].some(v=>String(v||'').toLowerCase().includes(q)));
+ const filtered=q?items.filter(x=>[x.c,x.d].some(v=>String(v||'').toLowerCase().includes(q))):[];
  const canAdjust=!isPublicDemo&&(isGlobal||profile?.role==='company_admin');
- $('stock-list').innerHTML=filtered.slice(0,100).map(x=>{
+ $('stock-list').innerHTML=filtered.length?filtered.slice(0,100).map(x=>{
   const code=safe(x.c),central=Number(x.sc||0),cde=Number(x.sd||0);
   const controls=canAdjust?'<div class="stock-edit-grid"><label>CENTRAL<input type="number" min="0" step="0.001" inputmode="decimal" data-stock-qty="'+code+'" data-location="CENTRAL" value="'+central+'"></label><button type="button" class="stock-save-btn" data-stock-set="'+code+'" data-location="CENTRAL">Actualizar CENTRAL</button><label>CDE<input type="number" min="0" step="0.001" inputmode="decimal" data-stock-qty="'+code+'" data-location="CDE" value="'+cde+'"></label><button type="button" class="stock-save-btn" data-stock-set="'+code+'" data-location="CDE">Actualizar CDE</button><label class="stock-reason-label">Motivo del ajuste<input type="text" maxlength="180" placeholder="Ej.: conteo físico" data-stock-reason="'+code+'"></label><p class="stock-edit-message" data-stock-message="'+code+'" role="status"></p></div>':'';
   return '<article class="order-card stock-item-card"><strong>'+safe(x.d)+'</strong><small>'+code+' · CENTRAL: '+central+' · CDE: '+cde+' · Total: '+(central+cde)+'</small>'+controls+'</article>';
- }).join('')||'<div class="empty-state">No se encontraron artículos.</div>';
+ }).join(''):(q?'<div class="empty-state">No se encontraron artículos.</div>':'<div class="empty-state">Ingresá un código o descripción para consultar el stock.</div>');
  $('stock-list').querySelectorAll('[data-stock-set]').forEach(b=>b.onclick=()=>saveStockBalance(b.dataset.stockSet,b.dataset.location,b));
 }
 async function saveStockBalance(code,location,button){
