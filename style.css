@@ -3034,3 +3034,70 @@ main{background:#1f2932!important;color:#e4edf7!important}#panel-search{position
 .footer{background:#194879!important;color:#fff!important;border-top:1px solid rgba(137,191,236,.28)}.total-block .total-label{color:#a8c9ed!important}.btn-primary{background:#258fe0!important;color:#fff!important}.btn-ghost{border-color:rgba(255,255,255,.45)!important;color:#fff!important}
 .tabs{background:#101214!important;border-top:1px solid rgba(255,255,255,.08)!important;box-shadow:none!important;padding:5px 4px calc(5px + env(safe-area-inset-bottom))!important}.tab-btn{color:#c2ccd8!important}.tab-btn.active{color:#eaf5ff!important;background:#17342d!important;border-top:7px solid #20b36b!important;border-radius:0!important}.tab-btn .count{background:#e5ae00!important;color:#14202b!important}
 @media(max-width:420px){.topbar{padding-left:18px!important;padding-right:18px!important}.topbar-title{height:68px}.meta-fields{gap:10px!important}.meta-fields input,.meta-fields select{min-height:53px!important}.company-context{overflow-x:auto}.search-wrap{padding:16px 18px 7px!important}.search-wrap input,.scan-btn{min-height:84px!important}.scan-btn{width:84px!important}.footer{padding:8px 18px calc(8px + env(safe-area-inset-bottom))!important}.tab-btn{font-size:10px!important}}
+
+
+/* AB SYSTEM DEMO — escala compacta igual a la referencia Ko'eju (móvil) */
+@media (max-width:600px) {
+  html, body { font-size:13px !important; }
+  #app > .topbar { padding:4px 9px 5px !important; }
+  #app .topbar-title { height:36px !important; min-height:36px !important; max-height:36px !important; overflow:hidden !important; }
+  #app .topbar-brand { height:36px !important; max-height:36px !important; }
+  #app .topbar-logo-image { width:min(100%,250px) !important; height:36px !important; max-height:36px !important; object-fit:cover !important; object-position:center 51% !important; }
+  #app .meta-fields { display:grid !important; grid-template-columns:1.05fr .95fr !important; gap:6px !important; margin-top:4px !important; }
+  #app .meta-fields input, #app .meta-fields select { box-sizing:border-box !important; width:100% !important; min-width:0 !important; min-height:27px !important; height:27px !important; padding:4px 9px !important; border-radius:8px !important; font:600 11px Arial,sans-serif !important; }
+  #app .meta-fields input::placeholder { font-size:10px !important; }
+  #app .client-tools-row { min-height:22px !important; margin-top:4px !important; gap:5px !important; }
+  #app .nuevo-cliente-toggle { max-width:48%; font:600 10px/1.2 Arial,sans-serif !important; padding:2px 0 !important; text-align:left !important; }
+  #app #cloud-status-slot { font-size:9px !important; white-space:nowrap !important; }
+  #app #logout { min-height:21px !important; padding:3px 8px !important; font-size:9px !important; white-space:nowrap !important; }
+  #app .company-context { min-height:20px !important; margin-top:2px !important; padding:3px 0 0 !important; gap:5px !important; font-size:9px !important; }
+  #app .company-context select#company-select { min-height:19px !important; height:19px !important; padding:1px 20px 1px 6px !important; font-size:9px !important; }
+  #app .company-context small { font-size:8px !important; }
+  #app .precio-estado-row { min-height:32px !important; }
+  #app .precio-estado-row .tier-row { min-height:32px !important; padding:3px 6px !important; gap:4px !important; }
+  #app .tier-row .tier-label, #app .tier-label { font:700 9px Arial,sans-serif !important; letter-spacing:.02em !important; }
+  #app .tier-options { gap:4px !important; }
+  #app .tier-btn { min-height:22px !important; height:22px !important; padding:3px 9px !important; border-radius:13px !important; font:700 10px Arial,sans-serif !important; }
+  #app .condicion-row { min-height:39px !important; padding:4px 9px !important; gap:5px !important; }
+  #app .condicion-quick { gap:4px !important; }
+  #app .condicion-row .tier-btn { min-height:29px !important; height:29px !important; padding:4px 10px !important; font-size:11px !important; }
+  #app .condicion-input { min-width:0 !important; min-height:29px !important; height:29px !important; padding:4px 8px !important; border-radius:8px !important; font:11px Arial,sans-serif !important; }
+  #app .search-wrap { padding:9px 9px 4px !important; }
+  #app .search-input-row { gap:8px !important; }
+  #app .search-wrap input { box-sizing:border-box !important; min-width:0 !important; min-height:42px !important; height:42px !important; padding:9px 11px !important; border-radius:17px !important; font:13px Arial,sans-serif !important; }
+  #app .search-wrap input::placeholder { font-size:12px !important; }
+  #app .scan-btn { flex:0 0 42px !important; width:42px !important; min-width:42px !important; min-height:42px !important; height:42px !important; border-radius:15px !important; font-size:17px !important; }
+  #app .result-count { padding:3px 9px 1px !important; font-size:9px !important; }
+  #app .item-list, #app .order-list { padding:3px 9px 60px !important; gap:4px !important; }
+  #app .item-card { padding:5px 7px !important; border-radius:7px !important; }
+  #app .item-code, #app .item-stock { font-size:9px !important; }
+  #app .item-desc { margin:1px 0 2px !important; font-size:11px !important; line-height:1.2 !important; }
+  #app .item-bottom { margin-top:3px !important; gap:5px !important; }
+  #app .item-price { font-size:12px !important; }
+  #app .qty-input { width:34px !important; min-height:24px !important; padding:2px !important; font-size:10px !important; }
+  #app .add-btn { min-height:24px !important; padding:4px 7px !important; font-size:10px !important; }
+  #app .empty-state { padding:32px 14px !important; font-size:11px !important; }
+  #app .empty-state .big { font-size:14px !important; }
+  #app > .footer { padding:7px 9px calc(7px + env(safe-area-inset-bottom)) !important; }
+  #app .total-block .total-label { font-size:9px !important; }
+  #app .total-block .total-value { font-size:18px !important; line-height:1.1 !important; }
+  #app .footer-actions { gap:6px !important; }
+  #app .footer .btn { min-height:32px !important; padding:6px 10px !important; border-radius:10px !important; font-size:12px !important; }
+  #app > .tabs { padding:3px 2px calc(3px + env(safe-area-inset-bottom)) !important; }
+  #app .tab-btn { min-width:0 !important; min-height:43px !important; padding:3px 2px !important; gap:1px !important; font-size:9px !important; }
+  #app .tab-btn .tab-icon { font-size:17px !important; line-height:1 !important; }
+  #app .tab-btn .tab-label { font-size:9px !important; line-height:1.1 !important; }
+  #app .tab-btn.active { border-top-width:4px !important; }
+  #app .tab-btn .count { min-width:14px !important; height:14px !important; padding:0 3px !important; font-size:8px !important; }
+  #app main .order-card, #app main .archive-card, #app main .stock-item-card, #app main .dashboard-card { padding:8px !important; border-radius:9px !important; }
+  #app main .dashboard-card span { font-size:10px !important; }
+  #app main .dashboard-card strong { margin:5px 0 3px !important; font-size:19px !important; }
+  #app main .dashboard-card small, #app main .stock-import-head p { font-size:9px !important; }
+  #app main input, #app main select, #app main textarea { font-size:12px !important; }
+}
+@media (min-width:601px) {
+  #app .topbar-logo-image { max-height:48px !important; }
+  #app .topbar-title { height:48px !important; min-height:48px !important; }
+  #app .meta-fields input, #app .meta-fields select { min-height:38px !important; font-size:13px !important; }
+  #app .search-wrap input, #app .scan-btn { min-height:58px !important; }
+}
