@@ -110,7 +110,7 @@ async function saveStockBalance(code,location,button){
  const reasonInput=$('stock-list').querySelector('[data-stock-reason="'+CSS.escape(code)+'"]');
  const message=$('stock-list').querySelector('[data-stock-message="'+CSS.escape(code)+'"]');
  const raw=qtyInput?.value,quantity=Number(raw),reason=reasonInput?.value.trim()||'';
- if(raw===''||!Number.isFinite(quantity)||quantity<0||!/^\\d+(\\.\\d{1,3})?$/.test(raw.trim())){message.textContent='Ingresá una cantidad válida (máximo 3 decimales).';return;}
+ if(raw===''||!Number.isFinite(quantity)||quantity<0||!/^\d+(\.\d{1,3})?$/.test(raw.trim())){message.textContent='Ingresá una cantidad válida (máximo 3 decimales).';return;}
  if(!reason){message.textContent='Indicá el motivo del ajuste.';reasonInput?.focus();return;}
  if(!item||!(isGlobal||profile?.role==='company_admin')){message.textContent='No tienes permiso para ajustar este stock.';return;}
  button.disabled=true;message.textContent='Guardando ajuste…';
