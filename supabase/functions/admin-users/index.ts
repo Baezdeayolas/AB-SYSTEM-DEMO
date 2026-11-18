@@ -140,7 +140,7 @@ Deno.serve(async (req: Request) => {
       }, { onConflict: "id" });
       if (profileError) throw profileError;
 
-      const { error: membershipError } = await admin.from("company_memberships").upsert({
+      const { error: membershipError } = await caller.from("company_memberships").upsert({
         company_id: companyId,
         user_id: targetUser.id,
         role,
@@ -159,7 +159,7 @@ Deno.serve(async (req: Request) => {
           !["active", "suspended"].includes(status)) {
         return reply({ error: "Los datos de membresía no son válidos." }, 400);
       }
-      const { error } = await admin.from("company_memberships")
+      const { error } = await caller.from("company_memberships")
         .update({ role, status }).eq("company_id", companyId).eq("user_id", userId);
       if (error) throw error;
       return reply({ ok: true });
