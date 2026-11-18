@@ -2816,3 +2816,114 @@ button:focus-visible, input:focus-visible, select:focus-visible {
   .member-admin-row { flex-direction:row; align-items:center; }
   .member-admin-controls { width:min(55%,500px); }
 }
+
+
+/* AB SYSTEM — paleta azul grisácea unificada para todos los menús */
+#app main,
+#app main .panel {
+  color: #e4edf7;
+}
+#app main .item-card,
+#app main .order-card,
+#app main .archive-card,
+#app main .stock-item-card,
+#app main .dashboard-card,
+#app main .stock-summary-card,
+#app main .admin-tools,
+#app main .global-admin-row,
+#app main .admin-panel-content {
+  background: #2b4158;
+  border: 1px solid rgba(190, 211, 233, .20);
+  color: #edf4fc;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .16);
+}
+#app main .item-card,
+#app main .order-card,
+#app main .archive-card,
+#app main .stock-item-card,
+#app main .global-admin-row {
+  border-radius: 11px;
+}
+#app main .dashboard-card span,
+#app main .stock-summary-card span,
+#app main .admin-tools p,
+#app main .global-admin-row small,
+#app main .stock-import-head p,
+#app main .stock-result-count,
+#app main .stock-updated,
+#app main .archive-meta,
+#app main .archive-sub,
+#app main .cs-meta-inline {
+  color: #c0d2e5;
+}
+#app main .dashboard-card strong,
+#app main .stock-summary-card strong,
+#app main .archive-total,
+#app main .archive-client,
+#app main .global-admin-row strong,
+#app main .stock-item-card strong,
+#app main .item-desc,
+#app main .item-price {
+  color: #f3f7fc;
+}
+#app main .stock-updated,
+#app main .archive-summary,
+#app main .historico-toggle,
+#app main .dashboard-note,
+#app main #excel-import-preview {
+  background: #263b51;
+  border: 1px solid rgba(190, 211, 233, .18);
+  color: #dce8f5;
+}
+#app main .stock-controls input,
+#app main .stock-controls select,
+#app main .global-admin-form input,
+#app main .global-admin-form select,
+#app main .member-admin-controls select,
+#app main .admin-tools input,
+#app main .admin-tools select,
+#app main .admin-panel-content input,
+#app main .admin-panel-content select,
+#app main .admin-panel-content textarea {
+  background: #1d2e40;
+  border: 1px solid rgba(190, 211, 233, .28);
+  color: #f1f6fc;
+}
+#app main input::placeholder,
+#app main textarea::placeholder {
+  color: #a9bdd2;
+  opacity: 1;
+}
+#app main .admin-tools input[type=file] {
+  background: #1d2e40;
+  color: #dce8f5;
+}
+#app main .global-admin-divider {
+  background: rgba(190, 211, 233, .22);
+}
+#app main .global-admin-row small,
+#app main .admin-tools .muted {
+  color: #b8cbe0;
+}
+#app main .stock-values span {
+  background: #344f6b;
+  color: #e8f1fb;
+}
+#app main .stock-values .is-low {
+  background: rgba(225, 29, 72, .22);
+  color: #ffc1ce;
+}
+#app main .stock-edit-grid input {
+  background: #1d2e40;
+  color: #f1f6fc;
+}
+#app main .stock-edit-grid label,
+#app main .global-admin-form label,
+#app main .admin-tools label,
+#app main .admin-panel-content label {
+  color: #dce8f5;
+}
+#app main .empty-state,
+#app main .result-count {
+  color: #c3d5e8;
+}
