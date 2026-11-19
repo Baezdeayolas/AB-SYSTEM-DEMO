@@ -285,29 +285,55 @@ document.querySelectorAll('[data-estado]').forEach(b=>b.onclick=()=>{estado=b.da
 document.querySelectorAll('[data-condicion]').forEach(b=>b.onclick=()=>{condicion=b.dataset.condicion;$('condicion-input').value=condicion;document.querySelectorAll('[data-condicion]').forEach(x=>x.classList.toggle('active',x===b));});
 $('nuevo-cliente-toggle').onclick=()=>{$('nuevo-cliente-panel').hidden=!$('nuevo-cliente-panel').hidden;};
 $('cliente-input').addEventListener('input',()=>{const q=$('cliente-input').value.trim().toLowerCase();const matches=q?clients.filter(c=>[c.c,c.n].some(v=>String(v||'').toLowerCase().includes(q))).slice(0,8):[];$('cliente-suggestions').innerHTML=matches.map(c=>'<button type="button" class="cliente-suggestion" data-client="'+safe(c.c)+'"><span class="cs-text"><span class="cs-name">'+safe(c.n)+'</span><span class="cs-meta">'+safe(c.c)+'</span></span></button>').join('');$('cliente-suggestions').classList.toggle('open',q.length>0&&matches.length>0);$('cliente-suggestions').querySelectorAll('[data-client]').forEach(b=>b.onclick=()=>{const c=clients.find(x=>String(x.c)===b.dataset.client);$('cliente-input').value=c.n;$('cliente-input').dataset.code=c.c;$('cliente-suggestions').classList.remove('open');});});
-$('save-order').onclick=async()=>{
- const saveButton=$('save-order');if(saveButton.disabled)return;
- saveButton.disabled=true;
- const msg=$('order-message');const seller=$('vendedor-input').value,clientCode=$('cliente-input').dataset.code;
+let orderSaveInProgress=false;
+async function saveCurrentOrder({startNew=false}={}){
+ const saveButton=$('save-order'),msg=$('order-message');
+ if(orderSaveInProgress)return false;
+ orderSaveInProgress=true;saveButton.disabled=true;
  try{
- if(isPublicDemo){msg.textContent='La demostración es de solo lectura.';return;}
- if(!cart.length){msg.textContent='Agregá al menos un artículo.';return;}
- if(!seller||!clientCode){msg.textContent='Seleccioná vendedor y cliente de la lista.';return;}
- const sellerMatches=sellerRows.filter(x=>x.seller_label===seller);
- if(sellerMatches.length!==1){msg.textContent='No se pudo identificar de forma única al vendedor seleccionado. Revisá sus asignaciones.';return;}
- const ownerId=sellerMatches[0].user_id;
- const client=clients.find(c=>String(c.c)===String(clientCode));if(!client){msg.textContent='Seleccioná un cliente válido.';return;}
- const sub=total(),discount=Math.min(100,Math.max(0,Number($('discount-input').value)||0)),grand=sub-(sub*discount/100),now=new Date().toISOString(),id=activeCompany.code.toLowerCase()+'_'+crypto.randomUUID();
- const payload={id,vendedor:seller,cliente:client.n,clienteCodigo:client.c,estado,condicion:$('condicion-input').value||condicion,lines:cart.map(x=>({code:x.c,description:x.d,qty:x.qty,tier,price:x['p'+tier]})),subtotal:sub,discount,total:grand,createdAt:now,updatedAt:now,companyCode:activeCompany.code};
- const {error}=await db.from('orders').insert({company_id:activeCompany.id,owner_id:ownerId,created_by:user.id,legacy_id:id,legacy_source:'archive',payload,updated_at:now});
- if(error){msg.textContent='No se pudo guardar el pedido: '+error.message;return;}
- cart=[];$('discount-input').value='0';showPanel('panel-archive');
- try{await loadOrders();msg.textContent='Pedido guardado correctamente en '+activeCompany.name+'.';}
- catch(refreshError){msg.textContent='El pedido se guardó, pero no se pudo actualizar el archivo: '+refreshError.message;}
- }catch(e){msg.textContent='No se pudo completar el guardado: '+(e.message||'Error desconocido');}
- finally{saveButton.disabled=false;}
+  if(isPublicDemo){msg.textContent='La demostración es de solo lectura.';return false;}
+  if(!cart.length){
+   if(startNew){$('discount-input').value='0';$('cliente-input').value='';$('cliente-input').dataset.code='';render();showPanel('panel-search');}
+   else msg.textContent='Agregá al menos un artículo.';
+   return false;
+  }
+  const seller=$('vendedor-input').value,clientCode=$('cliente-input').dataset.code;
+  if(!seller||!clientCode){msg.textContent='Seleccioná vendedor y cliente de la lista. El pedido sigue en pantalla y no se perdió.';return false;}
+  const sellerMatches=sellerRows.filter(x=>x.seller_label===seller);
+  if(sellerMatches.length!==1){msg.textContent='No se pudo identificar de forma única al vendedor seleccionado. Revisá sus asignaciones. El pedido sigue en pantalla.';return false;}
+  const ownerId=sellerMatches[0].user_id;
+  const client=clients.find(c=>String(c.c)===String(clientCode));
+  if(!client){msg.textContent='Seleccioná un cliente válido. El pedido sigue en pantalla.';return false;}
+  const sub=total(),discount=Math.min(100,Math.max(0,Number($('discount-input').value)||0)),grand=sub-(sub*discount/100),now=new Date().toISOString(),id=activeCompany.code.toLowerCase()+'_'+crypto.randomUUID();
+  const payload={id,vendedor:seller,cliente:client.n,clienteCodigo:client.c,estado,condicion:$('condicion-input').value||condicion,lines:cart.map(x=>({code:x.c,description:x.d,qty:x.qty,tier,price:x['p'+tier]})),subtotal:sub,discount,total:grand,createdAt:now,updatedAt:now,companyCode:activeCompany.code};
+  const {error}=await db.from('orders').insert({company_id:activeCompany.id,owner_id:ownerId,created_by:user.id,legacy_id:id,legacy_source:'archive',payload,updated_at:now});
+  if(error){msg.textContent='No se pudo archivar el pedido: '+error.message+'. Los datos siguen en pantalla; no vuelvas a compartirlo hasta resolver el error.';return false;}
+  let refreshError=null;
+  try{await loadOrders();}catch(e){refreshError=e;}
+  cart=[];$('discount-input').value='0';$('cliente-input').value='';$('cliente-input').dataset.code='';
+  render();
+  if(startNew){
+   showPanel('panel-search');
+   msg.textContent=refreshError?'Pedido guardado. No se pudo actualizar la vista de Archivo: '+refreshError.message:'Pedido archivado correctamente. Ya podés preparar uno nuevo.';
+  }else{
+   showPanel('panel-archive');
+   msg.textContent=refreshError?'El pedido se guardó, pero no se pudo actualizar el archivo: '+refreshError.message:'Pedido guardado correctamente en '+activeCompany.name+'.';
+  }
+  return true;
+ }catch(e){
+  msg.textContent='No se pudo completar el guardado: '+(e.message||'Error desconocido')+'. El pedido sigue en pantalla.';
+  return false;
+ }finally{
+  orderSaveInProgress=false;saveButton.disabled=false;
+ }
+}
+$('save-order').onclick=()=>saveCurrentOrder();
+$('btn-clear').onclick=async()=>{
+ const newButton=$('btn-clear');if(newButton.disabled||orderSaveInProgress)return;
+ newButton.disabled=true;
+ try{await saveCurrentOrder({startNew:true});}
+ finally{newButton.disabled=false;}
 };
-$('btn-clear').onclick=()=>{cart=[];$('discount-input').value='0';$('cliente-input').value='';$('cliente-input').dataset.code='';render();showPanel('panel-search');};
 $('btn-pdf').onclick=()=>{if(!cart.length){alert('Agregá artículos al pedido antes de generar el comprobante.');return;}const lines=cart.map(x=>'<tr><td>'+safe(x.c)+'</td><td>'+safe(x.d)+'</td><td>'+x.qty+'</td><td>'+money(x['p'+tier])+'</td><td>'+money(x.qty*x['p'+tier])+'</td></tr>').join('');const sub=total(),discount=Math.min(100,Math.max(0,Number($('discount-input').value)||0)),grand=sub-sub*discount/100;const w=window.open('','_blank');if(!w){alert('El navegador bloqueó la ventana. Permití ventanas emergentes para generar el PDF.');return;}w.onload=()=>w.print();w.document.write('<!doctype html><html lang="es"><meta charset="utf-8"><title>Pedido AB SYSTEM</title><style>body{font:14px Arial;padding:28px;color:#17212b}table{width:100%;border-collapse:collapse}th,td{padding:9px;border-bottom:1px solid #ddd;text-align:left}</style><h1>AB SYSTEM · Pedido</h1><p>Empresa: '+safe(activeCompany.name)+'</p><p>Cliente: '+safe($('cliente-input').value)+'</p><p>Vendedor: '+safe($('vendedor-input').value)+'</p><table><thead><tr><th>Código</th><th>Descripción</th><th>Cantidad</th><th>Precio</th><th>Subtotal</th></tr></thead><tbody>'+lines+'</tbody></table><h2>Total: '+money(grand)+'</h2></html>');w.document.close();};
 let barcodeScanner=null,barcodeScannerRunning=false,barcodeLibraryPromise=null;
 async function ensureBarcodeLibrary(){
