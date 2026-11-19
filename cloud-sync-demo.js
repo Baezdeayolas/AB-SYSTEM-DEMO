@@ -393,8 +393,9 @@ $('excel-import-confirm').addEventListener('click',async()=>{if(!pendingImport||
    const line=i+1,code=String(r[col.code]??'').trim(),name=String(r[col.name]??'').trim();
    if(!code&&!name)continue;
    if(!code||!name){skippedRows.push({line,code,name});continue;}
-   if(seen.has(code))throw new Error('Código de cliente duplicado '+code+' en filas '+seen.get(code)+' y '+line+'.');
-   seen.set(code,line);
+   const codeKey=code.normalize('NFKC').toLocaleUpperCase('en-US');
+   if(seen.has(codeKey))throw new Error('Código de cliente duplicado o equivalente '+code+' en filas '+seen.get(codeKey)+' y '+line+'. Revisá espacios y diferencias entre mayúsculas/minúsculas.');
+   seen.set(codeKey,line);
    const payload={c:code,n:name};
    for(const [key,field] of [['city','ciu'],['department','dep'],['district','dst'],['phone','tel'],['docType','tip'],['ident','ident'],['balanceGs','saldoActGs'],['balanceExt','saldoActExt'],['debtAccount','ctaCbleDeuda']]){
     if(col[key]!==undefined&&r[col[key]]!==null&&String(r[col[key]]).trim()!=='')payload[field]=String(r[col[key]]).trim();
@@ -422,22 +423,20 @@ $('excel-import-confirm').addEventListener('click',async()=>{if(!pendingImport||
   if(!pendingClientImport||isPublicDemo||!(isGlobal||profile?.role==='company_admin'))return;
   const b=$('client-excel-import-confirm');b.disabled=true;b.textContent='Importando…';
   try{
-   const rows=pendingClientImport.rows,batchSize=250,totalBatches=Math.ceil(rows.length/batchSize);let processed=0;
-   for(let offset=0,batch=1;offset<rows.length;offset+=batchSize,batch++){
-    const batchRows=rows.slice(offset,offset+batchSize).map(row=>{
-     const previous=clients.find(c=>String(c.c)===String(row.code))||{};
-     return {company_id:activeCompany.id,code:row.code,payload:{...previous,...row.payload}};
-    });
-    $('client-excel-import-preview').textContent='Importando lote '+batch+' de '+totalBatches+' · '+processed+' de '+rows.length+' clientes procesados…';
-    const result=await timeout(db.from('catalog_clients').upsert(batchRows,{onConflict:'company_id,code'}),'El lote '+batch+' de clientes');
-    if(result.error)throw new Error('Lote '+batch+'/'+totalBatches+': '+result.error.message+' · Procesados antes del error: '+processed+'.');
-    processed+=batchRows.length;
-   }
+   const rows=pendingClientImport.rows;
+   if(rows.length>10000)throw new Error('El archivo contiene '+rows.length+' clientes. Esta versión admite hasta 10.000 filas por operación segura.');
+   const batchRows=rows.map(row=>{
+    const previous=clients.find(c=>String(c.c)===String(row.code))||{};
+    return {company_id:activeCompany.id,code:row.code,payload:{...previous,...row.payload}};
+   });
+   $('client-excel-import-preview').textContent='Guardando '+batchRows.length+' clientes en una única operación. No cierres esta pantalla…';
+   const result=await timeout(db.from('catalog_clients').upsert(batchRows,{onConflict:'company_id,code'}),'La importación completa de clientes',120000);
+   if(result.error)throw new Error(result.error.message||'La base de datos rechazó la importación.');
    await loadData();
    const skipped=pendingClientImport.skippedRows||[];
-   $('client-excel-import-preview').textContent='Importación completada: '+processed+' clientes procesados en '+totalBatches+' lotes. '+(skipped.length?'Se omitieron '+skipped.length+' filas incompletas (ej.: '+skipped.slice(0,8).map(x=>x.line).join(', ')+(skipped.length>8?'…':'')+'). ':'')+'Los clientes ausentes se conservaron.';
+   $('client-excel-import-preview').textContent='Importación completada: '+batchRows.length+' clientes en una única operación. '+(skipped.length?'Se omitieron '+skipped.length+' filas incompletas (ej.: '+skipped.slice(0,8).map(x=>x.line).join(', ')+(skipped.length>8?'…':'')+'). ':'')+'Los clientes ausentes se conservaron.';
    pendingClientImport=null;$('client-excel-import-file').value='';
-  }catch(err){$('client-excel-import-preview').textContent='Importación detenida: '+(err.message||'Error desconocido')+' Si hubo lotes previos exitosos, podés volver a ejecutar la misma planilla para completar o actualizar los clientes.';}
+  }catch(err){$('client-excel-import-preview').textContent='La operación no confirmó un resultado: '+(err.message||'Error desconocido')+'. Si hubo un corte o tiempo agotado, verificá el listado antes de volver a intentar.';}
   finally{b.textContent='Importar clientes';b.disabled=!pendingClientImport;}
  });
 
