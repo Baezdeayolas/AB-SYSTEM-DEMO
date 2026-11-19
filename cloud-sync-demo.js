@@ -358,8 +358,8 @@ $('btn-pdf').onclick=async()=>{
   const sub=total(),discount=Math.min(100,Math.max(0,Number($('discount-input').value)||0)),off=sub*discount/100,grand=sub-off;
   const statusText=estado==='confirmado'?'PEDIDO CONFIRMADO':'PEDIDO PENDIENTE';
   const html='<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Nota de Pedido · AB SYSTEM</title><style>'+
-   '@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}html,body{margin:0;padding:0;color:#111;font-family:Arial,sans-serif}'+
-   '.pdf-sheet{width:194mm;min-height:281mm;display:flex;flex-direction:column;background:#fff;font-size:9px;line-height:1.25}'+
+   '@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}html,body{margin:0;padding:0;color:#111!important;background:#fff!important;color-scheme:light!important;font-family:Arial,sans-serif}'+
+   '#pdf-root{width:194mm;min-height:281mm;display:flex;flex-direction:column;background:#fff!important;color:#111!important;font-size:9px;line-height:1.25}#pdf-root *{color:#111!important}#pdf-root th{background:#f2f2f2!important}'+
    '.topline{display:flex;justify-content:space-between;align-items:flex-start;gap:8mm;margin:0 0 1mm}.brand{font-size:12px;font-weight:700}.company{font-size:11px;font-weight:500;text-align:right}'+
    '.issuer{font-size:9px;margin:0 0 5mm;color:#222}.heading{text-align:center;font-size:17px;font-weight:800;letter-spacing:.2px;margin:0 0 7mm;padding:0 0 5mm;border-bottom:1px solid #222}'+
    '.meta{display:grid;grid-template-columns:1.35fr 1fr;gap:7mm;padding:0 0 5mm;margin:0 0 5mm;border-bottom:1px solid #222;font-size:10px}'+
@@ -369,7 +369,7 @@ $('btn-pdf').onclick=async()=>{
    '.totals{width:100%;margin:5mm 0 0;font-size:10px;border-collapse:collapse}.totals div{display:flex;justify-content:space-between;align-items:center;padding:1.5mm 2.5mm;border:1px solid #111;min-height:6mm}.totals .grand{font-size:12px;font-weight:800}'+
    '.status{text-align:center;font-weight:800;font-size:15px;margin:6mm 0 0;letter-spacing:.2px}'+
    'tr{break-inside:avoid;page-break-inside:avoid}.totals,.status{break-inside:avoid;page-break-inside:avoid}'+
-   '</style></head><body><main class="pdf-sheet">'+
+   '</style></head><body><main id="pdf-root" class="pdf-sheet" style="background:#fff!important;color:#111!important">'+
    '<div class="topline"><div class="brand">AB SYSTEM</div><div class="company">Pedido '+safe(activeCompany.name)+'</div></div>'+
    '<div class="issuer">Emitido por '+safe(user?.email||'')+'</div>'+
    '<div class="heading">NOTA DE PEDIDO</div>'+
