@@ -22,7 +22,7 @@ jobs:
       - name: Check Edge Function syntax
         run: deno check supabase/functions/admin-users/index.ts
       - name: Run SQL migration safety regression checks
-        run: node --test tests/sql-inventory-migration.test.mjs
+        run: node --test tests/sql-inventory-migration.test.mjs tests/sql-admin-guards.test.mjs
       - name: Check database migration exists
         run: test -s sql/ETAPA-2D-22-INVENTARIO-CENTRAL-CDE-IMPORTACION-EXCEL.sql
       - name: Check release wiring
