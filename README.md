@@ -23,9 +23,9 @@ Entorno independiente de desarrollo multiempresa. No es producción.
 
 La empresa **DEMO2** (UUID existente `393b1b07-140f-46c7-a866-4436d59edeec`) será renombrada a **AB SYSTEM DEMO**, conservando su UUID. La empresa **KOEJU** (UUID `c8c4f6bf-a941-48a2-be99-6322b4ac19fd`) permanece intacta como fuente dentro de esta base DEMO. Los productos se copiarán a DEMO2 y los clientes de DEMO2 serán ficticios, sin datos personales ni financieros reales. Ko’ẽju producción y su Supabase separado no se modifican.
 
-La migración 2D-21 sigue bloqueada: el backfill a `code='KOEJU'` es correcto porque conserva los datos existentes en su empresa fuente; el destino AB SYSTEM DEMO es `DEMO2`. Sin embargo, el consolidado todavía incluye un Lote 5 que intenta crear `public.inventory_balances`, tabla legacy que ya existe en este proyecto. Debe separarse ese lote y coordinarse con el inventario nuevo CENTRAL/CDE antes de ejecutar. El archivo termina en `ROLLBACK` y no persiste cambios.
+La migración base 2D-21 ya fue corregida para no crear ni alterar `public.inventory_balances` ni `public.inventory_movements`, que corresponden al inventario legacy. El backfill a `code='KOEJU'` conserva correctamente los registros fuente; el destino AB SYSTEM DEMO es `DEMO2`. La migración base termina en `ROLLBACK` y sigue pendiente de ensayo.
 
-El lote 2D-22 depende de las claves compuestas `(company_id, code)` y de los helpers multiempresa. No debe ejecutarse hasta que la migración base corregida esté aplicada y probada; su `COMMIT` actual requiere aprobación específica después del ensayo.
+El inventario de la aplicación se gestiona exclusivamente mediante `inventory_location_balances` y `inventory_location_movements`, con depósitos `CENTRAL` y `CDE`. El SQL 2D-22 incorpora preflight de estructura existente, RPC de ajuste/importación y validación de códigos duplicados normalizados. También termina en `ROLLBACK` mientras no se haya probado sobre una restauración aislada de Supabase DEMO. Los saldos legacy no se asignan arbitrariamente a depósitos.
 
 La aplicación usa SheetJS desde CDN para leer archivos XLSX/XLS. Requiere conexión a internet para cargar esa biblioteca y Supabase.
 
@@ -39,7 +39,7 @@ La aplicación usa SheetJS desde CDN para leer archivos XLSX/XLS. Requiere conex
 - Los pedidos históricos no se recalculan al importar un catálogo nuevo.
 
 ## Pendiente antes de producción
-- Ejecutar el lote SQL 2D-22 en AB-SYSTEM-DEMO.
+- Ensayar 2D-21 y 2D-22 sobre una restauración completa y verificable del proyecto DEMO; no ejecutar en producción hasta aprobar las pruebas.
 - Importar el libro vigente y conciliar conteos y saldos CENTRAL/CDE.
 - Desplegar la Edge Function `admin-users` y probar altas/suspensiones de empresas, invitaciones, cambios de rol/estado y retiro de membresías con cuentas autorizadas.
 - Probar inicio de sesión y aislamiento con cuentas reales de superadministrador, administrador, vendedor y usuario sin membresía.
