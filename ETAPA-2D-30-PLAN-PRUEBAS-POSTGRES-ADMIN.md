@@ -1,49 +1,55 @@
 # ETAPA 2D-30 — Plan de pruebas PostgreSQL para protecciones administrativas
 
-**Estado:** plan de integración pendiente. No ejecutar contra Supabase AB-SYSTEM-DEMO ni Ko'eju producción.
-**Entorno requerido:** restauración aislada y verificable de AB-SYSTEM-DEMO, sin conexiones de usuarios reales.
-**Parche relacionado:** `sql/ETAPA-2D-29-PROTECCION-ULTIMO-ADMIN-Y-EMPRESAS-DRAFT.sql`.
+**Estado:** integración real en PostgreSQL 17 desechable en preparación; restauración completa de la base pendiente.
+**No ejecutar contra:** Supabase AB-SYSTEM-DEMO activo ni Ko'eju producción.
+**Parche relacionado:** sql/ETAPA-2D-29-PROTECCION-ULTIMO-ADMIN-Y-EMPRESAS-DRAFT.sql.
 
-## Alcance
+## Situación del entorno
 
-Validar comportamiento real de los triggers de PostgreSQL. Las pruebas Node del repositorio son estáticas: verifican que el borrador contenga las guardas previstas, pero no ejecutan SQL ni demuestran el comportamiento de PostgreSQL, RLS o concurrencia.
+- Proyecto AB-SYSTEM-DEMO: PostgreSQL 17.12, organización actualmente en plan Free.
+- No existen ramas de desarrollo Supabase.
+- La clonación/restauración oficial a un proyecto nuevo requiere plan pago y backups físicos habilitados. Una rama estándar aplica migraciones, pero no copia los datos de producción.
+- No se creará una rama ni proyecto Supabase de pago sin revisar y aceptar el costo.
+- Primer paso sin costo: ejecutar los triggers reales sobre un contenedor PostgreSQL 17 desechable de GitHub Actions, con un esquema fixture mínimo que reproduce las tablas y el trigger de identidad requeridos por el parche.
+- Esta prueba fixture no equivale a restaurar la base completa y no valida RLS, Auth, funciones de negocio ni conteos reales de todas las tablas.
 
 ## Preparación obligatoria
 
-1. Crear una restauración aislada de la base DEMO y verificar que puede restaurarse.
-2. Usar una empresa de prueba dedicada y usuarios Auth sintéticos, nunca usuarios reales.
-3. Crear dos membresías `company_admin` activas en esa empresa y al menos un vendedor.
-4. Confirmar que existe `trg_company_memberships_guard_identity`.
-5. Ejecutar el parche únicamente en esa restauración, después de revisar el preflight y cambiar temporalmente el cierre a `ROLLBACK` para el ensayo.
-6. Registrar SQLSTATE, resultado y conteos antes/después de cada caso.
+1. Ejecutar el workflow de integración PostgreSQL en un servicio efímero postgres:17.
+2. Crear tablas companies y company_memberships, roles de prueba y el trigger de identidad requerido por el preflight.
+3. Cargar el parche 2D-29 en esa base efímera, convirtiendo su cierre ROLLBACK a COMMIT únicamente dentro del proceso automatizado y desechable.
+4. Ejecutar los casos A–J y registrar SQLSTATE, resultado y conteos.
+5. Para una prueba integral posterior, obtener una restauración de respaldo de AB-SYSTEM-DEMO en un proyecto independiente o entorno local. Confirmar primero el plan/costo, el punto de backup y el aislamiento de integraciones externas.
+6. Antes de cualquier restauración, revisar extensiones y automatizaciones con efectos externos (pg_cron, pg_net, webhooks, wrappers) para evitar que la copia contacte sistemas reales.
 
 ## Casos de regresión
 
 | Caso | Operación | Resultado esperado |
 |---|---|---|
-| A | Eliminar el único administrador activo | Rechazado con SQLSTATE `23514` |
-| B | Suspender al único administrador activo | Rechazado con SQLSTATE `23514` |
-| C | Cambiar el rol del único administrador activo a `seller` | Rechazado con SQLSTATE `23514` |
+| A | Eliminar el único administrador activo | Rechazado con SQLSTATE 23514 |
+| B | Suspender al único administrador activo | Rechazado con SQLSTATE 23514 |
+| C | Cambiar el rol del único administrador activo a seller | Rechazado con SQLSTATE 23514 |
 | D | Retirar uno de dos administradores activos | Permitido; queda exactamente uno activo |
-| E | Retirar después al administrador restante | Rechazado con SQLSTATE `23514` |
-| F | Degradar o suspender ambos administradores en una sola sentencia | La sentencia completa se revierte; queda al menos uno activo |
-| G | Dos sesiones concurrentes intentan retirar cada una un administrador distinto | No pueden confirmar ambas; la empresa conserva al menos uno activo |
-| H | Eliminar una empresa con rol autenticado o privilegiado | Rechazado con SQLSTATE `55000` |
-| I | Ejecutar TRUNCATE sobre companies | Rechazado con SQLSTATE `55000` |
-| J | Suspender una empresa mediante UPDATE de status | Permitido; se conservan empresa, membresías y datos vinculados |
+| E | Retirar después al administrador restante | Rechazado con SQLSTATE 23514 |
+| F | Retirar todos los administradores en una sentencia masiva | La sentencia completa se revierte; quedan dos activos |
+| G | Dos sesiones concurrentes retiran administradores distintos | No pueden confirmar ambas; queda al menos uno activo |
+| H | Eliminar físicamente una empresa | Rechazado con SQLSTATE 55000 |
+| I | Ejecutar TRUNCATE sobre companies | Rechazado con SQLSTATE 55000 |
+| J | Suspender una empresa mediante UPDATE de status | Permitido; se conservan membresías |
 
-## Comprobaciones de integridad posteriores
+## Comprobaciones para la restauración integral
 
 - Comparar conteos de empresas, membresías, productos, clientes, pedidos e inventario antes/después.
-- Confirmar que no se modificó `company_id` ni `user_id` de membresías.
+- Confirmar que no se modificó company_id ni user_id de membresías.
 - Confirmar que no se borraron empresas ni filas comerciales.
-- Verificar que la política RLS sigue limitando cada usuario a su empresa.
-- Repetir A–J después de restaurar la base de prueba para demostrar que el resultado es reproducible.
+- Verificar RLS con usuarios de prueba de empresas distintas.
+- Usar usuarios Auth sintéticos; no importar identidades reales para pruebas destructivas.
+- Repetir A–J después de restaurar para demostrar reproducibilidad.
 
-## Bloqueo conocido antes de aplicar
+## Bloqueo de membresía
 
-La auditoría encontró que `DEMO2` no tiene un `company_admin` activo. El preflight del parche abortará mientras exista alguna empresa sin administrador activo. Primero se debe asignar un administrador autorizado a DEMO2 y volver a verificar el inventario de membresías.
+La auditoría de solo lectura confirma que DEMO2 tiene una membresía activa, cero company_admin activos y un miembro activo no administrador. El parche aborta si cualquier empresa carece de administrador activo. El responsable debe identificar qué cuenta autorizada debe recibir el rol; no se asignará el permiso por inferencia.
 
 ## Criterio de aprobación
 
-No aprobar ni convertir el borrador en migración aplicable hasta que todos los casos A–J pasen en una restauración aislada, se verifique la integridad de datos y se revise el comportamiento de los triggers con la versión real de PostgreSQL 17 usada por el proyecto.
+No aprobar ni convertir el borrador en migración aplicable hasta que A–J pasen en PostgreSQL 17 real, se complete una restauración integral aislada para validar RLS e integridad global, DEMO2 tenga un administrador autorizado, todas las empresas pasen el preflight y exista aprobación explícita para el siguiente cambio.
