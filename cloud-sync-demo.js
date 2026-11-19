@@ -217,7 +217,21 @@ async function enterPublicDemo(){
 }
 async function callGlobalAdmin(action,payload={}){
  const {data,error}=await timeout(db.functions.invoke('admin-users',{body:{action,...payload}}),'La administración global');
- if(error)throw error;if(data?.error)throw new Error(data.error);return data||{};
+ if(error){
+  let message=error.message||'Error desconocido';
+  const context=error.context;
+  if(context&&typeof context.json==='function'){
+   try{
+    const response=typeof context.clone==='function'?context.clone():context;
+    const body=await response.json();
+    if(typeof body?.error==='string'&&body.error.trim())message=body.error.trim();
+    else if(typeof body?.message==='string'&&body.message.trim())message=body.message.trim();
+   }catch(_){}
+  }
+  throw new Error(message);
+ }
+ if(data?.error)throw new Error(data.error);
+ return data||{};
 }
 async function loadGlobalAdminData(){
  if(!isGlobal)return;
