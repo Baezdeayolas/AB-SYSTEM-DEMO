@@ -1091,7 +1091,7 @@ BEGIN
     ('public.create_demo_profile()'),
     ('public.ab_guard_company_membership_identity()'),
     ('public.ab_guard_order_identity()'),
-    ('public.ab_guard_seller_assignment_membership()'),
+    ('public.ab_guard_seller_assignment_membership()')
   ) AS x(signature)
   WHERE to_regprocedure(x.signature) IS NULL;
 
@@ -1151,8 +1151,8 @@ BEGIN
 END
 $defaults$;
 
--- Verificacion de funciones: PUBLIC y anon no conservan EXECUTE en las funciones
--- enumeradas; authenticated conserva solo helpers y RPCs comerciales.
+-- Verificacion de funciones base: PUBLIC y anon no conservan EXECUTE en las funciones
+-- enumeradas. Las RPC de inventario se controlan en la migracion independiente 2D-22.
 DO $verify$
 DECLARE
   v_bad text;
@@ -1174,8 +1174,8 @@ BEGIN
       'public.create_demo_profile()'::regprocedure,
       'public.ab_guard_company_membership_identity()'::regprocedure,
       'public.ab_guard_order_identity()'::regprocedure,
-      'public.ab_guard_seller_assignment_membership()'::regprocedure,
-          )
+      'public.ab_guard_seller_assignment_membership()'::regprocedure
+    )
     AND a.privilege_type='EXECUTE'
     AND a.grantee IN (0, to_regrole('anon')::oid);
 
