@@ -236,7 +236,7 @@ async function loadGlobalAdminData(){
  });
  $('global-company-list').querySelectorAll('[data-company-status]').forEach(b=>b.onclick=async()=>{
   const status=b.dataset.status==='active'?'suspended':'active';b.disabled=true;
-  try{const {error}=await timeout(db.from('companies').update({status}).eq('id',b.dataset.companyStatus),'La actualización de empresa');if(error)throw error;await loadGlobalAdminData();await loadCompanyContext(user);if(activeCompany?.status==='suspended')activeCompany=companies[0]||null;}catch(e){alert('No se pudo cambiar el estado: '+e.message);}finally{b.disabled=false;}
+  try{await callGlobalAdmin('set-company-status',{companyId:b.dataset.companyStatus,status});await loadGlobalAdminData();await loadCompanyContext(user);if(activeCompany?.status==='suspended'&&companies.length){activeCompany=companies[0];await loadData();}}catch(e){alert('No se pudo cambiar el estado: '+e.message);}finally{b.disabled=false;}
  });
 }
 $('company-create-form').addEventListener('submit',async e=>{
@@ -244,7 +244,7 @@ $('company-create-form').addEventListener('submit',async e=>{
  const name=$('new-company-name').value.trim(),code=$('new-company-code').value.trim().toUpperCase().replace(/[^A-Z0-9_-]/g,'');
  const msg=$('company-create-message');if(!name||!code){msg.textContent='Completá el nombre y un código válido.';return;}
  const b=$('company-create-form').querySelector('button');b.disabled=true;
- try{const {error}=await timeout(db.from('companies').insert({name,code,status:'active'}),'La creación de empresa');if(error)throw error;msg.textContent='Empresa creada correctamente.';$('company-create-form').reset();await loadCompanyContext(user);await loadGlobalAdminData();}
+ try{await callGlobalAdmin('create-company',{name,code});msg.textContent='Empresa creada correctamente.';$('company-create-form').reset();await loadCompanyContext(user);await loadGlobalAdminData();}
  catch(err){msg.textContent='No se pudo crear la empresa: '+err.message;}finally{b.disabled=false;}
 });
 $('member-invite-form').addEventListener('submit',async e=>{
