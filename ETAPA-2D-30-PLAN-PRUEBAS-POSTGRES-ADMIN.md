@@ -34,7 +34,7 @@
 | F | Retirar todos los administradores en una sentencia masiva | La sentencia completa se revierte; quedan dos activos |
 | G | Dos sesiones concurrentes retiran administradores distintos | No pueden confirmar ambas; queda al menos uno activo |
 | H | Eliminar físicamente una empresa | Rechazado con SQLSTATE 55000 |
-| I | Ejecutar TRUNCATE sobre companies | Rechazado con SQLSTATE 55000 |
+| I | Ejecutar TRUNCATE sobre companies CASCADE | Rechazado con SQLSTATE 55000 |
 | J | Suspender una empresa mediante UPDATE de status | Permitido; se conservan membresías |
 
 ## Comprobaciones para la restauración integral
