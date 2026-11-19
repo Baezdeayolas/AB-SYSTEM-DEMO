@@ -95,6 +95,42 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    if (action === "create-company") {
+      const name = String(body.name || "").trim();
+      const code = String(body.code || "").trim().toUpperCase();
+      if (!name || name.length > 120 || !/^[A-Z0-9_-]{2,24}$/.test(code)) {
+        return reply({ error: "El nombre debe tener hasta 120 caracteres y el código entre 2 y 24 caracteres (A-Z, 0-9, guion o guion bajo)." }, 400);
+      }
+      const { data: company, error: createError } = await admin
+        .from("companies")
+        .insert({ name, code, status: "active" })
+        .select("id,code,name,status")
+        .single();
+      if (createError) {
+        if (createError.code === "23505") return reply({ error: "Ya existe una empresa con ese código." }, 409);
+        throw createError;
+      }
+      return reply({ ok: true, company });
+    }
+
+    if (action === "set-company-status") {
+      const companyId = String(body.companyId || "");
+      const status = String(body.status || "");
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(companyId) ||
+          !["active", "suspended"].includes(status)) {
+        return reply({ error: "La empresa o el estado solicitado no son válidos." }, 400);
+      }
+      const { data: company, error: statusError } = await admin
+        .from("companies")
+        .update({ status })
+        .eq("id", companyId)
+        .select("id,code,name,status")
+        .maybeSingle();
+      if (statusError) throw statusError;
+      if (!company) return reply({ error: "No se encontró la empresa indicada." }, 404);
+      return reply({ ok: true, company });
+    }
+
     if (action === "invite") {
       const companyId = String(body.companyId || "");
       const email = String(body.email || "").trim().toLowerCase();
