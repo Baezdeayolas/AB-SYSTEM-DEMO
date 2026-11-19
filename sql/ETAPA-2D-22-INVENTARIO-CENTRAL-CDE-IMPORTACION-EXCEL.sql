@@ -201,11 +201,16 @@ BEGIN
      OR (e.value->>'stock_cde') !~ '^[0-9]+([.][0-9]{1,3})?$';
   IF v_count>0 THEN RAISE EXCEPTION 'Hay % filas sin codigo, payload o stock valido.',v_count; END IF;
 
+  -- La deteccion debe coincidir con el frontend: ignora espacios externos,
+  -- diferencias entre mayusculas/minusculas y equivalencias Unicode NFKC.
+  -- Se conserva el codigo original (solo btrim) al almacenarlo.
   SELECT count(*) INTO v_count FROM (
-    SELECT e.value->>'code' FROM jsonb_array_elements(p_rows) e
-    GROUP BY e.value->>'code' HAVING count(*)>1
+    SELECT upper(normalize(btrim(e.value->>'code'), NFKC)) AS normalized_code
+    FROM jsonb_array_elements(p_rows) e
+    GROUP BY upper(normalize(btrim(e.value->>'code'), NFKC))
+    HAVING count(*)>1
   ) d;
-  IF v_count>0 THEN RAISE EXCEPTION 'El archivo contiene codigos duplicados.'; END IF;
+  IF v_count>0 THEN RAISE EXCEPTION 'El archivo contiene codigos duplicados o equivalentes (espacios, mayusculas o Unicode).'; END IF;
 
   FOR v_row IN SELECT value FROM jsonb_array_elements(p_rows)
   LOOP
