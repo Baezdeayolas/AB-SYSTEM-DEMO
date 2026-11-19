@@ -44,6 +44,16 @@ BEGIN
   END IF;
 
   IF NOT EXISTS (
+    SELECT 1 FROM pg_catalog.pg_trigger
+    WHERE tgrelid='public.company_memberships'::regclass
+      AND tgname='trg_company_memberships_guard_identity'
+      AND NOT tgisinternal
+  ) THEN
+    RAISE EXCEPTION
+      'ABORTADO: falta trg_company_memberships_guard_identity; no se puede garantizar la identidad fija de las membresias.';
+  END IF;
+
+  IF NOT EXISTS (
     SELECT 1 FROM information_schema.columns
     WHERE table_schema='public' AND table_name='company_memberships'
       AND column_name='company_id' AND data_type='uuid'
