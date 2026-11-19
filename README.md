@@ -21,11 +21,11 @@ Entorno independiente de desarrollo multiempresa. No es producción.
 ## Instalación de la versión candidata
 ## Estado de migración (NO ejecutar SQL todavía)
 
-La empresa inicial de demostración será **AB SYSTEM DEMO** (código objetivo provisional: `ABDEMO`). La fila empresarial que actualmente se identifica como `KOEJU` en la base DEMO se transformará conservando los registros comerciales que correspondan, sin modificar Ko’ẽju producción.
+La empresa **DEMO2** (UUID existente `393b1b07-140f-46c7-a866-4436d59edeec`) será renombrada a **AB SYSTEM DEMO**, conservando su UUID. La empresa **KOEJU** (UUID `c8c4f6bf-a941-48a2-be99-6322b4ac19fd`) permanece intacta como fuente dentro de esta base DEMO. Los productos se copiarán a DEMO2 y los clientes de DEMO2 serán ficticios, sin datos personales ni financieros reales. Ko’ẽju producción y su Supabase separado no se modifican.
 
-La migración consolidada 2D-21 sigue en revisión: su backfill histórico todavía busca `code='KOEJU'`. Se corrigió su cierre de seguridad a `ROLLBACK` para impedir confirmaciones accidentales. **No ejecutar 2D-21 ni 2D-22** hasta completar la adaptación de empresa, el respaldo restaurable, la revisión de membresías y la anonimización de datos personales destinados a demostraciones.
+La migración 2D-21 sigue bloqueada: el backfill a `code='KOEJU'` es correcto porque conserva los datos existentes en su empresa fuente; el destino AB SYSTEM DEMO es `DEMO2`. Sin embargo, el consolidado todavía incluye un Lote 5 que intenta crear `public.inventory_balances`, tabla legacy que ya existe en este proyecto. Debe separarse ese lote y coordinarse con el inventario nuevo CENTRAL/CDE antes de ejecutar. El archivo termina en `ROLLBACK` y no persiste cambios.
 
-El lote 2D-22 depende del esquema multiempresa creado por 2D-21; no es una migración inicial independiente. Cuando el esquema y los permisos estén validados, se revisará y probará en una transacción separada.
+El lote 2D-22 depende de las claves compuestas `(company_id, code)` y de los helpers multiempresa. No debe ejecutarse hasta que la migración base corregida esté aplicada y probada; su `COMMIT` actual requiere aprobación específica después del ensayo.
 
 La aplicación usa SheetJS desde CDN para leer archivos XLSX/XLS. Requiere conexión a internet para cargar esa biblioteca y Supabase.
 
