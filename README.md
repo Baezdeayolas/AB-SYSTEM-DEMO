@@ -39,7 +39,7 @@ La aplicación usa SheetJS desde CDN para leer archivos XLSX/XLS. Requiere conex
 - Los pedidos históricos no se recalculan al importar un catálogo nuevo.
 
 ## Pendiente antes de producción
-- Ensayar 2D-21 y 2D-22 sobre una restauración completa y verificable del proyecto DEMO; no ejecutar en producción hasta aprobar las pruebas.
+- Ensayar 2D-21 y 2D-22 sobre una restauración completa y verificable del proyecto DEMO; no ejecutar en producción hasta aprobar las pruebas reales de PostgreSQL/RLS.
 - Importar el libro vigente y conciliar conteos y saldos CENTRAL/CDE.
 - Desplegar la Edge Function `admin-users` y probar altas/suspensiones de empresas, invitaciones, cambios de rol/estado y retiro de membresías con cuentas autorizadas.
 - Probar inicio de sesión y aislamiento con cuentas reales de superadministrador, administrador, vendedor y usuario sin membresía.
