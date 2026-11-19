@@ -186,6 +186,31 @@ Deno.serve(async (req: Request) => {
       return reply({ ok: true, invited, userId: targetUser.id });
     }
 
+    if (action === "remove-membership") {
+      const companyId = String(body.companyId || "");
+      const userId = String(body.userId || "");
+      const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidPattern.test(companyId) || !uuidPattern.test(userId)) {
+        return reply({ error: "La empresa o el usuario indicados no son válidos." }, 400);
+      }
+      const { data: target, error: targetError } = await admin
+        .from("company_memberships").select("role,status")
+        .eq("company_id", companyId).eq("user_id", userId).maybeSingle();
+      if (targetError) throw targetError;
+      if (!target) return reply({ error: "La membresía ya no existe." }, 404);
+      if (target.role === "company_admin" && target.status === "active") {
+        const { count, error: countError } = await admin
+          .from("company_memberships").select("user_id", { count: "exact", head: true })
+          .eq("company_id", companyId).eq("role", "company_admin").eq("status", "active");
+        if (countError) throw countError;
+        if ((count || 0) <= 1) return reply({ error: "No se puede quitar al último administrador activo de la empresa." }, 409);
+      }
+      const { error: deleteError } = await admin.from("company_memberships")
+        .delete().eq("company_id", companyId).eq("user_id", userId);
+      if (deleteError) throw deleteError;
+      return reply({ ok: true });
+    }
+
     if (action === "update-membership") {
       const companyId = String(body.companyId || "");
       const userId = String(body.userId || "");
@@ -195,7 +220,19 @@ Deno.serve(async (req: Request) => {
           !["active", "suspended"].includes(status)) {
         return reply({ error: "Los datos de membresía no son válidos." }, 400);
       }
-      const { error } = await caller.from("company_memberships")
+      const { data: current, error: currentError } = await admin.from("company_memberships")
+        .select("role,status").eq("company_id", companyId).eq("user_id", userId).maybeSingle();
+      if (currentError) throw currentError;
+      if (!current) return reply({ error: "La membresía ya no existe." }, 404);
+      if (current.role === "company_admin" && current.status === "active" &&
+          (role !== "company_admin" || status !== "active")) {
+        const { count, error: countError } = await admin
+          .from("company_memberships").select("user_id", { count: "exact", head: true })
+          .eq("company_id", companyId).eq("role", "company_admin").eq("status", "active");
+        if (countError) throw countError;
+        if ((count || 0) <= 1) return reply({ error: "La empresa debe conservar al menos un administrador activo." }, 409);
+      }
+      const { error } = await admin.from("company_memberships")
         .update({ role, status }).eq("company_id", companyId).eq("user_id", userId);
       if (error) throw error;
       return reply({ ok: true });
