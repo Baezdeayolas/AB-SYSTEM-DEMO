@@ -6,6 +6,98 @@
 
 BEGIN;
 
+-- Preflight defensivo: no asumir que una tabla preexistente tiene la forma
+-- esperada solo porque CREATE TABLE IF NOT EXISTS no falla.
+DO $preflight$
+DECLARE
+  v_missing text;
+  v_ok boolean;
+BEGIN
+  IF to_regclass('public.catalog_items') IS NULL
+     OR to_regclass('public.catalog_import_rows') IS NULL
+     OR to_regclass('public.companies') IS NULL THEN
+    RAISE EXCEPTION 'ABORTADO: faltan tablas base de multiempresa; aplicar y validar 2D-21 primero.';
+  END IF;
+
+  SELECT string_agg(required.column_name, ', ')
+    INTO v_missing
+  FROM (VALUES
+    ('catalog_items','company_id'),('catalog_items','code'),
+    ('catalog_items','payload'),('catalog_items','updated_at'),
+    ('catalog_import_rows','company_id'),('catalog_import_rows','import_id'),
+    ('catalog_import_rows','catalog_type'),('catalog_import_rows','code'),
+    ('catalog_import_rows','payload'),('catalog_import_rows','created_at')
+  ) AS required(table_name,column_name)
+  WHERE NOT EXISTS (
+    SELECT 1 FROM information_schema.columns c
+    WHERE c.table_schema='public'
+      AND c.table_name=required.table_name
+      AND c.column_name=required.column_name
+  );
+
+  IF v_missing IS NOT NULL THEN
+    RAISE EXCEPTION 'ABORTADO: faltan columnas requeridas: %.', v_missing;
+  END IF;
+
+  SELECT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid='public.catalog_items'::regclass
+      AND contype='p'
+      AND pg_get_constraintdef(oid)='PRIMARY KEY (company_id, code)'
+  ) INTO v_ok;
+  IF NOT v_ok THEN
+    RAISE EXCEPTION 'ABORTADO: catalog_items requiere PK (company_id, code).';
+  END IF;
+
+  IF to_regclass('public.inventory_location_balances') IS NOT NULL THEN
+    SELECT string_agg(required.column_name, ', ')
+      INTO v_missing
+    FROM (VALUES
+      ('company_id'),('product_code'),('location_code'),
+      ('quantity'),('updated_at'),('updated_by')
+    ) AS required(column_name)
+    WHERE NOT EXISTS (
+      SELECT 1 FROM information_schema.columns c
+      WHERE c.table_schema='public'
+        AND c.table_name='inventory_location_balances'
+        AND c.column_name=required.column_name
+    );
+    IF v_missing IS NOT NULL THEN
+      RAISE EXCEPTION 'ABORTADO: inventory_location_balances existente no coincide; faltan columnas: %.', v_missing;
+    END IF;
+
+    SELECT EXISTS (
+      SELECT 1 FROM pg_constraint
+      WHERE conrelid='public.inventory_location_balances'::regclass
+        AND contype='p'
+        AND pg_get_constraintdef(oid)='PRIMARY KEY (company_id, product_code, location_code)'
+    ) INTO v_ok;
+    IF NOT v_ok THEN
+      RAISE EXCEPTION 'ABORTADO: la PK existente de inventory_location_balances no es la esperada.';
+    END IF;
+  END IF;
+
+  IF to_regclass('public.inventory_location_movements') IS NOT NULL THEN
+    SELECT string_agg(required.column_name, ', ')
+      INTO v_missing
+    FROM (VALUES
+      ('id'),('company_id'),('product_code'),('location_code'),
+      ('movement_type'),('quantity_delta'),('quantity_before'),
+      ('quantity_after'),('reason'),('source_ref'),('created_by'),('created_at')
+    ) AS required(column_name)
+    WHERE NOT EXISTS (
+      SELECT 1 FROM information_schema.columns c
+      WHERE c.table_schema='public'
+        AND c.table_name='inventory_location_movements'
+        AND c.column_name=required.column_name
+    );
+    IF v_missing IS NOT NULL THEN
+      RAISE EXCEPTION 'ABORTADO: inventory_location_movements existente no coincide; faltan columnas: %.', v_missing;
+    END IF;
+  END IF;
+END
+$preflight$;
+
 CREATE TABLE IF NOT EXISTS public.inventory_location_balances (
   company_id uuid NOT NULL,
   product_code text NOT NULL,
