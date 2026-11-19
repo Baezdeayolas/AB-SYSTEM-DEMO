@@ -53,7 +53,17 @@ test("trigger functions are invoker-only, use a fixed search_path and are not cl
     assert.match(block, /SECURITY INVOKER/);
     assert.match(block, /SET search_path = ''/);
   }
-  assert.match(patch, /REVOKE ALL ON FUNCTION public\.ab_prevent_last_active_company_admin\(\)\s+FROM PUBLIC, anon, authenticated/);
+  for (const functionName of [
+    "ab_prevent_last_active_company_admin",
+    "ab_assert_active_admin_after_membership_update",
+    "ab_assert_active_admin_after_membership_delete",
+    "ab_block_company_physical_delete",
+  ]) {
+    assert.ok(
+      patch.includes(`REVOKE ALL ON FUNCTION public.${functionName}()`),
+      `missing client EXECUTE revoke for ${functionName}`,
+    );
+  }
 });
 
 test("patch remains a non-persistent draft", () => {
