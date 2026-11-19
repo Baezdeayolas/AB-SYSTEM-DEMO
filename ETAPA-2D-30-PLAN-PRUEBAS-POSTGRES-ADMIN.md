@@ -1,6 +1,6 @@
 # ETAPA 2D-30 — Plan de pruebas PostgreSQL para protecciones administrativas
 
-**Estado:** integración real en PostgreSQL 17 desechable en preparación; restauración completa de la base pendiente.
+**Estado:** casos A–J aprobados en PostgreSQL 17 desechable (GitHub Actions, run #173); restauración completa de la base pendiente.
 **No ejecutar contra:** Supabase AB-SYSTEM-DEMO activo ni Ko'eju producción.
 **Parche relacionado:** sql/ETAPA-2D-29-PROTECCION-ULTIMO-ADMIN-Y-EMPRESAS-DRAFT.sql.
 
@@ -10,12 +10,12 @@
 - No existen ramas de desarrollo Supabase.
 - La clonación/restauración oficial a un proyecto nuevo requiere plan pago y backups físicos habilitados. Una rama estándar aplica migraciones, pero no copia los datos de producción.
 - No se creará una rama ni proyecto Supabase de pago sin revisar y aceptar el costo.
-- Primer paso sin costo: ejecutar los triggers reales sobre un contenedor PostgreSQL 17 desechable de GitHub Actions, con un esquema fixture mínimo que reproduce las tablas y el trigger de identidad requeridos por el parche.
+- Paso sin costo completado: los triggers reales pasaron A–J en un contenedor PostgreSQL 17 desechable de GitHub Actions, con un esquema fixture mínimo que reproduce las tablas y el trigger de identidad requeridos por el parche. Run #173: 10/10 casos aprobados.
 - Esta prueba fixture no equivale a restaurar la base completa y no valida RLS, Auth, funciones de negocio ni conteos reales de todas las tablas.
 
 ## Preparación obligatoria
 
-1. Ejecutar el workflow de integración PostgreSQL en un servicio efímero postgres:17.
+1. Completado: ejecutar el workflow de integración PostgreSQL en un servicio efímero postgres:17; A–J pasaron.
 2. Crear tablas companies y company_memberships, roles de prueba y el trigger de identidad requerido por el preflight.
 3. Cargar el parche 2D-29 en esa base efímera, convirtiendo su cierre ROLLBACK a COMMIT únicamente dentro del proceso automatizado y desechable.
 4. Ejecutar los casos A–J y registrar SQLSTATE, resultado y conteos.
