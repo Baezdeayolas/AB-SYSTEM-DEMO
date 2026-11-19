@@ -9,14 +9,21 @@
 -- se cambiara la ultima instruccion a COMMIT para ejecutar una unica vez.
 --
 -- PRECONDICIONES PENDIENTES DE VALIDACION:
+-- 0) Rehacer el consolidado: excluir/reemplazar el Lote 5 legacy que colisiona
+--    con public.inventory_balances existente y coordinar el nuevo modelo CENTRAL/CDE.
 -- 1) Respaldo DEMO completo, restaurable y verificado.
 -- 2) Confirmar manualmente la empresa inicial y su codigo objetivo ABDEMO.
 -- 3) Revisar el mapeo de perfiles/membresias y propietarios de pedidos.
 -- 4) Verificar estructura y datos actuales de inventario legacy.
 -- 5) Validar payloads y cantidades del catalogo antes de migrar inventario.
 -- 6) Revisar el alcance de default privileges para el rol postgres.
--- ATENCION: el bloque de backfill aun busca code=KOEJU y NO esta adaptado
--- a la nueva decision AB SYSTEM DEMO. No ejecutar este archivo.
+-- El backfill de las filas comerciales existentes a code=KOEJU es INTENCIONAL:
+-- KOEJU permanece como empresa fuente dentro de esta base DEMO.
+-- DEMO2 (UUID ya existente) se renombrara a AB SYSTEM DEMO y recibira
+-- una copia separada de catalogo y clientes ficticios en una etapa posterior.
+-- BLOQUEO ACTUAL: el Lote 5 intenta crear public.inventory_balances, pero esa
+-- tabla legacy ya existe en este proyecto. La transaccion abortara en ese punto.
+-- No ejecutar este archivo hasta separar el inventario legacy del nuevo modelo.
 --
 -- REGLAS DE NEGOCIO:
 -- - Pedidos no facturan, no reservan y no descuentan stock.
