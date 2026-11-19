@@ -42,3 +42,7 @@ Se añadieron:
 - No se desplegó la Edge Function.
 - No se ejecutó SQL ni se copiaron datos.
 - Ko’ẽju producción permanece intacto.
+
+## Estado de publicación en GitHub
+
+La comparación con `main` indica que esta rama está divergida: contiene 262 commits no presentes en `main`, mientras que `main` tiene 2 commits documentales que no están en esta rama. No se debe fusionar a ciegas ni publicar directamente. Antes de publicar hay que reconciliar esos dos documentos y revisar el PR completo, además de completar la validación de Supabase.
