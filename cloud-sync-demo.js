@@ -334,51 +334,80 @@ $('btn-clear').onclick=async()=>{
  try{await saveCurrentOrder({startNew:true});}
  finally{newButton.disabled=false;}
 };
-$('btn-pdf').onclick=()=>{
+$('btn-pdf').onclick=async()=>{
  if(!cart.length){alert('Agregá artículos al pedido antes de generar la nota.');return;}
- const clientCode=$('cliente-input').dataset.code;
- const client=clients.find(c=>String(c.c)===String(clientCode))||{};
- const seller=$('vendedor-input').value||'';
- const customerName=client.n||$('cliente-input').value||'';
- const city=client.ciu||client.dst||client.city||client.ciudad||'';
- const condition=$('condicion-input').value||condicion||'';
- const now=new Date(),dateText=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
- const priceList='M'+tier;
- const fmt=n=>Math.round(Number(n)||0).toLocaleString('es-PY');
- const lines=cart.map(x=>{
-  const barcode=x.b?String(x.b)+' - ':'';
-  return '<tr><td class="code">'+safe(x.c)+'</td><td class="qty">'+fmt(x.qty)+'</td><td class="concept">'+safe(barcode+x.d)+'</td><td class="number">'+fmt(x['p'+tier])+'</td><td class="number">'+fmt(x.qty*x['p'+tier])+'</td></tr>';
- }).join('');
- const sub=total(),discount=Math.min(100,Math.max(0,Number($('discount-input').value)||0)),off=sub*discount/100,grand=sub-off;
- const statusText=estado==='confirmado'?'PEDIDO CONFIRMADO':'PEDIDO PENDIENTE';
- const w=window.open('','_blank');
- if(!w){alert('El navegador bloqueó la ventana. Permití ventanas emergentes para generar el PDF.');return;}
- w.onload=()=>setTimeout(()=>w.print(),250);
- w.document.open();
- w.document.write('<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Nota de Pedido · AB SYSTEM</title><style>'+
- '@page{size:A4 portrait;margin:10mm}*{box-sizing:border-box}body{font:10px Arial,sans-serif;color:#111;margin:0}'+
- '.brand{font-size:19px;font-weight:800;letter-spacing:.5px;margin:0 0 3px}.issuer{font-size:9px;margin-bottom:10px;color:#333}'+
- '.company{font-size:12px;font-weight:700;margin:0 0 12px}.heading{text-align:center;font-size:15px;font-weight:800;letter-spacing:.8px;border-top:1px solid #222;border-bottom:1px solid #222;padding:7px 0;margin:0 0 10px}'+
- '.meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;margin-bottom:10px}.meta p{margin:0;line-height:1.45}.label{font-weight:700}'+
- 'table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:9px}thead{display:table-header-group}th{background:#eee;font-weight:700;text-align:left;border-top:1px solid #222;border-bottom:1px solid #222;padding:5px 4px}td{padding:4px;border-bottom:1px solid #ccc;vertical-align:top;overflow-wrap:anywhere}'+
- '.code{width:17%}.qty{width:8%;text-align:center}.concept{width:49%}.number{width:13%;text-align:right;white-space:nowrap}'+
- '.totals{width:52%;margin:12px 0 0 auto;font-size:10px}.totals div{display:flex;justify-content:space-between;padding:3px 4px}.totals .grand{font-size:13px;font-weight:800;border-top:1px solid #222;margin-top:3px;padding-top:7px}'+
- '.status{text-align:right;font-weight:800;font-size:12px;margin-top:12px;letter-spacing:.4px}.foot{margin-top:18px;border-top:1px solid #bbb;padding-top:5px;font-size:8px;color:#555}'+
- '@media screen{body{padding:18px;max-width:850px;margin:auto}}@media print{tr{break-inside:avoid}.totals,.status{break-inside:avoid}}'+
- '</style></head><body>'+
- '<div class="brand">AB SYSTEM</div><div class="issuer">Emitido por '+safe(user?.email||'')+'</div>'+
- '<div class="company">Pedido '+safe(activeCompany.name)+'</div>'+
- '<div class="heading">NOTA DE PEDIDO</div>'+
- '<div class="meta">'+
- '<p><span class="label">Razón Social</span> '+safe(customerName)+' <span class="label">Fecha</span> '+dateText+'</p>'+
- '<p><span class="label">Cód.Cliente</span> '+safe(client.c||clientCode||'')+' <span class="label">Cond.Venta</span> '+safe(condition)+'</p>'+
- '<p><span class="label">Ciudad</span> '+safe(city)+' - <span class="label">Vendedor</span> '+safe(seller)+'</p>'+
- '<p><span class="label">Lista de precio</span> '+priceList+'</p></div>'+
- '<table><thead><tr><th class="code">Cód.Artículo</th><th class="qty">Cantidad</th><th class="concept">Concepto</th><th class="number">P.Unit.</th><th class="number">Total</th></tr></thead><tbody>'+lines+'</tbody></table>'+
- '<div class="totals"><div><span>Subtotal Gs.</span><strong>'+fmt(sub)+'</strong></div><div><span>Descuento ('+fmt(discount)+'%) - Gs.</span><strong>'+fmt(off)+'</strong></div><div class="grand"><span>TOTAL A PAGAR Gs.</span><strong>'+fmt(grand)+'</strong></div></div>'+
- '<div class="status">'+statusText+'</div><div class="foot">AB SYSTEM · '+safe(activeCompany.name)+'</div>'+
- '</body></html>');
- w.document.close();
+ const button=$('btn-pdf'),message=$('order-message');
+ if(button.disabled)return;
+ button.disabled=true;button.textContent='Preparando PDF…';message.textContent='Generando la nota en formato A4…';
+ let mount=null;
+ try{
+  const clientCode=$('cliente-input').dataset.code;
+  const client=clients.find(c=>String(c.c)===String(clientCode))||{};
+  const seller=$('vendedor-input').value||'';
+  const customerName=client.n||$('cliente-input').value||'';
+  const city=client.ciu||client.dst||client.city||client.ciudad||'';
+  const condition=$('condicion-input').value||condicion||'';
+  const now=new Date(),dateText=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
+  const priceList='M'+tier;
+  const fmt=n=>Math.round(Number(n)||0).toLocaleString('es-PY');
+  const rowHeight=Math.max(3.2,Math.min(17,175/Math.max(1,cart.length)));
+  const rowPadding=Math.max(.35,(rowHeight-3.0)/2);
+  const lines=cart.map(x=>{
+   const barcode=x.b?String(x.b)+' - ':'';
+   return '<tr><td class="code">'+safe(x.c)+'</td><td class="qty">'+fmt(x.qty)+'</td><td class="concept">'+safe(barcode+x.d)+'</td><td class="number">'+fmt(x['p'+tier])+'</td><td class="number">'+fmt(x.qty*x['p'+tier])+'</td></tr>';
+  }).join('');
+  const sub=total(),discount=Math.min(100,Math.max(0,Number($('discount-input').value)||0)),off=sub*discount/100,grand=sub-off;
+  const statusText=estado==='confirmado'?'PEDIDO CONFIRMADO':'PEDIDO PENDIENTE';
+  const html='<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Nota de Pedido · AB SYSTEM</title><style>'+
+   '@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}html,body{margin:0;padding:0;color:#111;font-family:Arial,sans-serif}'+
+   '.pdf-sheet{width:194mm;min-height:281mm;display:flex;flex-direction:column;background:#fff;font-size:9px;line-height:1.25}'+
+   '.brand{font-size:22px;font-weight:800;letter-spacing:.6px;margin:0 0 2mm}.issuer{font-size:9px;margin-bottom:5mm;color:#333}'+
+   '.company{font-size:13px;font-weight:700;margin:0 0 5mm}.heading{text-align:center;font-size:17px;font-weight:800;letter-spacing:1px;border-top:1px solid #222;border-bottom:1px solid #222;padding:3mm 0;margin:0 0 5mm}'+
+   '.meta{display:grid;grid-template-columns:1fr 1fr;gap:3mm 7mm;margin-bottom:5mm;font-size:10px}.meta p{margin:0;line-height:1.5}.label{font-weight:700}'+
+   'table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:8.5px;flex:1}thead{display:table-header-group}th{background:#eee;font-weight:700;text-align:left;border-top:1px solid #222;border-bottom:1px solid #222;padding:2mm 1mm}td{padding:'+rowPadding+'mm 1mm;border-bottom:1px solid #ccc;vertical-align:middle;overflow-wrap:anywhere;line-height:1.15}'+
+   '.code{width:17%}.qty{width:9%;text-align:center}.concept{width:48%}.number{width:13%;text-align:right;white-space:nowrap}'+
+   '.totals{width:55%;margin:5mm 0 0 auto;font-size:10px}.totals div{display:flex;justify-content:space-between;padding:1.2mm}.totals .grand{font-size:14px;font-weight:800;border-top:1px solid #222;margin-top:1mm;padding-top:2mm}'+
+   '.status{text-align:right;font-weight:800;font-size:13px;margin-top:5mm;letter-spacing:.4px}.foot{margin-top:auto;border-top:1px solid #bbb;padding-top:2mm;font-size:8px;color:#555}'+
+   'tr{break-inside:avoid;page-break-inside:avoid}.totals,.status{break-inside:avoid;page-break-inside:avoid}'+
+   '</style></head><body><main class="pdf-sheet">'+
+   '<div class="brand">AB SYSTEM</div><div class="issuer">Emitido por '+safe(user?.email||'')+'</div>'+
+   '<div class="company">Pedido '+safe(activeCompany.name)+'</div><div class="heading">NOTA DE PEDIDO</div>'+
+   '<div class="meta">'+
+   '<p><span class="label">Razón Social</span> '+safe(customerName)+' <span class="label">Fecha</span> '+dateText+'</p>'+
+   '<p><span class="label">Cód.Cliente</span> '+safe(client.c||clientCode||'')+' <span class="label">Cond.Venta</span> '+safe(condition)+'</p>'+
+   '<p><span class="label">Ciudad</span> '+safe(city)+' - <span class="label">Vendedor</span> '+safe(seller)+'</p>'+
+   '<p><span class="label">Lista de precio</span> '+priceList+'</p></div>'+
+   '<table><thead><tr><th class="code">Cód.Artículo</th><th class="qty">Cantidad</th><th class="concept">Concepto</th><th class="number">P.Unit.</th><th class="number">Total</th></tr></thead><tbody>'+lines+'</tbody></table>'+
+   '<div class="totals"><div><span>Subtotal Gs.</span><strong>'+fmt(sub)+'</strong></div><div><span>Descuento ('+fmt(discount)+'%) - Gs.</span><strong>'+fmt(off)+'</strong></div><div class="grand"><span>TOTAL A PAGAR Gs.</span><strong>'+fmt(grand)+'</strong></div></div>'+
+   '<div class="status">'+statusText+'</div><div class="foot">AB SYSTEM · '+safe(activeCompany.name)+'</div></main></body></html>';
+  if(!window.html2pdf)throw new Error('No se pudo cargar el generador de PDF. Revisá tu conexión e intentá nuevamente.');
+  mount=document.createElement('div');mount.style.cssText='position:fixed;left:-10000px;top:0;width:194mm;background:#fff;z-index:-1';
+  mount.innerHTML=html;document.body.appendChild(mount);
+  const filename='Nota-de-Pedido-'+String(activeCompany.code||'AB-SYSTEM')+'-'+dateText.replace(/\//g,'-')+'.pdf';
+  const blob=await window.html2pdf().set({
+   margin:[8,8,8,8],filename,image:{type:'jpeg',quality:.98},
+   html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff',logging:false},
+   jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+   pagebreak:{mode:['css','legacy']}
+  }).from(mount.querySelector('.pdf-sheet')).outputPdf('blob');
+  const file=new File([blob],filename,{type:'application/pdf'});
+  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+   message.textContent='PDF A4 listo. Elegí la aplicación para compartirlo…';
+   await navigator.share({files:[file],title:'Nota de Pedido · '+activeCompany.name,text:'Nota de Pedido'});
+   message.textContent='El menú de compartir se abrió correctamente.';
+  }else{
+   const url=URL.createObjectURL(blob),link=document.createElement('a');
+   link.href=url;link.download=filename;document.body.appendChild(link);link.click();link.remove();
+   setTimeout(()=>URL.revokeObjectURL(url),60000);
+   message.textContent='Este navegador no permite compartir archivos directamente. El PDF A4 se descargó; podés adjuntarlo desde la aplicación que prefieras.';
+  }
+ }catch(error){
+  if(error?.name==='AbortError'){message.textContent='Compartir cancelado. El pedido sigue disponible.';}
+  else{message.textContent='No se pudo generar o compartir el PDF: '+(error?.message||'Error desconocido');}
+ }finally{
+  if(mount)mount.remove();
+  button.disabled=false;button.textContent='Compartir PDF';
+ }
 };
 let barcodeScanner=null,barcodeScannerRunning=false,barcodeLibraryPromise=null;
 async function ensureBarcodeLibrary(){
