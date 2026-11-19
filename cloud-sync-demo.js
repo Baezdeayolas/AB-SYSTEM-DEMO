@@ -236,7 +236,7 @@ async function loadGlobalAdminData(){
  });
  $('global-company-list').querySelectorAll('[data-company-status]').forEach(b=>b.onclick=async()=>{
   const status=b.dataset.status==='active'?'suspended':'active';b.disabled=true;
-  try{await callGlobalAdmin('set-company-status',{companyId:b.dataset.companyStatus,status});await loadGlobalAdminData();await loadCompanyContext(user);if(activeCompany?.status==='suspended'&&companies.length){activeCompany=companies[0];await loadData();}}catch(e){alert('No se pudo cambiar el estado: '+e.message);}finally{b.disabled=false;}
+  try{const previousCompanyId=activeCompany?.id;await callGlobalAdmin('set-company-status',{companyId:b.dataset.companyStatus,status});await loadGlobalAdminData();await loadCompanyContext(user);if(activeCompany?.id!==previousCompanyId){cart=[];orders=[];items=[];clients=[];sellerRows=[];await loadData();}}catch(e){alert('No se pudo cambiar el estado: '+e.message);}finally{b.disabled=false;}
  });
 }
 $('company-create-form').addEventListener('submit',async e=>{
