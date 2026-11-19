@@ -1,0 +1,25 @@
+name: Validate multi-company admin
+on:
+  push:
+    branches:
+      - work/adaptacion-multiempresa-v1
+  pull_request:
+    branches:
+      - main
+jobs:
+  static-and-type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Check frontend JavaScript syntax
+        run: node --check cloud-sync-demo.js
+      - name: Run admin security regression checks
+        run: node --test tests/admin-users-guards.test.mjs
+      - name: Type-check Supabase Edge Function
+        run: deno check supabase/functions/admin-users/index.ts

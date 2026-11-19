@@ -31,14 +31,14 @@ Crear un pedido **no descuenta ni reserva stock**. Este lote no tiene trigger ni
 
 ## Cambios de frontend incluidos
 
-`cloud-sync-demo.js` ahora consulta `inventory_balances` por empresa y usa su cantidad para mostrar el stock, en lugar de confiar en el campo histórico `payload.sc`. La interfaz seguirá necesitando una pantalla/flujo de importación Excel que invoque una RPC masiva transaccional; ese flujo todavía no está implementado.
+`cloud-sync-demo.js` ahora consulta `inventory_balances` por empresa y usa su cantidad para mostrar el stock, en lugar de confiar en el campo histórico `payload.sc`. El lote incorpora `ab_import_company_catalog`, una RPC masiva transaccional para recibir filas `{code,payload,quantity}`, crear/actualizar artículos y ajustar sus saldos. El parser/selector de Excel y la conexión de la pantalla todavía no están implementados.
 
 ## Pendientes antes de aprobar
 
 1. Ejecutar el borrador en una copia aislada de DEMO y comprobar tipos reales de `payload.sc`.
-2. Añadir una RPC batch para importar todo el Excel en una sola transacción, con protección contra archivos que omitan productos existentes (nunca borrar productos ausentes).
+2. Conectar el parser/selector Excel con `ab_import_company_catalog` y probar el lote completo; la RPC ya está preparada y no borra artículos ausentes.
 3. Probar RLS con JWT de superadmin, company_admin, seller y usuario sin membresía.
-4. Incluir las dos tablas nuevas y los permisos de ambas RPC en la auditoría final de grants/default ACL.
+4. Verificar las dos tablas nuevas y los permisos de RPC con el Lote 6.
 5. No desplegar el frontend que consulta `inventory_balances` hasta que este lote y el lote de privilegios estén aplicados y probados.
 
 ## Estado de datos
@@ -46,15 +46,3 @@ Crear un pedido **no descuenta ni reserva stock**. Este lote no tiene trigger ni
 El respaldo DEMO restaurado localmente contiene 5 productos y 1 fila legacy de `inventory_current`. El conteo no confirma por sí mismo los valores de `payload.sc`; por eso el SQL valida cada valor y aborta si no puede interpretarlo sin pérdida.
 
 No se modificó Supabase DEMO ni Ko’ẽju de producción. No se ejecutó SQL ni se publicó la aplicación.
-
-
-## Importación sin borrar productos
-
-El lote incluye `ab_import_company_catalog(company_id, import_id, rows)`. Recibe un arreglo JSON de filas con `code`, `payload` y `quantity`. Toda la importación se ejecuta dentro de la transacción de la llamada RPC:
-- valida códigos y cantidades;
-- inserta artículos nuevos o actualiza los existentes;
-- actualiza el saldo y agrega el movimiento de importación;
-- registra cada fila en `catalog_import_rows`;
-- nunca ejecuta DELETE y no altera artículos que no aparecen en el archivo.
-
-El contrato de datos para el futuro parser Excel queda definido, pero aún falta conectar el archivo del celular/Drive con esta RPC y probar el flujo completo.

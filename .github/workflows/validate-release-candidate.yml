@@ -1,0 +1,69 @@
+name: Validate AB SYSTEM release candidate
+
+on:
+  push:
+    branches:
+      - work/adaptacion-multiempresa-v1
+  pull_request:
+
+jobs:
+  syntax-and-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v2.x
+      - name: Check JavaScript syntax
+        run: node --check cloud-sync-demo.js
+      - name: Check Edge Function syntax
+        run: deno check supabase/functions/admin-users/index.ts
+      - name: Run SQL migration safety regression checks
+        run: node --test tests/sql-inventory-migration.test.mjs tests/sql-admin-guards.test.mjs
+      - name: Check database migration exists
+        run: test -s sql/ETAPA-2D-22-INVENTARIO-CENTRAL-CDE-IMPORTACION-EXCEL.sql
+      - name: Check release wiring
+        run: |
+          grep -q "inventory_location_balances" cloud-sync-demo.js
+          grep -q "ab_import_company_catalog_v2" cloud-sync-demo.js
+          grep -q "excel-import-file" index.html
+          grep -q "company-gate-select" index.html
+          grep -q "demo-access" index.html
+          grep -q "global-admin-tools" index.html
+          test -s supabase/functions/admin-users/index.ts
+          grep -q "superadmin_global" supabase/functions/admin-users/index.ts
+          ! grep -q "SUPABASE_SERVICE_ROLE_KEY" cloud-sync-demo.js
+          grep -q "druugcvqxxanhtdkqnjd.supabase.co" cloud-sync-demo.js
+          ! grep -q "service_role" cloud-sync-demo.js
+          ! grep -q "dazdaiutdbvotmzislxr" cloud-sync-demo.js
+
+  postgres-admin-guards-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Run real PostgreSQL 17 admin guard integration tests
+        run: node --test tests/postgres/admin-guards.integration.test.mjs

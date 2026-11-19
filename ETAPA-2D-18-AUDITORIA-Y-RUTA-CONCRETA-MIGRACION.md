@@ -18,7 +18,7 @@ Se hizo una restauración local del respaldo `AB-SYSTEM-DEMO.backup` en un clús
 - 5 funciones públicas.
 - 15 políticas RLS.
 - 7 claves foráneas.
-- 18 filas recuperadas en las 10 tablas públicas; además, 2 UUID ficticios en auth.users (20 filas contando esos auxiliares locales).
+- 17 filas recuperadas en las 10 tablas públicas.
 - 2 UUID ficticios en `auth.users`, creados únicamente para satisfacer las FKs durante la prueba local.
 
 La estructura y los datos públicos se recuperaron. Los dos registros Auth locales no son cuentas ni credenciales reales. La prueba no valida Auth/Storage de Supabase, sesiones JWT ni el comportamiento efectivo de RLS.
@@ -132,24 +132,13 @@ No basta con que los SQL terminen sin errores. Se exige:
 
 - Respaldo DEMO: restauración local de esquema y datos públicos comprobada.
 - Respaldo Ko’ẽju histórico: generado y legible por `pg_restore --list`, pero su restauración local no se ha probado.
-- Lotes SQL 1–4: borradores; **no ejecutar en Supabase**.
+- Lotes SQL 1–6 y migración consolidada: borradores; **no ejecutar en Supabase todavía**.
 - SQL en Supabase: no ejecutado.
 - Ko’ẽju producción: sin cambios.
 - Publicación/merge: no realizados.
 
 
-## Actualización de ingeniería — 2026-11-17
+Se preparó también el Lote 6 para funciones, secuencias y default privileges. Este lote mantiene los grants explícitos de service_role, retira EXECUTE de PUBLIC/anon en las funciones de aplicación y endurece los defaults de postgres/supabase_admin. La revocación global del EXECUTE por defecto a PUBLIC para funciones futuras tiene alcance sobre todos los esquemas de esos creadores y debe revisarse antes de aprobarla.
 
-Se corrigió el SQL del Lote 3 tras detectar delimitadores PL/pgSQL inválidos. Se añadió validación de que las asignaciones correspondan a vendedores activos de la misma empresa y se reforzó la inmutabilidad del creador del pedido. El Lote 4 ahora identifica correctamente grants a PUBLIC en su verificación.
 
-Se preparó el Lote 5 de inventario:
-- saldos por empresa y producto;
-- historial de movimientos;
-- RPC para actualizar un saldo individual;
-- RPC de importación masiva atómica de artículos y stock;
-- los artículos que no aparecen en un archivo no se borran ni se modifican;
-- crear pedidos no reserva ni descuenta inventario.
-
-El frontend ahora consulta `inventory_balances` para mostrar stock. El analizador/selector de Excel y la integración de la pantalla de importación todavía no están implementados. El Lote 5 depende de los Lotes 1 y 2 y de validar los valores reales de `payload.sc`.
-
-Los cambios siguen siendo borradores. Ningún SQL fue ejecutado en Supabase y no se ha hecho prueba con JWT reales. La rama no se publicó ni se fusionó.
+La migración completa se consolidó en `sql/ETAPA-2D-21-MIGRACION-MULTIEMPRESA-DEMO-CONSOLIDADA-DRAFT.sql` para evitar ejecutar los lotes por separado. Es una sola transacción de ensayo con ROLLBACK final. La validación estática encontró una sola apertura/cierre transaccional y delimitadores PL/pgSQL balanceados; no sustituye una ejecución real.

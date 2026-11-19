@@ -1874,7 +1874,7 @@ main,
   content: "";
   position: absolute;
   inset: 0;
-  background-image: url('https://raw.githubusercontent.com/Baezdeayolas/Nota-de-Pedido-Ko-eju-/main/Icons/ventafondo.jpg');
+  background-image: url('./Icons/ventafondo.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -2080,7 +2080,7 @@ main { background:#202a34; }
   z-index:-1;
   background:
     linear-gradient(rgba(22,24,22,.64),rgba(22,24,22,.64)),
-    url('https://raw.githubusercontent.com/Baezdeayolas/Nota-de-Pedido-Ko-eju-/main/Icons/ventafondo.jpg') center center / cover no-repeat;
+    url('./Icons/ventafondo.jpg') center center / cover no-repeat;
   pointer-events:none;
 }
 .search-wrap {
@@ -2115,7 +2115,7 @@ main { background:#202a34; }
   color:#e5edf7;
 }
 .area-central-pedido::before {
-  background-image:url('https://raw.githubusercontent.com/Baezdeayolas/Nota-de-Pedido-Ko-eju-/main/Icons/ventafondo.jpg');
+  background-image:url('./Icons/ventafondo.jpg');
   opacity:var(--order-bg-opacity,.22);
 }
 .order-visual-panel {
@@ -2184,7 +2184,7 @@ main { background:#202a34; }
   background-color: #302f29;
   background-image:
     linear-gradient(rgba(27, 37, 49, .76), rgba(27, 37, 49, .76)),
-    url('https://raw.githubusercontent.com/Baezdeayolas/Nota-de-Pedido-Ko-eju-/main/Icons/ventafondo.jpg');
+    url('./Icons/ventafondo.jpg');
   background-position: center center;
   background-size: contain;
   background-repeat: no-repeat;
@@ -2196,53 +2196,1103 @@ main { background:#202a34; }
 
 
 /* =========================================================
-   AB SYSTEM — MATRIZ VISUAL OFICIAL
-   Adaptadores de estructura exclusivos de DEMO.
-   No modifica la lógica ni la conexión de datos.
+   AB SYSTEM DEMO — adaptación de la identidad visual Ko'eju
+   Solo presentación: no altera lógica, datos ni permisos.
    ========================================================= */
-[hidden]{display:none!important}
-html,body{min-height:100%;height:auto}
-body{display:block;padding-bottom:78px;background:#202a34;color:#dbe6f4}
-#app{min-height:100vh;background:#202a34}
-.topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:10px 16px 8px;background:var(--ink);color:var(--paper);border:0;box-shadow:none}
-.topbar-brand{display:flex;flex-direction:column;gap:2px}
-.topbar .brand{font-family:var(--font-display);font-size:20px;font-weight:700;letter-spacing:-.01em;color:#fff}
-.topbar .brand span{font-family:var(--font-mono);font-size:14px;color:var(--gold)}
-.topbar small{font:500 9px/1.3 var(--font-mono);letter-spacing:.12em;color:var(--gold)}
-.userline{display:flex;align-items:center;gap:10px;color:var(--paper);font:12px var(--font-body)}
-main{max-width:100%;margin:0 auto;padding:12px 12px 24px;background:#202a34}
-.welcome{padding:12px;margin:0 0 10px;background:#26384b;border:1px solid var(--line);border-radius:10px}
-.welcome h1{font:700 20px var(--font-display);color:#fff}
-.welcome p{color:#b8c6d8}
-.eyebrow{font:600 10px var(--font-mono);letter-spacing:.1em;color:var(--gold)!important}
-.status{background:#173c35;color:#a9f0ce;border:1px solid #20b36b55;border-radius:7px}
-.metrics{gap:8px;margin-bottom:10px}
-.metrics article,.panel{background:#26384b;border:1px solid var(--line);border-radius:10px;color:#e2ebf7;box-shadow:none}
-.metrics article{padding:12px}
-.metrics small{color:#b8c6d8}
-.metrics strong{font:700 22px var(--font-mono);color:#fff}
-.columns{display:grid;grid-template-columns:1fr;gap:10px}
-.panel{padding:12px;margin:0 0 10px}
-.panel h2{font:700 17px var(--font-display);color:#fff}
-.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-input,select{font:13px var(--font-body);color:#f4f6fa;background:#25251f;border:1px solid rgba(255,255,255,.3);border-radius:7px}
-input::placeholder{color:#aab4c2}
-.search{min-height:48px}
-.list{display:grid;gap:7px;margin-top:10px}
-.product,.order-row,.cart-row{background:#202a34;border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#f1f6fc}
-.product small,.order-row small,.muted{color:#b8c6d8}
-.product button{background:var(--green);color:#fff;border-radius:7px}
-.panel label{color:#c4d8ef}
-.total{border-color:rgba(255,255,255,.2);color:#c7ddf3}
-.total strong{font-family:var(--font-mono);color:#fff}
-.primary{background:var(--rust);border-radius:7px}
-.ghost{border:1px solid rgba(255,255,255,.35);border-radius:7px;color:inherit}
-.message{color:#b8cce4}
-.bottom-nav{position:fixed;z-index:50;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:7px 8px calc(7px + env(safe-area-inset-bottom));background:#111;border-top:1px solid rgba(255,255,255,.12)}
-.bottom-nav button{min-height:46px;padding:6px 3px;border:0;border-radius:7px;background:transparent;color:#b8c6d8;font:600 11px var(--font-body)}
-.bottom-nav button.active{background:#174477;color:#fff;box-shadow:inset 0 2px 0 var(--gold)}
-footer{padding:12px;text-align:center;color:#91a3b8;background:#111;font:10px var(--font-mono)}
-.gate{background:#202a34}
-.login-card{border-radius:10px;border:1px solid var(--line);box-shadow:0 12px 40px #0005}
-@media(min-width:760px){main{max-width:1120px;padding:18px 16px 30px}.columns{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr)}}
-@media(max-width:420px){.topbar{padding-left:12px;padding-right:12px}.metrics{gap:6px}.metrics article{padding:9px 7px}.metrics strong{font-size:18px}}
+[hidden] { display: none !important; }
+
+/* Acceso DEMO */
+.gate {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background:
+    radial-gradient(circle at 85% 12%, rgba(31,181,132,.18), transparent 32%),
+    linear-gradient(145deg, #102b50 0%, #183f70 55%, #102b50 100%);
+}
+.login-card {
+  width: min(100%, 420px);
+  padding: 28px 24px 22px;
+  border: 1px solid rgba(203,213,225,.75);
+  border-radius: 20px;
+  background: #fff;
+  color: #1e293b;
+  box-shadow: 0 22px 60px rgba(5,20,40,.28);
+}
+.login-card .brand {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 25px;
+  color: #13315c;
+  font: 700 25px/1.1 var(--font-display);
+  letter-spacing: .025em;
+}
+.login-card .brand span {
+  color: #1fb584;
+  font: 700 10px/1.2 var(--font-mono);
+  letter-spacing: .16em;
+}
+.login-card h1 {
+  margin: 0 0 6px;
+  color: #1e293b;
+  font: 700 23px/1.2 var(--font-display);
+}
+.login-card > p {
+  margin: 0 0 22px;
+  color: #64748b;
+  font-size: 13px;
+}
+.login-card label {
+  display: block;
+  margin: 14px 0;
+  color: #334e6f;
+  font-size: 12px;
+  font-weight: 700;
+}
+.login-card input {
+  display: block;
+  width: 100%;
+  min-height: 46px;
+  margin-top: 7px;
+  padding: 11px 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #f8fafc;
+  color: #1e293b;
+  font: 14px var(--font-body);
+}
+.login-card input:focus {
+  outline: 2px solid rgba(31,181,132,.28);
+  border-color: #1fb584;
+}
+.login-card .primary {
+  width: 100%;
+  min-height: 47px;
+  margin-top: 9px;
+  border: 0;
+  border-radius: 11px;
+  background: linear-gradient(110deg, #1fb584, #168fca);
+  color: #fff;
+  font: 700 14px var(--font-body);
+  box-shadow: 0 6px 16px rgba(31,181,132,.22);
+}
+.login-card .message {
+  margin: 16px 0 0;
+  color: #64748b;
+  text-align: center;
+  font-size: 11px;
+}
+
+/* Contexto multiempresa y sesión */
+.topbar { gap: 9px 14px; }
+.client-tools-row { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+.status {
+  display:inline-flex;
+  align-items:center;
+  padding:5px 9px;
+  border-radius:999px;
+  background:rgba(31,181,132,.14);
+  border:1px solid rgba(31,181,132,.35);
+  color:#d7fff0;
+  font:600 10px var(--font-mono);
+}
+.ghost {
+  padding:6px 11px;
+  border:1px solid rgba(255,255,255,.35);
+  border-radius:8px;
+  background:rgba(255,255,255,.08);
+  color:#fff;
+  font:600 11px var(--font-body);
+}
+.company-context {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:5px 9px;
+  width:100%;
+  padding-top:8px;
+  border-top:1px solid rgba(255,255,255,.15);
+  color:#d8e8fa;
+  font:600 10px var(--font-mono);
+}
+.company-context select#company-select {
+  width:auto;
+  min-width:150px;
+  max-width:100%;
+  margin:0;
+  padding:6px 28px 6px 9px;
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:8px;
+  background:#244b78;
+  color:#fff;
+  font:600 12px var(--font-body);
+}
+.company-context small { color:#c7ddf3; }
+
+/* Ajustes para el contenido multiempresa conservando componentes Ko'eju */
+#panel-dashboard, #panel-stock, #panel-archive, #panel-admin { padding:12px; }
+#panel-search { min-height:100%; }
+#panel-order { min-height:100%; }
+#save-order { margin:8px 12px 12px; }
+#order-message { padding:0 12px; }
+.admin-tools {
+  padding:14px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+}
+.admin-tools label { display:block; margin-bottom:7px; font-weight:700; }
+.admin-tools input[type=file] { width:100%; padding:10px; background:#f5f2eb; color:#1e293b; }
+#excel-import-preview { margin:10px 0; padding:10px; border-radius:9px; background:#eaf2ed; color:#244f7e; }
+@media (max-width:420px) {
+  .login-card { padding:24px 19px 20px; border-radius:17px; }
+  .topbar { padding-left:11px; padding-right:11px; }
+  .company-context { gap:5px 7px; }
+}
+
+
+/* AB SYSTEM DEMO — encabezado completo y adaptable */
+.topbar {
+  display: block;
+  padding: max(10px, env(safe-area-inset-top)) 14px 10px;
+  background: linear-gradient(180deg, #174477 0%, #1d548c 100%);
+  color: #fff;
+}
+.topbar-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  min-height: 30px;
+  margin: 0 0 8px;
+}
+.topbar-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.topbar-brand > span {
+  display: block;
+  color: #fff;
+  font: 800 21px/1.05 Arial, sans-serif;
+  letter-spacing: .015em;
+}
+.topbar-tagline {
+  display: block;
+  color: #c9ddf3;
+  font: 600 8px/1.25 Arial, sans-serif;
+  letter-spacing: .11em;
+}
+.meta-fields {
+  display: grid;
+  grid-template-columns: minmax(112px, .72fr) minmax(0, 1.55fr);
+  gap: 7px;
+  margin: 0;
+  width: 100%;
+}
+.meta-fields > select,
+.meta-fields .cliente-field,
+.meta-fields .cliente-field input {
+  min-width: 0;
+  width: 100%;
+}
+.meta-fields input,
+.meta-fields select {
+  box-sizing: border-box;
+  min-height: 39px;
+  padding: 7px 10px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 9px;
+  background-color: #244f7e;
+  color: #fff;
+  font: 500 12px/1.2 var(--font-body);
+}
+.meta-fields input::placeholder { color: #c7ddf3; opacity: 1; }
+.meta-fields select { padding-right: 27px; }
+.client-tools-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  min-height: 32px;
+  margin-top: 6px;
+}
+.nuevo-cliente-toggle {
+  min-height: 28px;
+  padding: 5px 2px;
+  color: #fff;
+  font: 600 11px/1.25 var(--font-body);
+  text-align: left;
+}
+#cloud-status-slot { min-width: 0; }
+.status {
+  max-width: 100%;
+  padding: 4px 7px;
+  border-radius: 7px;
+  font: 600 9px/1.2 var(--font-body);
+  white-space: normal;
+}
+#logout {
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 7px;
+  background: rgba(255,255,255,.09);
+  color: #fff;
+  font: 600 10px var(--font-body);
+}
+.company-context {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+  width: 100%;
+  margin-top: 5px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,.18);
+  color: #dceafa;
+  font: 600 10px/1.3 var(--font-body);
+}
+.company-context > span { color: #c9ddf3; }
+.company-context select#company-select {
+  box-sizing: border-box;
+  min-width: 135px;
+  max-width: 100%;
+  min-height: 32px;
+  padding: 5px 27px 5px 8px;
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 8px;
+  background-color: #244f7e;
+  color: #fff;
+  font: 600 11px var(--font-body);
+}
+.company-context small {
+  flex: 1 1 100%;
+  color: #c9ddf3;
+  font-size: 9px;
+}
+.nuevo-cliente-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 7px;
+  margin-top: 7px;
+  padding: 9px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 10px;
+  background: rgba(255,255,255,.07);
+}
+.nuevo-cliente-panel[hidden] { display: none !important; }
+.nuevo-cliente-panel input {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 36px;
+  padding: 7px 9px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 8px;
+  background: #244f7e;
+  color: #fff;
+  font: 500 12px var(--font-body);
+}
+.nuevo-cliente-panel input:nth-child(2) { grid-column: span 2; }
+.nuevo-cliente-panel input::placeholder { color: #c7ddf3; }
+@media (max-width: 360px) {
+  .topbar { padding-left: 10px; padding-right: 10px; }
+  .topbar-brand > span { font-size: 19px; }
+  .meta-fields { grid-template-columns: minmax(100px,.7fr) minmax(0,1.5fr); gap: 5px; }
+  .meta-fields input, .meta-fields select { font-size: 11px; padding-left: 7px; }
+  .client-tools-row { justify-content: flex-start; }
+  .status { font-size: 8px; }
+}
+
+ 
+/* ---------- Ajuste de contraste: réplica visual Ko'eju ---------- */
+/* Reducir superficies blancas y reforzar lectura en pantallas móviles. */
+:root {
+  --ink: #e8f1fc;
+  --ink-soft: #c2d5eb;
+  --paper: #202a34;
+  --paper-dim: #26384b;
+  --line: rgba(210,225,240,.22);
+}
+html, body, main,
+#panel-dashboard, #panel-stock, #panel-archive, #panel-admin,
+#panel-order, #panel-search {
+  background-color: #202a34;
+  color: #e8f1fc;
+}
+#panel-search {
+  background-color: #302f29;
+}
+#panel-search::before {
+  background-image:
+    linear-gradient(rgba(27,37,49,.78), rgba(27,37,49,.78)),
+    url('./Icons/ventafondo.jpg');
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+.search-wrap,
+.stock-controls,
+.stock-import-head,
+.precio-estado-row,
+.tier-row,
+.condicion-row {
+  background-color: #202a34;
+  color: #e8f1fc;
+}
+.search-wrap input,
+.search-filters select,
+.condicion-input,
+.qty-input,
+.stock-controls input,
+.stock-controls select,
+#archive-search-input,
+.admin-tools input:not([type="file"]),
+.admin-tools select,
+.admin-panel-content input:not([type="file"]),
+.admin-panel-content select,
+.nuevo-cliente-panel input {
+  background: #25251f;
+  color: #fff;
+  border: 1px solid rgba(220,235,250,.28);
+}
+.search-wrap input::placeholder,
+input::placeholder,
+textarea::placeholder {
+  color: #c0cbd8;
+  opacity: 1;
+}
+.scan-btn {
+  background: #25251f;
+  color: #f0f5fc;
+  border: 1px solid rgba(220,235,250,.3);
+}
+.item-card,
+.order-card,
+.archive-card,
+.dashboard-card,
+.stock-summary-card,
+.admin-tools,
+.admin-panel-content,
+.historico-toggle,
+.order-discount-panel,
+.order-visual-panel,
+#excel-import-preview {
+  background: #26384b;
+  color: #f1f6fc;
+  border-color: rgba(220,235,250,.2);
+}
+.item-card,
+.order-card,
+.archive-card,
+.dashboard-card,
+.stock-summary-card,
+.admin-tools {
+  box-shadow: 0 3px 10px rgba(0,0,0,.18);
+}
+.item-desc,
+.item-price,
+.order-card,
+.archive-client,
+.archive-total,
+.stock-summary-card strong,
+.stock-import-head h2,
+.modal-sheet h3,
+.admin-tools label,
+.admin-panel-content label {
+  color: #f4f8ff;
+}
+.item-code,
+.item-stock,
+.archive-meta,
+.archive-sub,
+.cs-meta-inline,
+.stock-import-head p,
+.stock-updated,
+.stock-result-count,
+.hint,
+.result-count,
+.empty-state {
+  color: #c2d5eb;
+}
+.stock-badge {
+  background: #35516d;
+  color: #f2f7ff;
+}
+.stock-badge.low {
+  background: rgba(225,29,72,.22);
+  color: #ffb8c8;
+}
+.historico-toggle {
+  color: #e8f1fc;
+  border-color: rgba(220,235,250,.24);
+}
+.archive-summary {
+  background: #26384b;
+  color: #f1f6fc;
+  border-color: rgba(220,235,250,.2);
+}
+.archive-summary-label,
+.archive-summary-value {
+  color: #dcecff;
+}
+.modal-sheet {
+  background: #202a34;
+  color: #f1f6fc;
+}
+.modal-sheet p { color: #c2d5eb; }
+.cliente-suggestions {
+  background: #26384b;
+  border-color: rgba(220,235,250,.22);
+}
+.cliente-suggestion {
+  color: #f1f6fc;
+  border-color: rgba(220,235,250,.16);
+}
+.cliente-suggestion .cs-meta { color: #c2d5eb; }
+.tabs {
+  background: #111820;
+  border-top-color: rgba(255,255,255,.14);
+}
+.tab-btn { color: #c2d5eb; }
+.tab-btn.active {
+  color: #fff;
+  background: #172b24;
+  box-shadow: inset 0 3px 0 #20b36b;
+}
+.tab-label { font-size: 11px; font-weight: 700; }
+.tab-icon { font-size: 20px; }
+.footer {
+  background: #174477;
+  color: #fff;
+}
+.total-block .total-label { color: #c7ddf3; }
+.total-block .total-value { color: #fff; }
+.btn-primary, #btn-pdf { background: #168fe0; color: #fff; }
+.add-btn { background: #20b36b; color: #fff; }
+.btn-ghost, #btn-clear { color: #fff; }
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid #63c6ff;
+  outline-offset: 2px;
+}
+@media (max-width: 420px) {
+  .item-desc { font-size: 14px; line-height: 1.3; }
+  .item-price { font-size: 15px; }
+  .item-code, .item-stock { font-size: 11px; }
+  .tab-label { font-size: 10.5px; }
+  .stock-summary-card span { font-size: 11px; }
+}
+
+
+/* Control manual de existencias por depósito (solo administradores) */
+.stock-item-card { gap:8px; }
+.stock-edit-grid {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:7px 9px;
+  align-items:end;
+  margin-top:9px;
+  padding-top:9px;
+  border-top:1px solid rgba(220,235,250,.18);
+}
+.stock-edit-grid label {
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+  color:#dcecff;
+  font-size:11px;
+  font-weight:700;
+}
+.stock-edit-grid input {
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  min-height:36px;
+  padding:7px 9px;
+  border:1px solid rgba(220,235,250,.28);
+  border-radius:8px;
+  background:#202a34;
+  color:#fff;
+  font:600 13px var(--font-body);
+}
+.stock-save-btn {
+  min-height:36px;
+  padding:7px 10px;
+  border:1px solid rgba(32,179,107,.45);
+  border-radius:8px;
+  background:#176b4a;
+  color:#fff;
+  font:700 10px var(--font-body);
+}
+.stock-save-btn:disabled { opacity:.55; }
+.stock-edit-grid .stock-reason-label { grid-column:1 / -1; }
+.stock-edit-message {
+  grid-column:1 / -1;
+  min-height:14px;
+  margin:0;
+  color:#bdebd5;
+  font-size:10px;
+  line-height:1.35;
+}
+@media (max-width:360px) {
+  .stock-edit-grid { grid-template-columns:minmax(0,1fr); }
+  .stock-edit-grid .stock-reason-label { grid-column:1; }
+}
+
+/* Estructura de pantalla: contenido desplazable y navegación siempre al pie. */
+#app:not([hidden]) {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+#app > main {
+  order: 5;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#app > .footer {
+  order: 6;
+  flex: 0 0 auto;
+}
+#app > .tabs {
+  order: 7;
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  z-index: 30;
+}
+
+
+/* Acceso multiempresa, demostración pública y administración global */
+.gate[hidden], #company-gate[hidden], #global-admin-tools[hidden],
+.meta-fields[hidden], .precio-estado-row[hidden], .condicion-row[hidden],
+.footer[hidden], .tabs [hidden] { display:none !important; }
+.demo-access-btn {
+  width:100%; min-height:45px; margin-top:10px; border:1px solid #b8c8d8;
+  border-radius:11px; background:#f2f7fb; color:#183f70; font:700 14px var(--font-body);
+}
+.demo-access-btn:hover { background:#e5eff8; }
+.login-card .demo-caption { margin:8px 0 0; font-size:11px; line-height:1.45; text-align:center; }
+#company-gate .login-card select {
+  display:block; width:100%; min-height:46px; margin-top:7px; padding:10px 12px;
+  border:1px solid #cbd5e1; border-radius:10px; background:#f8fafc; color:#1e293b;
+  font:14px var(--font-body);
+}
+#global-admin-tools { margin-bottom:14px; }
+#global-admin-tools h3 { margin:15px 0 8px; font:700 15px var(--font-display); }
+.global-admin-form { display:grid; gap:9px; }
+.global-admin-form label { display:grid; gap:5px; font-size:12px; font-weight:700; }
+.global-admin-form input, .global-admin-form select,
+.member-admin-controls select {
+  width:100%; min-height:42px; padding:8px 10px; border:1px solid var(--line);
+  border-radius:8px; background:#fff; color:var(--ink); font:13px var(--font-body);
+}
+.global-admin-divider { height:1px; margin:15px 0; background:var(--line); }
+.global-admin-list { display:grid; gap:8px; margin:8px 0 14px; }
+.global-admin-row {
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:10px; border:1px solid var(--line); border-radius:10px; background:#fff;
+}
+.global-admin-row > div:first-child { display:grid; gap:3px; min-width:0; }
+.global-admin-row strong { font-size:13px; overflow-wrap:anywhere; }
+.global-admin-row small { color:#64748b; font-size:11px; overflow-wrap:anywhere; }
+.global-admin-list-head { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.member-admin-row { align-items:flex-start; flex-direction:column; }
+.member-admin-controls { display:grid; grid-template-columns:1fr 1fr auto; width:100%; gap:6px; }
+.member-admin-controls select { min-width:0; font-size:11px; }
+@media(min-width:700px) {
+  #global-admin-tools { max-width:900px; }
+  .member-admin-row { flex-direction:row; align-items:center; }
+  .member-admin-controls { width:min(55%,500px); }
+}
+
+
+/* AB SYSTEM — paleta azul grisácea unificada para todos los menús */
+#app main,
+#app main .panel {
+  color: #e4edf7;
+}
+#app main .item-card,
+#app main .order-card,
+#app main .archive-card,
+#app main .stock-item-card,
+#app main .dashboard-card,
+#app main .stock-summary-card,
+#app main .admin-tools,
+#app main .global-admin-row,
+#app main .admin-panel-content {
+  background: #2b4158;
+  border: 1px solid rgba(190, 211, 233, .20);
+  color: #edf4fc;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .16);
+}
+#app main .item-card,
+#app main .order-card,
+#app main .archive-card,
+#app main .stock-item-card,
+#app main .global-admin-row {
+  border-radius: 11px;
+}
+#app main .dashboard-card span,
+#app main .stock-summary-card span,
+#app main .admin-tools p,
+#app main .global-admin-row small,
+#app main .stock-import-head p,
+#app main .stock-result-count,
+#app main .stock-updated,
+#app main .archive-meta,
+#app main .archive-sub,
+#app main .cs-meta-inline {
+  color: #c0d2e5;
+}
+#app main .dashboard-card strong,
+#app main .stock-summary-card strong,
+#app main .archive-total,
+#app main .archive-client,
+#app main .global-admin-row strong,
+#app main .stock-item-card strong,
+#app main .item-desc,
+#app main .item-price {
+  color: #f3f7fc;
+}
+#app main .stock-updated,
+#app main .archive-summary,
+#app main .historico-toggle,
+#app main .dashboard-note,
+#app main #excel-import-preview {
+  background: #263b51;
+  border: 1px solid rgba(190, 211, 233, .18);
+  color: #dce8f5;
+}
+#app main .stock-controls input,
+#app main .stock-controls select,
+#app main .global-admin-form input,
+#app main .global-admin-form select,
+#app main .member-admin-controls select,
+#app main .admin-tools input,
+#app main .admin-tools select,
+#app main .admin-panel-content input,
+#app main .admin-panel-content select,
+#app main .admin-panel-content textarea {
+  background: #1d2e40;
+  border: 1px solid rgba(190, 211, 233, .28);
+  color: #f1f6fc;
+}
+#app main input::placeholder,
+#app main textarea::placeholder {
+  color: #a9bdd2;
+  opacity: 1;
+}
+#app main .admin-tools input[type=file] {
+  background: #1d2e40;
+  color: #dce8f5;
+}
+#app main .global-admin-divider {
+  background: rgba(190, 211, 233, .22);
+}
+#app main .global-admin-row small,
+#app main .admin-tools .muted {
+  color: #b8cbe0;
+}
+#app main .stock-values span {
+  background: #344f6b;
+  color: #e8f1fb;
+}
+#app main .stock-values .is-low {
+  background: rgba(225, 29, 72, .22);
+  color: #ffc1ce;
+}
+#app main .stock-edit-grid input {
+  background: #1d2e40;
+  color: #f1f6fc;
+}
+#app main .stock-edit-grid label,
+#app main .global-admin-form label,
+#app main .admin-tools label,
+#app main .admin-panel-content label {
+  color: #dce8f5;
+}
+#app main .empty-state,
+#app main .result-count {
+  color: #c3d5e8;
+}
+
+/* AB SYSTEM — resultados de búsqueda de clientes: alto contraste */
+#app main #cliente-suggestions.cliente-suggestions {
+  z-index: 1000;
+  background: #1f3348;
+  border: 1px solid rgba(190, 211, 233, .34);
+  border-radius: 12px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, .42);
+}
+#app main #cliente-suggestions .cliente-suggestion {
+  width: 100%;
+  min-height: 54px;
+  padding: 10px 13px;
+  background: #2b4158;
+  color: #f3f7fc;
+  border: 0;
+  border-bottom: 1px solid rgba(190, 211, 233, .18);
+  text-align: left;
+  cursor: pointer;
+}
+#app main #cliente-suggestions .cliente-suggestion:last-child {
+  border-bottom: 0;
+}
+#app main #cliente-suggestions .cliente-suggestion:hover,
+#app main #cliente-suggestions .cliente-suggestion:focus-visible {
+  background: #405e7c;
+  color: #ffffff;
+  outline: 2px solid #9fc4e8;
+  outline-offset: -2px;
+}
+#app main #cliente-suggestions .cs-name {
+  display: block;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+#app main #cliente-suggestions .cs-meta {
+  display: block;
+  margin-top: 3px;
+  color: #c5d8eb;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* AB SYSTEM — corrección definitiva: sugerencias están en el encabezado, no en main */
+#app .topbar .cliente-field #cliente-suggestions.cliente-suggestions {
+  background: #1f3348 !important;
+  border: 1px solid #7892ad !important;
+  border-radius: 12px !important;
+  box-shadow: 0 14px 32px rgba(0,0,0,.48) !important;
+  color: #f3f7fc !important;
+  z-index: 10000 !important;
+}
+#app .topbar .cliente-field #cliente-suggestions .cliente-suggestion {
+  display: flex !important;
+  width: 100% !important;
+  min-height: 56px !important;
+  padding: 11px 14px !important;
+  background: #2b4158 !important;
+  color: #f3f7fc !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(190,211,233,.24) !important;
+  text-align: left !important;
+}
+#app .topbar .cliente-field #cliente-suggestions .cliente-suggestion:last-child {
+  border-bottom: 0 !important;
+}
+#app .topbar .cliente-field #cliente-suggestions .cliente-suggestion:hover,
+#app .topbar .cliente-field #cliente-suggestions .cliente-suggestion:focus-visible {
+  background: #456482 !important;
+  color: #fff !important;
+  outline: 2px solid #b7d8f5 !important;
+  outline-offset: -2px !important;
+}
+#app .topbar .cliente-field #cliente-suggestions .cs-name {
+  display: block !important;
+  color: #fff !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+}
+#app .topbar .cliente-field #cliente-suggestions .cs-meta {
+  display: block !important;
+  margin-top: 3px !important;
+  color: #d0e3f6 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+}
+
+
+/* AB SYSTEM DEMO — réplica visual de la pantalla principal Ko'eju */
+:root{--ink:#1f2a33;--ink-soft:#273746;--paper:#1f2932;--paper-dim:#202a34;--rust:#258fe0;--rust-dark:#176db4;--gold:#9bc8f2;--green:#6F9282;--line:rgba(220,235,250,.16)}
+html,body{background:#1f2932!important;color:#e6edf5!important}#app{background:#1f2932}
+.topbar{padding:7px 18px 10px!important;color:#edf5fc!important;background:radial-gradient(ellipse 75% 125% at 50% 5%,rgba(16,105,158,.35),transparent 72%),linear-gradient(115deg,#03182a 0%,#062b46 50%,#03182a 100%)!important;border-bottom:1px solid rgba(64,176,226,.28);box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.topbar-title{height:68px;min-height:68px;display:flex;align-items:center;justify-content:center}.topbar-brand{width:100%;display:flex;align-items:center;justify-content:center}.topbar-logo-image{display:block;width:min(100%,285px);height:68px;max-height:68px;object-fit:cover;object-position:center 51%;mix-blend-mode:screen;filter:brightness(1.12) contrast(1.05) drop-shadow(0 0 8px rgba(0,153,225,.2))}
+.meta-fields{gap:12px!important;margin-top:8px!important}.meta-fields input,.meta-fields select{min-height:53px!important;padding:10px 14px!important;border-radius:12px!important;background:#f3f2ed!important;border:1px solid #d7dce2!important;color:#263342!important;font:600 14px Arial,sans-serif!important}.meta-fields input::placeholder{color:#aab4c2!important}.meta-fields select{background-color:#f3f2ed!important}
+.client-tools-row{min-height:34px;margin-top:7px!important;gap:8px}.nuevo-cliente-toggle{color:#f1f5fb!important;font:600 13px Arial,sans-serif!important;padding:5px 0 2px!important}#cloud-status-slot{color:#cbd9e7!important;font-size:12px}#logout{border-radius:999px;background:#82c8e4!important;color:#123047!important;padding:6px 12px;font-weight:700}
+.company-context{display:flex!important;align-items:center;flex-wrap:nowrap!important;gap:6px!important;padding:5px 0 0!important;margin-top:2px;border-top:1px solid rgba(255,255,255,.13)!important;color:#c8d9e8!important;font-size:10px!important;white-space:nowrap}.company-context select#company-select{min-height:28px;padding:4px 25px 4px 8px!important;border-radius:7px;background:#244b78!important;font-size:11px!important}.company-context small{overflow:hidden;text-overflow:ellipsis}
+.precio-estado-row,.condicion-row{background:#202a34!important;color:#d5e2f2!important;border-color:rgba(220,235,250,.15)!important}.precio-estado-row .tier-row{padding:7px 9px!important}.tier-row .tier-label,.tier-label{color:#c4d8ef!important;font:700 11px Arial,sans-serif!important}.tier-btn{background:#26384b!important;color:#c7d9ef!important;border-radius:16px!important;min-height:40px!important;padding:7px 13px!important}.tier-btn.active,.tier-btn.selected{background:#20b36b!important;color:#fff!important;border-color:#20b36b!important}.condicion-row{padding:8px 12px!important;gap:8px!important}.condicion-input{min-height:42px!important;background:#f3f2ed!important;color:#263342!important;border-radius:11px!important}
+main{background:#1f2932!important;color:#e4edf7!important}#panel-search{position:relative;min-height:100%;isolation:isolate}#panel-search:before{content:"";position:absolute;z-index:-1;pointer-events:none;top:175px;left:0;right:0;height:min(68vh,490px);background:linear-gradient(rgba(18,29,39,.50),rgba(18,29,39,.58)),url('./Icons/ventafondo.jpg') center center/cover no-repeat;opacity:.9}
+.search-wrap{padding:16px 18px 7px!important;background:transparent!important}.search-input-row{gap:14px!important}.search-wrap input{min-height:84px!important;padding:16px 20px!important;border-radius:28px!important;background:#25251f!important;border:1px solid #73736e!important;color:#f3f5f7!important;font:500 18px Arial,sans-serif!important;box-shadow:none!important}.search-wrap input::placeholder{color:#b3b9c1!important}.scan-btn{width:84px!important;min-height:84px!important;border-radius:26px!important;background:#25251f!important;border:1px solid #73736e!important;color:#eaf3fb!important;font-size:23px!important}.result-count{color:#d6e3ef!important}
+#app main .item-card,#app main .order-card,#app main .archive-card,#app main .stock-item-card,#app main .dashboard-card,#app main .stock-summary-card,#app main .admin-tools,#app main .global-admin-row,#app main .admin-panel-content{background:#2b4158!important;color:#edf4fc!important}
+.footer{background:#194879!important;color:#fff!important;border-top:1px solid rgba(137,191,236,.28)}.total-block .total-label{color:#a8c9ed!important}.btn-primary{background:#258fe0!important;color:#fff!important}.btn-ghost{border-color:rgba(255,255,255,.45)!important;color:#fff!important}
+.tabs{background:#101214!important;border-top:1px solid rgba(255,255,255,.08)!important;box-shadow:none!important;padding:5px 4px calc(5px + env(safe-area-inset-bottom))!important}.tab-btn{color:#c2ccd8!important}.tab-btn.active{color:#eaf5ff!important;background:#17342d!important;border-top:7px solid #20b36b!important;border-radius:0!important}.tab-btn .count{background:#e5ae00!important;color:#14202b!important}
+@media(max-width:420px){.topbar{padding-left:18px!important;padding-right:18px!important}.topbar-title{height:68px}.meta-fields{gap:10px!important}.meta-fields input,.meta-fields select{min-height:53px!important}.company-context{overflow-x:auto}.search-wrap{padding:16px 18px 7px!important}.search-wrap input,.scan-btn{min-height:84px!important}.scan-btn{width:84px!important}.footer{padding:8px 18px calc(8px + env(safe-area-inset-bottom))!important}.tab-btn{font-size:10px!important}}
+
+
+/* AB SYSTEM DEMO — escala compacta igual a la referencia Ko'eju (móvil) */
+@media (max-width:600px) {
+  html, body { font-size:13px !important; }
+  #app > .topbar { padding:4px 9px 5px !important; }
+  #app .topbar-title { height:36px !important; min-height:36px !important; max-height:36px !important; overflow:hidden !important; }
+  #app .topbar-brand { height:36px !important; max-height:36px !important; }
+  #app .topbar-logo-image { width:min(100%,250px) !important; height:36px !important; max-height:36px !important; object-fit:cover !important; object-position:center 51% !important; }
+  #app .meta-fields { display:grid !important; grid-template-columns:1.05fr .95fr !important; gap:6px !important; margin-top:4px !important; }
+  #app .meta-fields input, #app .meta-fields select { box-sizing:border-box !important; width:100% !important; min-width:0 !important; min-height:27px !important; height:27px !important; padding:4px 9px !important; border-radius:8px !important; font:600 11px Arial,sans-serif !important; }
+  #app .meta-fields input::placeholder { font-size:10px !important; }
+  #app .client-tools-row { min-height:22px !important; margin-top:4px !important; gap:5px !important; }
+  #app .nuevo-cliente-toggle { max-width:48%; font:600 10px/1.2 Arial,sans-serif !important; padding:2px 0 !important; text-align:left !important; }
+  #app #cloud-status-slot { font-size:9px !important; white-space:nowrap !important; }
+  #app #logout { min-height:21px !important; padding:3px 8px !important; font-size:9px !important; white-space:nowrap !important; }
+  #app .company-context { min-height:20px !important; margin-top:2px !important; padding:3px 0 0 !important; gap:5px !important; font-size:9px !important; }
+  #app .company-context select#company-select { min-height:19px !important; height:19px !important; padding:1px 20px 1px 6px !important; font-size:9px !important; }
+  #app .company-context small { font-size:8px !important; }
+  #app .precio-estado-row { min-height:32px !important; }
+  #app .precio-estado-row .tier-row { min-height:32px !important; padding:3px 6px !important; gap:4px !important; }
+  #app .tier-row .tier-label, #app .tier-label { font:700 9px Arial,sans-serif !important; letter-spacing:.02em !important; }
+  #app .tier-options { gap:4px !important; }
+  #app .tier-btn { min-height:22px !important; height:22px !important; padding:3px 9px !important; border-radius:13px !important; font:700 10px Arial,sans-serif !important; }
+  #app .condicion-row { min-height:39px !important; padding:4px 9px !important; gap:5px !important; }
+  #app .condicion-quick { gap:4px !important; }
+  #app .condicion-row .tier-btn { min-height:29px !important; height:29px !important; padding:4px 10px !important; font-size:11px !important; }
+  #app .condicion-input { min-width:0 !important; min-height:29px !important; height:29px !important; padding:4px 8px !important; border-radius:8px !important; font:11px Arial,sans-serif !important; }
+  #app .search-wrap { padding:9px 9px 4px !important; }
+  #app .search-input-row { gap:8px !important; }
+  #app .search-wrap input { box-sizing:border-box !important; min-width:0 !important; min-height:42px !important; height:42px !important; padding:9px 11px !important; border-radius:17px !important; font:13px Arial,sans-serif !important; }
+  #app .search-wrap input::placeholder { font-size:12px !important; }
+  #app .scan-btn { flex:0 0 42px !important; width:42px !important; min-width:42px !important; min-height:42px !important; height:42px !important; border-radius:15px !important; font-size:17px !important; }
+  #app .result-count { padding:3px 9px 1px !important; font-size:9px !important; }
+  #app .item-list, #app .order-list { padding:3px 9px 60px !important; gap:4px !important; }
+  #app .item-card { padding:5px 7px !important; border-radius:7px !important; }
+  #app .item-code, #app .item-stock { font-size:9px !important; }
+  #app .item-desc { margin:1px 0 2px !important; font-size:11px !important; line-height:1.2 !important; }
+  #app .item-bottom { margin-top:3px !important; gap:5px !important; }
+  #app .item-price { font-size:12px !important; }
+  #app .qty-input { width:34px !important; min-height:24px !important; padding:2px !important; font-size:10px !important; }
+  #app .add-btn { min-height:24px !important; padding:4px 7px !important; font-size:10px !important; }
+  #app .empty-state { padding:32px 14px !important; font-size:11px !important; }
+  #app .empty-state .big { font-size:14px !important; }
+  #app > .footer { padding:7px 9px calc(7px + env(safe-area-inset-bottom)) !important; }
+  #app .total-block .total-label { font-size:9px !important; }
+  #app .total-block .total-value { font-size:18px !important; line-height:1.1 !important; }
+  #app .footer-actions { gap:6px !important; }
+  #app .footer .btn { min-height:32px !important; padding:6px 10px !important; border-radius:10px !important; font-size:12px !important; }
+  #app > .tabs { padding:3px 2px calc(3px + env(safe-area-inset-bottom)) !important; }
+  #app .tab-btn { min-width:0 !important; min-height:43px !important; padding:3px 2px !important; gap:1px !important; font-size:9px !important; }
+  #app .tab-btn .tab-icon { font-size:17px !important; line-height:1 !important; }
+  #app .tab-btn .tab-label { font-size:9px !important; line-height:1.1 !important; }
+  #app .tab-btn.active { border-top-width:4px !important; }
+  #app .tab-btn .count { min-width:14px !important; height:14px !important; padding:0 3px !important; font-size:8px !important; }
+  #app main .order-card, #app main .archive-card, #app main .stock-item-card, #app main .dashboard-card { padding:8px !important; border-radius:9px !important; }
+  #app main .dashboard-card span { font-size:10px !important; }
+  #app main .dashboard-card strong { margin:5px 0 3px !important; font-size:19px !important; }
+  #app main .dashboard-card small, #app main .stock-import-head p { font-size:9px !important; }
+  #app main input, #app main select, #app main textarea { font-size:12px !important; }
+}
+@media (min-width:601px) {
+  #app .topbar-logo-image { max-height:48px !important; }
+  #app .topbar-title { height:48px !important; min-height:48px !important; }
+  #app .meta-fields input, #app .meta-fields select { min-height:38px !important; font-size:13px !important; }
+  #app .search-wrap input, #app .scan-btn { min-height:58px !important; }
+}
+
+
+/* Buscar: eliminar franja plana y fusionar el fondo con la fotografía */
+#app main { background:linear-gradient(180deg,#0b2b43 0%,#102f45 38%,#1b2b36 100%) !important; }
+#app #panel-search { background:transparent !important; }
+#app #panel-search::before {
+  top:0 !important;
+  left:0 !important;
+  right:0 !important;
+  height:100% !important;
+  min-height:560px !important;
+  opacity:1 !important;
+  background:
+    linear-gradient(180deg,
+      rgba(8,39,61,.96) 0%,
+      rgba(10,48,73,.86) 14%,
+      rgba(12,47,70,.52) 30%,
+      rgba(15,35,50,.30) 48%,
+      rgba(19,31,42,.52) 76%,
+      rgba(25,39,51,.92) 100%),
+    url('./Icons/ventafondo.jpg') center 44% / cover no-repeat !important;
+}
+#app #panel-search .result-count:empty { display:none !important; }
+
+
+/* AB SYSTEM — temática azul marino/celeste unificada en todos los menús */
+:root {
+  --ink:#eaf3fb !important;
+  --ink-soft:#c1d3e3 !important;
+  --paper:#172b40 !important;
+  --paper-dim:#203a53 !important;
+  --rust:#278fc5 !important;
+  --rust-dark:#1e78aa !important;
+  --gold:#8ed8f5 !important;
+  --green:#65b9d9 !important;
+  --line:rgba(161,195,222,.22) !important;
+}
+#app main {
+  background:linear-gradient(180deg,#102b43 0%,#142f47 48%,#192f43 100%) !important;
+  color:#edf6ff !important;
+}
+#app #panel-order,
+#app #panel-archive,
+#app #panel-dashboard,
+#app #panel-stock,
+#app #panel-admin {
+  min-height:100%;
+  color:#edf6ff !important;
+  background:transparent !important;
+}
+#app #panel-order h2,#app #panel-order h3,
+#app #panel-archive h2,#app #panel-archive h3,
+#app #panel-dashboard h2,#app #panel-stock h2,
+#app #panel-admin h2,#app #panel-admin h3,
+#app #panel-admin label { color:#f1f7fd !important; }
+#app #panel-order .order-card,
+#app #panel-order .order-discount-panel,
+#app #panel-archive .archive-card,
+#app #panel-archive .archive-summary,
+#app #panel-archive .historico-toggle,
+#app #panel-dashboard .dashboard-card,
+#app #panel-dashboard .dashboard-note,
+#app #panel-stock .stock-summary-card,
+#app #panel-stock .stock-row,
+#app #panel-admin .admin-tools,
+#app #panel-admin .global-admin-form,
+#app #panel-admin .global-admin-list,
+#app #panel-admin .global-admin-list > *,
+#app #panel-admin .client-import-tools {
+  background:linear-gradient(145deg,#29445e 0%,#20384f 100%) !important;
+  color:#edf6ff !important;
+  border:1px solid rgba(157,194,222,.25) !important;
+  box-shadow:0 5px 15px rgba(2,13,25,.16) !important;
+}
+#app #panel-order .order-card *,
+#app #panel-archive .archive-card *,
+#app #panel-dashboard .dashboard-card *,
+#app #panel-stock .stock-row *,
+#app #panel-admin .admin-tools *,
+#app #panel-admin .global-admin-list * { color:inherit; }
+#app #panel-order .order-discount-panel label,
+#app #panel-archive .archive-client,
+#app #panel-archive .archive-total,
+#app #panel-dashboard .dashboard-card strong,
+#app #panel-stock .stock-row-main strong { color:#f5faff !important; }
+#app #panel-order .order-discount-panel input,
+#app #panel-order .order-tier-select,
+#app #panel-archive .search-wrap input,
+#app #panel-stock .stock-controls input,
+#app #panel-stock .stock-controls select,
+#app #panel-admin input,
+#app #panel-admin select,
+#app #panel-admin textarea,
+#app #panel-admin .global-admin-form input,
+#app #panel-admin .global-admin-form select {
+  background:#142a3e !important;
+  color:#f1f7fd !important;
+  border:1px solid #54738f !important;
+  border-radius:9px !important;
+}
+#app #panel-order input::placeholder,
+#app #panel-archive input::placeholder,
+#app #panel-stock input::placeholder,
+#app #panel-admin input::placeholder { color:#a9bfd2 !important; }
+#app #panel-order .order-bottom,
+#app #panel-archive .archive-meta,
+#app #panel-archive .archive-sub,
+#app #panel-dashboard .dashboard-head p,
+#app #panel-dashboard .dashboard-card span,
+#app #panel-dashboard .dashboard-card small,
+#app #panel-dashboard .dashboard-note,
+#app #panel-stock .stock-import-head p,
+#app #panel-stock .stock-updated,
+#app #panel-stock .stock-values,
+#app #panel-stock .stock-more,
+#app #panel-admin .muted,
+#app #panel-admin p { color:#c1d3e3 !important; }
+#app #panel-stock .stock-values span,
+#app #panel-stock .stock-badge,
+#app #panel-order .discount-summary {
+  background:#36536d !important;
+  color:#e7f4ff !important;
+}
+#app #panel-order .btn-primary,
+#app #panel-archive .btn-primary,
+#app #panel-dashboard .btn-primary,
+#app #panel-stock .btn-primary,
+#app #panel-admin .btn-primary,
+#app #panel-admin button:not(.btn-outline) {
+  background:linear-gradient(135deg,#258fc2,#36acd7) !important;
+  color:#fff !important;
+  border:1px solid rgba(165,224,247,.3) !important;
+}
+#app #panel-archive .btn-outline,
+#app #panel-dashboard .btn-outline,
+#app #panel-stock .btn-outline,
+#app #panel-admin .btn-outline {
+  background:#29445e !important;
+  color:#eaf5ff !important;
+  border:1px solid #6687a3 !important;
+}
+#app #panel-order .empty-state,
+#app #panel-archive .empty-state { color:#bfd2e3 !important; }
+#app .tabs {
+  background:#10283e !important;
+  border-top:1px solid #42627e !important;
+  box-shadow:0 -5px 18px rgba(2,13,25,.3) !important;
+}
+#app .tab-btn { color:#b9ccdc !important; }
+#app .tab-btn.active {
+  color:#eaf8ff !important;
+  background:linear-gradient(180deg,rgba(39,143,197,.28),rgba(39,143,197,.12)) !important;
+  box-shadow:inset 0 2px 0 #65c9ed !important;
+}
+#app .footer {
+  background:linear-gradient(110deg,#0b2033,#17364f) !important;
+  border-top:1px solid rgba(142,216,245,.2) !important;
+}
+#app .total-block .total-label { color:#8ed8f5 !important; }
+#app .topbar { background:linear-gradient(120deg,#081d30,#16405d) !important; }
+
+
+/* Corrección de fondo fotográfico para Archivo, Resumen, Stock y Admin */
+#app #panel-archive,
+#app #panel-dashboard,
+#app #panel-stock,
+#app #panel-admin {
+  position:relative !important;
+  isolation:isolate !important;
+  min-height:calc(100vh - 210px) !important;
+  background:transparent !important;
+}
+#app #panel-archive::before,
+#app #panel-dashboard::before,
+#app #panel-stock::before,
+#app #panel-admin::before {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  pointer-events:none;
+  inset:0;
+  min-height:100%;
+  background:
+    linear-gradient(180deg,
+      rgba(8,39,61,.94) 0%,
+      rgba(10,48,73,.82) 18%,
+      rgba(12,47,70,.62) 48%,
+      rgba(19,31,42,.78) 100%),
+    url('./Icons/ventafondo.jpg') center 44% / cover no-repeat;
+  background-attachment:scroll;
+}
+#app #panel-archive .search-wrap,
+#app #panel-stock .stock-controls {
+  background:rgba(12,35,54,.72) !important;
+}
