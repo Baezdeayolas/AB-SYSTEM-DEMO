@@ -244,7 +244,9 @@ Deno.serve(async (req: Request) => {
         if (countError) throw countError;
         if ((count || 0) <= 1) return reply({ error: "La empresa debe conservar al menos un administrador activo." }, 409);
       }
-      const { error } = await admin.from("company_memberships")
+      // Preserve the authenticated superadmin JWT for the database trigger.
+      // The trigger validates auth.uid() and the caller's global role.
+      const { error } = await caller.from("company_memberships")
         .update({ role, status }).eq("company_id", companyId).eq("user_id", userId);
       if (error) throw error;
       return reply({ ok: true });
