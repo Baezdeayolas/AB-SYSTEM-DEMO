@@ -230,14 +230,14 @@ async function loadGlobalAdminData(){
  $('global-members-list').querySelectorAll('[data-member-remove]').forEach(b=>b.onclick=async()=>{
   const [companyId,userId]=b.dataset.memberRemove.split('|');
   if(!confirm('¿Quitar este usuario de la empresa? Su cuenta de acceso se conservará y podrá seguir perteneciendo a otras empresas.'))return;
-  b.disabled=true;try{await callGlobalAdmin('remove-membership',{companyId,userId});await loadGlobalAdminData();}catch(e){alert('No se pudo quitar la membresía: '+e.message);}finally{b.disabled=false;}
+  b.disabled=true;try{await callGlobalAdmin('remove-membership',{companyId,userId});await loadGlobalAdminData();if(activeCompany?.id===companyId)await loadData();}catch(e){alert('No se pudo quitar la membresía: '+e.message);}finally{b.disabled=false;}
  });
  $('global-members-list').querySelectorAll('[data-member-save]').forEach(b=>b.onclick=async()=>{
   const [companyId,userId]=b.dataset.memberSave.split('|');
   const key=b.dataset.memberSave;
   const role=$('global-members-list').querySelector('[data-member-role="'+key+'"]').value;
   const status=$('global-members-list').querySelector('[data-member-status="'+key+'"]').value;
-  b.disabled=true;try{await callGlobalAdmin('update-membership',{companyId,userId,role,status});await loadGlobalAdminData();}catch(e){alert('No se pudo actualizar la membresía: '+e.message);}finally{b.disabled=false;}
+  b.disabled=true;try{await callGlobalAdmin('update-membership',{companyId,userId,role,status});await loadGlobalAdminData();if(activeCompany?.id===companyId)await loadData();}catch(e){alert('No se pudo actualizar la membresía: '+e.message);}finally{b.disabled=false;}
  });
  $('global-company-list').querySelectorAll('[data-company-status]').forEach(b=>b.onclick=async()=>{
   const status=b.dataset.status==='active'?'suspended':'active';b.disabled=true;
