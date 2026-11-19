@@ -43,9 +43,9 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 before(async () => {
   const patch = await readFile(patchPath, "utf8");
-  assert.match(patch, /ROLLBACK;\\s*$/);
+  assert.match(patch, /ROLLBACK;\s*$/);
   execFileSync("psql", [...psqlArgs, "-f", fixturePath], { stdio: "inherit" });
-  const executablePatch = patch.replace(/ROLLBACK;\\s*$/, "COMMIT;");
+  const executablePatch = patch.replace(/ROLLBACK;\s*$/, "COMMIT;");
   execFileSync("psql", [...psqlArgs], { input: executablePatch, encoding: "utf8", stdio: ["pipe", "inherit", "inherit"] });
 });
 
