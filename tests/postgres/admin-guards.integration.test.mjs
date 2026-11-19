@@ -99,7 +99,7 @@ test("H — physical company DELETE is blocked (55000)", async () => {
   assert.equal(runSql("SELECT count(*) FROM public.companies WHERE id='" + c.companyId + "'"), "1");
 });
 test("I — TRUNCATE companies is blocked (55000)", () => {
-  expectSqlstate("TRUNCATE TABLE public.companies", "55000");
+  expectSqlstate("TRUNCATE TABLE public.companies CASCADE", "55000");
   assert.ok(Number(runSql("SELECT count(*) FROM public.companies")) > 0);
 });
 test("J — suspending a company is allowed and preserves its memberships", async () => {
