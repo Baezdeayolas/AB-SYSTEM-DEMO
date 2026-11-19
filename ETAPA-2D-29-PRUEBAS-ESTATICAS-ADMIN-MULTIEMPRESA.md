@@ -2,7 +2,7 @@
 
 **Rama:** `work/adaptacion-multiempresa-v1`
 **Entorno:** exclusivamente AB-SYSTEM-DEMO.
-**Estado:** revisión estática realizada; pruebas automatizadas configuradas; pruebas reales pendientes del despliegue.
+**Estado:** revisión estática realizada; GitHub Actions release candidate aprobado; pruebas reales de Supabase pendientes.
 
 ## Cambios adicionales
 
@@ -17,6 +17,8 @@
 Se añadieron:
 - `tests/admin-users-guards.test.mjs`: verificaciones de regresión para autorización global, validación de empresa, estados permitidos, retiro de membresías, protección del último administrador y preservación de perfiles.
 - `.github/workflows/validate-admin.yml`: ejecuta `node --check`, los tests de Node y `deno check` de la Edge Function al actualizar la rama o abrir un PR hacia main.
+- `tests/sql-inventory-migration.test.mjs`: comprueba que 2D-21 no recrea el inventario legacy, que 2D-22 usa las tablas/RPC por depósito y que ambos borradores terminan en `ROLLBACK`.
+- `.github/workflows/validate-release-candidate.yml`: ejecuta los controles de integración y el test de seguridad de las migraciones.
 
 ## Comprobaciones realizadas durante esta revisión
 
@@ -29,7 +31,7 @@ Se añadieron:
 ## Límites importantes
 
 - Las comprobaciones estáticas no sustituyen una ejecución de GitHub Actions ni una prueba de integración contra Supabase.
-- No se pudo confirmar una ejecución exitosa de GitHub Actions para esta rama.
+- GitHub Actions workflow `Validate AB SYSTEM release candidate`, ejecución #124, terminó con `success`: sintaxis JS, `deno check`, existencia de migración y wiring frontend/backend. La nueva suite de regresión SQL se añadió después de esa ejecución y está pendiente de la siguiente corrida.
 - La Edge Function necesita desplegarse en el proyecto DEMO antes de que la interfaz administrativa funcione en el sitio publicado.
 - No existe todavía una migración aplicada y verificada de la base multiempresa; el README conserva las advertencias sobre 2D-21/2D-22 y respaldo restaurable.
 - La empresa con datos no se debe borrar físicamente. Se suspende para conservar pedidos, productos y movimientos.
@@ -45,4 +47,4 @@ Se añadieron:
 
 ## Estado de publicación en GitHub
 
-La comparación con `main` indica que esta rama está divergida: contiene 262 commits no presentes en `main`, mientras que `main` tiene 2 commits documentales que no están en esta rama. No se debe fusionar a ciegas ni publicar directamente. Antes de publicar hay que reconciliar esos dos documentos y revisar el PR completo, además de completar la validación de Supabase.
+La rama fue reconciliada mediante un commit de merge con `main`: comparación actual `ahead 266 / behind 0`, PR #2 reporta `mergeable=true`. El PR sigue en borrador y no se fusionó. La migración de inventario se separó de la migración base y se agregaron pruebas estáticas específicas; falta confirmar su nueva ejecución CI y realizar pruebas reales en Supabase.
