@@ -31,7 +31,7 @@ Se añadieron:
 ## Límites importantes
 
 - Las comprobaciones estáticas no sustituyen una ejecución de GitHub Actions ni una prueba de integración contra Supabase.
-- GitHub Actions workflow `Validate AB SYSTEM release candidate`, ejecución #124, terminó con `success`: sintaxis JS, `deno check`, existencia de migración y wiring frontend/backend. La nueva suite de regresión SQL se añadió después de esa ejecución y está pendiente de la siguiente corrida.
+- GitHub Actions workflow `Validate AB SYSTEM release candidate`, ejecución #124, terminó con `success`: sintaxis JS, `deno check`, existencia de migración y wiring frontend/backend. La nueva suite de regresión SQL se ejecutó en GitHub Actions y pasó correctamente en la ejecución #125 (release candidate) y en la ejecución de administración correspondiente. Los tests son estáticos: no ejecutan el SQL contra PostgreSQL ni sustituyen las pruebas reales de RLS/JWT.
 - La Edge Function necesita desplegarse en el proyecto DEMO antes de que la interfaz administrativa funcione en el sitio publicado.
 - No existe todavía una migración aplicada y verificada de la base multiempresa; el README conserva las advertencias sobre 2D-21/2D-22 y respaldo restaurable.
 - La empresa con datos no se debe borrar físicamente. Se suspende para conservar pedidos, productos y movimientos.
@@ -47,4 +47,4 @@ Se añadieron:
 
 ## Estado de publicación en GitHub
 
-La rama fue reconciliada mediante un commit de merge con `main`: comparación actual `ahead 266 / behind 0`, PR #2 reporta `mergeable=true`. El PR sigue en borrador y no se fusionó. La migración de inventario se separó de la migración base y se agregaron pruebas estáticas específicas; falta confirmar su nueva ejecución CI y realizar pruebas reales en Supabase.
+La rama fue reconciliada mediante un commit de merge con `main`: comparación actual `ahead 266 / behind 0`, PR #2 reporta `mergeable=true`. El PR sigue en borrador y no se fusionó. La migración de inventario se separó de la migración base. 2D-21 ya no crea tablas legacy `inventory_balances`/`inventory_movements`; 2D-22 valida la estructura base y las tablas por depósito, y permanece en `ROLLBACK`. GitHub Actions release candidate #125 y el workflow de administración terminaron en `success`. Falta probar PostgreSQL real, RLS/JWT, desplegar `admin-users` y verificar el superadministrador.
