@@ -21,8 +21,9 @@ Se añadieron:
 ## Comprobaciones realizadas durante esta revisión
 
 - El archivo frontend `cloud-sync-demo.js` pasó la comprobación de sintaxis JavaScript con el motor V8.
-- Pasaron 13 comprobaciones estáticas sobre los guardas y las conexiones frontend/backend de administración.
+- Pasaron 14 comprobaciones estáticas sobre los guardas y las conexiones frontend/backend de administración.
 - Se revisaron los bloques de creación, suspensión/reactivación, invitación, cambio de rol/estado y retiro de membresía.
+- Después de cambiar o retirar una membresía, el catálogo de vendedores de la empresa activa se vuelve a cargar para evitar que quede visible un vendedor que ya perdió acceso.
 - No se realizó ninguna operación de escritura en Supabase ni se eliminó ningún usuario o empresa.
 
 ## Límites importantes
