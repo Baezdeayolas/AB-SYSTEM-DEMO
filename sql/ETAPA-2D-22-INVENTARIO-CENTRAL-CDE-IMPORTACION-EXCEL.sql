@@ -247,4 +247,6 @@ REVOKE ALL ON FUNCTION public.ab_import_company_catalog_v2(uuid,text,jsonb) FROM
 GRANT EXECUTE ON FUNCTION public.ab_import_company_catalog_v2(uuid,text,jsonb) TO authenticated;
 REVOKE ALL ON FUNCTION public.ab_inventory_create_location_balances() FROM PUBLIC, anon, authenticated;
 
-COMMIT;
+-- BORRADOR DE ENSAYO: no persistir hasta validar estructura existente,
+-- ejecutar pruebas de RLS/JWT y aprobar expresamente el cambio.
+ROLLBACK;
