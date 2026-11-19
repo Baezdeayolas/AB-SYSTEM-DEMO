@@ -34,6 +34,11 @@ test("physical company deletion and truncation are blocked at database level", (
   assert.match(patch, /REVOKE DELETE, TRUNCATE ON TABLE public\.companies FROM authenticated/);
 });
 
+test("preflight requires the existing membership identity guard", () => {
+  assert.match(patch, /trg_company_memberships_guard_identity/);
+  assert.match(patch, /no se puede garantizar la identidad fija de las membresias/);
+});
+
 test("preflight refuses to install while any company has no active admin", () => {
   assert.match(patch, /v_companies_without_admin/);
   assert.match(patch, /m\.role='company_admin'/);
