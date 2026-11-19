@@ -41,9 +41,12 @@ La aplicación usa SheetJS desde CDN para leer archivos XLSX/XLS. Requiere conex
 ## Pendiente antes de producción
 - Ejecutar el lote SQL 2D-22 en AB-SYSTEM-DEMO.
 - Importar el libro vigente y conciliar conteos y saldos CENTRAL/CDE.
+- Desplegar la Edge Function `admin-users` y probar altas/suspensiones de empresas, invitaciones, cambios de rol/estado y retiro de membresías con cuentas autorizadas.
 - Probar inicio de sesión y aislamiento con cuentas reales de superadministrador, administrador, vendedor y usuario sin membresía.
 - Probar cambio de empresa, creación/lectura de pedidos, archivo, stock e importación desde Android y escritorio.
 - Verificar despliegue en un destino de prueba y confirmar que no apunta a Ko’ẽju histórico.
-- El escáner de códigos de barras y la administración completa de altas de usuarios/empresas no forman parte de esta versión candidata.
+- La administración global de empresas y membresías está implementada en la rama de desarrollo mediante la Edge Function protegida `admin-users`; todavía requiere despliegue y pruebas reales en Supabase DEMO.
+- Las empresas se desactivan/reactivan para conservar pedidos e inventario; quitar un vendedor elimina su membresía de esa empresa, no su cuenta de acceso global.
+- La validación automatizada de administración se ejecuta mediante GitHub Actions (Node.js y Deno).
 
 No se ha creado PR, no se fusionó la rama y no se desplegó ni publicó esta versión.
