@@ -30,6 +30,7 @@ test("removing a membership preserves the auth account and last company admin", 
   assert.match(edge, /No se puede quitar al último administrador activo/);
   assert.doesNotMatch(edge, /auth\.admin\.deleteUser/);
   assert.match(app, /Su cuenta de acceso se conservará/);
+  assert.match(app, /if\(activeCompany\?\.id===companyId\)await loadData\(\)/);
 });
 
 test("inviting an existing user does not overwrite their global profile role", () => {
