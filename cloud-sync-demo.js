@@ -350,8 +350,7 @@ $('btn-pdf').onclick=async()=>{
   const now=new Date(),dateText=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
   const priceList='M'+tier;
   const fmt=n=>Math.round(Number(n)||0).toLocaleString('es-PY');
-  const rowHeight=Math.max(3.2,Math.min(17,175/Math.max(1,cart.length)));
-  const rowPadding=Math.max(.35,(rowHeight-3.0)/2);
+  const rowPadding=Math.max(.7,Math.min(1.8,24/Math.max(1,cart.length)));
   const lines=cart.map(x=>{
    const barcode=x.b?String(x.b)+' - ':'';
    return '<tr><td class="code">'+safe(x.c)+'</td><td class="qty">'+fmt(x.qty)+'</td><td class="concept">'+safe(barcode+x.d)+'</td><td class="number">'+fmt(x['p'+tier])+'</td><td class="number">'+fmt(x.qty*x['p'+tier])+'</td></tr>';
@@ -361,25 +360,31 @@ $('btn-pdf').onclick=async()=>{
   const html='<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Nota de Pedido · AB SYSTEM</title><style>'+
    '@page{size:A4 portrait;margin:8mm}*{box-sizing:border-box}html,body{margin:0;padding:0;color:#111;font-family:Arial,sans-serif}'+
    '.pdf-sheet{width:194mm;min-height:281mm;display:flex;flex-direction:column;background:#fff;font-size:9px;line-height:1.25}'+
-   '.brand{font-size:22px;font-weight:800;letter-spacing:.6px;margin:0 0 2mm}.issuer{font-size:9px;margin-bottom:5mm;color:#333}'+
-   '.company{font-size:13px;font-weight:700;margin:0 0 5mm}.heading{text-align:center;font-size:17px;font-weight:800;letter-spacing:1px;border-top:1px solid #222;border-bottom:1px solid #222;padding:3mm 0;margin:0 0 5mm}'+
-   '.meta{display:grid;grid-template-columns:1fr 1fr;gap:3mm 7mm;margin-bottom:5mm;font-size:10px}.meta p{margin:0;line-height:1.5}.label{font-weight:700}'+
-   'table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:8.5px;flex:1}thead{display:table-header-group}th{background:#eee;font-weight:700;text-align:left;border-top:1px solid #222;border-bottom:1px solid #222;padding:2mm 1mm}td{padding:'+rowPadding+'mm 1mm;border-bottom:1px solid #ccc;vertical-align:middle;overflow-wrap:anywhere;line-height:1.15}'+
-   '.code{width:17%}.qty{width:9%;text-align:center}.concept{width:48%}.number{width:13%;text-align:right;white-space:nowrap}'+
-   '.totals{width:55%;margin:5mm 0 0 auto;font-size:10px}.totals div{display:flex;justify-content:space-between;padding:1.2mm}.totals .grand{font-size:14px;font-weight:800;border-top:1px solid #222;margin-top:1mm;padding-top:2mm}'+
-   '.status{text-align:right;font-weight:800;font-size:13px;margin-top:5mm;letter-spacing:.4px}.foot{margin-top:auto;border-top:1px solid #bbb;padding-top:2mm;font-size:8px;color:#555}'+
+   '.topline{display:flex;justify-content:space-between;align-items:flex-start;gap:8mm;margin:0 0 1mm}.brand{font-size:12px;font-weight:700}.company{font-size:11px;font-weight:500;text-align:right}'+
+   '.issuer{font-size:9px;margin:0 0 5mm;color:#222}.heading{text-align:center;font-size:17px;font-weight:800;letter-spacing:.2px;margin:0 0 7mm;padding:0 0 5mm;border-bottom:1px solid #222}'+
+   '.meta{display:grid;grid-template-columns:1.35fr 1fr;gap:7mm;padding:0 0 5mm;margin:0 0 5mm;border-bottom:1px solid #222;font-size:10px}'+
+   '.meta-col{display:grid;gap:1.1mm;align-content:start}.field{display:grid;grid-template-columns:27mm minmax(0,1fr);gap:1mm;line-height:1.35}.field-label{font-weight:400;white-space:nowrap}.field-value{min-width:0;overflow-wrap:anywhere}'+
+   'table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:8.5px}thead{display:table-header-group}th{background:#fff;font-weight:400;text-align:left;border:1px solid #111;padding:1.5mm 1.3mm}td{padding:'+rowPadding+'mm 1.3mm;border:1px solid #111;vertical-align:middle;overflow-wrap:anywhere;line-height:1.2}'+
+   '.code{width:16%}.qty{width:10%;text-align:center}.concept{width:46%}.number{width:14%;text-align:right;white-space:nowrap}th.qty{text-align:center}th.number{text-align:center}'+
+   '.totals{width:100%;margin:5mm 0 0;font-size:10px;border-collapse:collapse}.totals div{display:flex;justify-content:space-between;align-items:center;padding:1.5mm 2.5mm;border:1px solid #111;min-height:6mm}.totals .grand{font-size:12px;font-weight:800}'+
+   '.status{text-align:center;font-weight:800;font-size:15px;margin:6mm 0 0;letter-spacing:.2px}'+
    'tr{break-inside:avoid;page-break-inside:avoid}.totals,.status{break-inside:avoid;page-break-inside:avoid}'+
    '</style></head><body><main class="pdf-sheet">'+
-   '<div class="brand">AB SYSTEM</div><div class="issuer">Emitido por '+safe(user?.email||'')+'</div>'+
-   '<div class="company">Pedido '+safe(activeCompany.name)+'</div><div class="heading">NOTA DE PEDIDO</div>'+
-   '<div class="meta">'+
-   '<p><span class="label">Razón Social</span> '+safe(customerName)+' <span class="label">Fecha</span> '+dateText+'</p>'+
-   '<p><span class="label">Cód.Cliente</span> '+safe(client.c||clientCode||'')+' <span class="label">Cond.Venta</span> '+safe(condition)+'</p>'+
-   '<p><span class="label">Ciudad</span> '+safe(city)+' - <span class="label">Vendedor</span> '+safe(seller)+'</p>'+
-   '<p><span class="label">Lista de precio</span> '+priceList+'</p></div>'+
+   '<div class="topline"><div class="brand">AB SYSTEM</div><div class="company">Pedido '+safe(activeCompany.name)+'</div></div>'+
+   '<div class="issuer">Emitido por '+safe(user?.email||'')+'</div>'+
+   '<div class="heading">NOTA DE PEDIDO</div>'+
+   '<div class="meta"><div class="meta-col">'+
+   '<div class="field"><span class="field-label">Razón Social</span><span class="field-value">'+safe(customerName)+'</span></div>'+
+   '<div class="field"><span class="field-label">Cód.Cliente</span><span class="field-value">'+safe(client.c||clientCode||'')+'</span></div>'+
+   '<div class="field"><span class="field-label">Ciudad</span><span class="field-value">'+safe(city)+'</span></div></div>'+
+   '<div class="meta-col">'+
+   '<div class="field"><span class="field-label">Fecha</span><span class="field-value">'+dateText+'</span></div>'+
+   '<div class="field"><span class="field-label">Cond.Venta</span><span class="field-value">'+safe(condition)+'</span></div>'+
+   '<div class="field"><span class="field-label">Vendedor</span><span class="field-value">'+safe(seller)+'</span></div>'+
+   '<div class="field"><span class="field-label">Lista de precio</span><span class="field-value">'+priceList+'</span></div></div></div>'+
    '<table><thead><tr><th class="code">Cód.Artículo</th><th class="qty">Cantidad</th><th class="concept">Concepto</th><th class="number">P.Unit.</th><th class="number">Total</th></tr></thead><tbody>'+lines+'</tbody></table>'+
-   '<div class="totals"><div><span>Subtotal Gs.</span><strong>'+fmt(sub)+'</strong></div><div><span>Descuento ('+fmt(discount)+'%) - Gs.</span><strong>'+fmt(off)+'</strong></div><div class="grand"><span>TOTAL A PAGAR Gs.</span><strong>'+fmt(grand)+'</strong></div></div>'+
-   '<div class="status">'+statusText+'</div><div class="foot">AB SYSTEM · '+safe(activeCompany.name)+'</div></main></body></html>';
+   '<div class="totals"><div><span>Subtotal</span><strong>Gs. '+fmt(sub)+'</strong></div><div><span>Descuento ('+fmt(discount)+'%)</span><strong>- Gs. '+fmt(off)+'</strong></div><div class="grand"><span>TOTAL A PAGAR</span><strong>Gs. '+fmt(grand)+'</strong></div></div>'+
+   '<div class="status">'+statusText+'</div></main></body></html>';
   if(!window.html2pdf)throw new Error('No se pudo cargar el generador de PDF. Revisá tu conexión e intentá nuevamente.');
   mount=document.createElement('div');mount.style.cssText='position:fixed;left:-10000px;top:0;width:194mm;background:#fff;z-index:-1';
   mount.innerHTML=html;document.body.appendChild(mount);
