@@ -169,14 +169,26 @@ Deno.serve(async (req: Request) => {
       }
       if (!targetUser?.id) throw new Error("Supabase no devolvió el usuario creado.");
 
-      const { error: profileError } = await admin.from("profiles").upsert({
-        id: targetUser.id,
-        role: role === "company_admin" ? "admin" : "seller",
-        seller_label: displayName,
-      }, { onConflict: "id" });
-      if (profileError) throw profileError;
+      const { data: existingProfile, error: profileLookupError } = await admin
+        .from("profiles").select("id,role").eq("id", targetUser.id).maybeSingle();
+      if (profileLookupError) throw profileLookupError;
+      if (existingProfile) {
+        const { error: profileUpdateError } = await admin.from("profiles")
+          .update({ seller_label: displayName }).eq("id", targetUser.id);
+        if (profileUpdateError) throw profileUpdateError;
+      } else {
+        const { error: profileInsertError } = await admin.from("profiles").insert({
+          id: targetUser.id,
+          role: "seller",
+          seller_label: displayName,
+        });
+        if (profileInsertError) throw profileInsertError;
+      }
 
-      const { error: membershipError } = await caller.from("company_memberships").upsert({
+      // The requester's global-superadmin role was verified above. Use the
+      // service client here so the membership write is not dependent on
+      // browser-session RLS state after an auth invitation was created.
+      const { error: membershipError } = await admin.from("company_memberships").upsert({
         company_id: companyId,
         user_id: targetUser.id,
         role,
